@@ -100,7 +100,7 @@ export default function ServiceDetailPage({ serviceId, onBack, onBook, onSelectS
             >
               <img
                 id="detail-hero-img"
-                src={service.image}
+                src={service.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                 alt={service.name}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -269,7 +269,7 @@ export default function ServiceDetailPage({ serviceId, onBack, onBook, onSelectS
                 className="bg-brand-surface hover:border-brand-secondary/40 overflow-hidden flex flex-col justify-between"
               >
                 <div className="relative aspect-[16/10]">
-                  <img src={related.image} alt={related.name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                  <img src={related.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'} alt={related.name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                 </div>
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4 text-left">
                   <div className="space-y-1">

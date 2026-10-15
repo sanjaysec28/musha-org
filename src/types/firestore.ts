@@ -309,6 +309,12 @@ export interface FirestoreConciergeRequest {
   promo_code?: string;
   notes?: string;
   status: ConciergeRequestStatus;
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_gateway?: 'razorpay' | 'pay_at_salon';
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  paid_amount?: number;
+  paid_at?: string;
   created_at: string;
   updated_at: string;
   reviewed_by?: string;

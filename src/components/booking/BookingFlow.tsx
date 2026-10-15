@@ -27,7 +27,8 @@ import {
   CalendarX,
   WifiOff,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  CreditCard
 } from 'lucide-react';
 import { EXTENDED_SERVICES_DATA, ExtendedService } from '../../data/servicesExtendedData';
 import { StylistItem } from '../../data/salonData';
@@ -46,6 +47,12 @@ import {
 } from '../../lib/firestoreService';
 import { FirestoreSalonSettings } from '../../types/firestore';
 import { callCreateBooking, mapBookingError } from '../../lib/firebaseFunctions';
+import {
+  loadRazorpayScript,
+  getRazorpayConfig,
+  createRazorpayOrder,
+  verifyRazorpayPayment
+} from '../../lib/razorpay';
 import AuthModule from '../dashboard/AuthModule';
 
 // Deterministic UUID generator to adapt string IDs to standard UUID format
@@ -82,6 +89,10 @@ export interface BookingRecord {
   ticketCode?: string;
   customerName?: string;
   stylist?: StylistItem | null;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
+  paymentGateway?: 'razorpay' | 'pay_at_salon';
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
 }
 
 interface BookingFlowProps {
@@ -212,6 +223,11 @@ export default function BookingFlow({
   const [completedRecord, setCompletedRecord] = useState<BookingRecord | null>(null);
   const [isConciergeMode, setIsConciergeMode] = useState(false);
 
+  // Payment settlement options (Razorpay online vs Pay at Salon desk)
+  const [paymentMethod, setPaymentMethod] = useState<'pay_at_salon' | 'razorpay'>('razorpay');
+  const [razorpayKeyId, setRazorpayKeyId] = useState<string>('');
+  const [isRazorpayConfigured, setIsRazorpayConfigured] = useState<boolean>(false);
+
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dbServices, setDbServices] = useState<any[]>([]);
@@ -221,6 +237,21 @@ export default function BookingFlow({
   const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false);
   const [slotsLoadingError, setSlotsLoadingError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+
+  // Initialize Razorpay config & script loader
+  useEffect(() => {
+    let isMounted = true;
+    getRazorpayConfig().then(cfg => {
+      if (isMounted && cfg) {
+        setRazorpayKeyId(cfg.keyId);
+        setIsRazorpayConfigured(cfg.isConfigured);
+      }
+    }).catch(err => {
+      console.warn('Notice loading Razorpay config:', err);
+    });
+    loadRazorpayScript().catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   // Fetch Firestore salon settings
   useEffect(() => {
@@ -891,39 +922,195 @@ export default function BookingFlow({
         if (hasDiscount) rawConciergePayload.discount_applied = discountValue;
         if (validPromo) rawConciergePayload.promo_code = validPromo;
 
-        // Fully normalize payload prior to writing to Firestore
-        const normalizedConciergePayload = normalizeConciergeRequestPayload(rawConciergePayload);
-
-        try {
-          await conciergeRequestsRepository.create(normalizedConciergePayload);
-
-          const conciergeRecord: BookingRecord = {
-            id: conciergeReqId,
-            service: activeService,
-            gender: selectedCategory,
-            date: formattedDate,
-            timeSlot: selectedTimeSlot,
-            endTime: computedEndTime,
-            totalAmount: finalTotalAmount,
-            discountApplied: discountValue,
-            promoApplied: hasDiscount && promoCode ? promoCode.toUpperCase() : '',
-            createdAt: new Date().toLocaleDateString(),
-            ticketCode: 'AWAITING-CONFIRMATION',
-            customerName: patronName
+        // Persist concierge request to Firestore & advance
+        const persistConciergeBooking = async (paymentOpts?: {
+          status?: 'pending' | 'paid';
+          gateway?: 'razorpay' | 'pay_at_salon';
+          paymentId?: string;
+          orderId?: string;
+          noteAppend?: string;
+        }) => {
+          const finalRawPayload: Record<string, any> = {
+            ...rawConciergePayload,
+            payment_status: paymentOpts?.status || 'pending',
+            payment_gateway: paymentOpts?.gateway || (paymentMethod === 'razorpay' && paymentOpts?.status === 'paid' ? 'razorpay' : 'pay_at_salon'),
           };
 
-          setIsConciergeMode(true);
-          setCompletedRecord(conciergeRecord);
-          setCurrentStep(7);
-          triggerToast('success', 'Concierge Request Logged', `Your reservation request #${conciergeReqId} has been successfully registered with the salon desk.`);
-        } catch (saveErr: any) {
-          console.error('Error saving concierge request to Firestore:', saveErr);
-          const errDetail = saveErr?.message?.includes('permission-denied')
-            ? 'Permission denied saving reservation. Please ensure you are logged in with an active patron profile.'
-            : (saveErr?.message || 'Unable to register concierge request with salon desk. Please try again.');
-          triggerToast('error', 'Request Submission Failed', errDetail);
-          return;
+          if (paymentOpts?.status === 'paid') {
+            finalRawPayload.paid_amount = finalTotalAmount;
+            finalRawPayload.paid_at = new Date().toISOString();
+          }
+          if (paymentOpts?.paymentId) finalRawPayload.razorpay_payment_id = paymentOpts.paymentId;
+          if (paymentOpts?.orderId) finalRawPayload.razorpay_order_id = paymentOpts.orderId;
+          if (paymentOpts?.noteAppend) {
+            finalRawPayload.notes = patronNotes ? `${patronNotes} (${paymentOpts.noteAppend})` : paymentOpts.noteAppend;
+          }
+
+          const normalizedConciergePayload = normalizeConciergeRequestPayload(finalRawPayload);
+
+          try {
+            await conciergeRequestsRepository.create(normalizedConciergePayload);
+
+            const conciergeRecord: BookingRecord = {
+              id: conciergeReqId,
+              service: activeService,
+              gender: selectedCategory,
+              date: formattedDate,
+              timeSlot: selectedTimeSlot,
+              endTime: computedEndTime,
+              totalAmount: finalTotalAmount,
+              discountApplied: discountValue,
+              promoApplied: hasDiscount && promoCode ? promoCode.toUpperCase() : '',
+              createdAt: new Date().toLocaleDateString(),
+              ticketCode: 'AWAITING-CONFIRMATION',
+              customerName: patronName,
+              paymentStatus: paymentOpts?.status || 'pending',
+              paymentGateway: paymentOpts?.gateway || 'pay_at_salon',
+              razorpayPaymentId: paymentOpts?.paymentId,
+              razorpayOrderId: paymentOpts?.orderId
+            };
+
+            setIsConciergeMode(true);
+            setCompletedRecord(conciergeRecord);
+            setCurrentStep(7);
+            if (paymentOpts?.status === 'paid') {
+              triggerToast('success', 'VIP Payment Verified', `Reservation #${conciergeReqId} confirmed with online payment.`);
+            } else {
+              triggerToast('success', 'Concierge Request Logged', `Your reservation request #${conciergeReqId} has been successfully registered with the salon desk.`);
+            }
+          } catch (saveErr: any) {
+            console.error('Error saving concierge request to Firestore:', saveErr);
+            const errDetail = saveErr?.message?.includes('permission-denied')
+              ? 'Permission denied saving reservation. Please ensure you are logged in with an active patron profile.'
+              : (saveErr?.message || 'Unable to register concierge request with salon desk. Please try again.');
+            triggerToast('error', 'Request Submission Failed', errDetail);
+            return;
+          }
+        };
+
+        if (paymentMethod === 'razorpay') {
+          // Attempt authoritative order creation on server
+          try {
+            const hasScript = await loadRazorpayScript();
+            if (!hasScript || !(window as any).Razorpay) {
+              triggerToast('warning', 'Checkout Unavailable', 'Payment gateway could not be loaded in browser. Proceeding with Desk Settlement.');
+              await persistConciergeBooking({ status: 'pending', gateway: 'pay_at_salon', noteAppend: 'Gateway script failed to load' });
+              return;
+            }
+
+            const orderRes = await createRazorpayOrder({
+              requestId: conciergeReqId,
+              serviceId: activeService.id,
+              amount: finalTotalAmount,
+              customerId: userId,
+              customerName: patronName,
+              customerEmail: patronEmail,
+              customerPhone: patronPhone
+            });
+
+            if (!orderRes.success || !orderRes.orderId) {
+              const reason = orderRes.error === 'RAZORPAY_NOT_CONFIGURED'
+                ? 'Razorpay credentials not yet configured in server environment. Proceeding with Desk Settlement.'
+                : 'Unable to initiate online order. Proceeding with Desk Settlement.';
+              triggerToast('info', 'Desk Settlement Selected', reason);
+              await persistConciergeBooking({ status: 'pending', gateway: 'pay_at_salon', noteAppend: 'Order creation skipped or not configured' });
+              return;
+            }
+
+            // Launch standard Razorpay Modal
+            const rzp = new (window as any).Razorpay({
+              key: orderRes.keyId || razorpayKeyId,
+              amount: orderRes.amount,
+              currency: orderRes.currency || 'INR',
+              name: 'Musha Empire Unisex Salon',
+              description: `${activeService.name} — Appointment Reservation`,
+              image: '/images/musha_luxury_salon_interior.png',
+              order_id: orderRes.orderId,
+              prefill: {
+                name: patronName,
+                email: patronEmail,
+                contact: patronPhone
+              },
+              theme: {
+                color: '#C5A880'
+              },
+              modal: {
+                ondismiss: async () => {
+                  // User answer A3: Save reservation request with pending payment status
+                  triggerToast('info', 'Payment Dismissed', 'Online payment was dismissed. Your sanctuary reservation request has been registered with payment due upon arrival.');
+                  await persistConciergeBooking({
+                    status: 'pending',
+                    gateway: 'pay_at_salon',
+                    orderId: orderRes.orderId,
+                    noteAppend: 'Checkout modal dismissed by patron; payment due at salon desk'
+                  });
+                }
+              },
+              handler: async (resp: any) => {
+                setIsSubmitting(true);
+                try {
+                  const verifyRes = await verifyRazorpayPayment({
+                    requestId: conciergeReqId,
+                    orderId: resp.razorpay_order_id,
+                    paymentId: resp.razorpay_payment_id,
+                    signature: resp.razorpay_signature,
+                    customerId: userId
+                  });
+
+                  if (verifyRes.success && verifyRes.verified) {
+                    await persistConciergeBooking({
+                      status: 'paid',
+                      gateway: 'razorpay',
+                      paymentId: resp.razorpay_payment_id,
+                      orderId: resp.razorpay_order_id
+                    });
+                  } else {
+                    triggerToast('error', 'Signature Mismatch', 'Payment token could not be cryptographically authenticated. Recorded as pending desk settlement.');
+                    await persistConciergeBooking({
+                      status: 'pending',
+                      gateway: 'pay_at_salon',
+                      orderId: resp.razorpay_order_id,
+                      noteAppend: 'Cryptographic signature verification returned mismatch'
+                    });
+                  }
+                } catch (verifyErr) {
+                  console.error('Error during payment verification:', verifyErr);
+                  triggerToast('error', 'Verification Failed', 'Unable to reach verification service. Recorded as pending desk settlement.');
+                  await persistConciergeBooking({
+                    status: 'pending',
+                    gateway: 'pay_at_salon',
+                    orderId: resp.razorpay_order_id,
+                    noteAppend: 'Verification network timeout'
+                  });
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }
+            });
+
+            rzp.on('payment.failed', async (failResp: any) => {
+              console.warn('Razorpay payment failed:', failResp.error);
+              triggerToast('warning', 'Payment Unsuccessful', failResp.error?.description || 'Payment was declined. Reservation saved with desk settlement.');
+              await persistConciergeBooking({
+                status: 'pending',
+                gateway: 'pay_at_salon',
+                orderId: orderRes.orderId,
+                noteAppend: `Payment failed: ${failResp.error?.code || 'declined'}`
+              });
+            });
+
+            rzp.open();
+            return;
+          } catch (rzpErr) {
+            console.warn('Error launching Razorpay:', rzpErr);
+            triggerToast('info', 'Desk Settlement Selected', 'Proceeding with reservation registered for arrival settlement.');
+            await persistConciergeBooking({ status: 'pending', gateway: 'pay_at_salon' });
+            return;
+          }
         }
+
+        // Standard Pay at Salon Desk selection
+        await persistConciergeBooking({ status: 'pending', gateway: 'pay_at_salon' });
       }
     } finally {
       setIsSubmitting(false);
@@ -1047,98 +1234,150 @@ export default function BookingFlow({
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                   {[
                     {
                       id: 'Men',
                       label: 'Men',
                       icon: User,
                       title: "Gentlemen's Grooming",
-                      description: 'Precision scissor cuts, hot-shaves, beard sculpting, and facial clay detox.',
+                      description: 'Master scissor craftsmanship, traditional hot-towel straight razor shaves, beard contouring, and rejuvenating charcoal skin detox.',
                       tagline: 'Refined Masculine Style',
+                      badge: "King's Sanctuary",
+                      image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1000&q=80',
+                      features: ['Precision Scissor Cuts & Fades', 'Hot Towel Beard Sculpting', 'Clarifying Scalp Rinses'],
+                      isFullWidth: false,
                     },
                     {
                       id: 'Women',
                       label: 'Women',
                       icon: Sparkles,
                       title: "Women's Sanctuary",
-                      description: 'Celestial color balayage, botanical spa therapy, bridal updos, and custom nail care.',
+                      description: 'Haute hair artistry, dimensional balayage, holistic botanical spa therapies, designer royal bridal updos, and bespoke nail care.',
                       tagline: 'High-Artistry Feminine Rituals',
+                      badge: "Queen's Sanctuary",
+                      image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80',
+                      features: ['Dimensional Balayage & Highlights', 'Botanical Hair Spa & Botox', 'Imperial Bridal Packages'],
+                      isFullWidth: false,
                     },
                     {
                       id: 'Other',
                       label: 'Other',
                       icon: Compass,
                       title: 'Universal Experience',
-                      description: 'Explore our complete catalog of luxury salon treatments, from hair spa to wellness.',
-                      tagline: 'All Sanctuary Rituals',
+                      description: 'Explore the complete universe of Musha Empire luxury services. Spanning comprehensive men’s grooming, women’s sanctuary styling, pediatric care, and restorative spa rituals.',
+                      tagline: 'Comprehensive Sanctuary Rituals',
+                      badge: 'Featured Master Catalog',
+                      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1400&q=80',
+                      features: ['Complete 90-Ritual Service Menu', 'Couples & Multi-Service Sessions', 'Holistic Skin, Hair & Nails'],
+                      isFullWidth: true,
                     }
                   ].map((cat) => {
                     const isSelected = selectedCategory === cat.id;
                     const Icon = cat.icon;
+
                     return (
                       <motion.div
                         key={cat.id}
                         id={`select-category-${cat.id.toLowerCase()}`}
                         onClick={() => setSelectedCategory(cat.id)}
-                        whileHover={{ y: -6, scale: 1.015 }}
-                        animate={
+                        whileHover={{ y: -4 }}
+                        transition={{ duration: 0.3 }}
+                        className={`group relative rounded-2xl md:rounded-3xl border overflow-hidden flex flex-col justify-between p-6 sm:p-8 cursor-pointer text-left transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-brand-secondary/15 ${
+                          cat.isFullWidth
+                            ? 'md:col-span-2 min-h-[380px] sm:min-h-[400px]'
+                            : 'min-h-[460px] sm:min-h-[480px]'
+                        } ${
                           isSelected
-                            ? { scale: 1.02, y: -2 }
-                            : { scale: 1, y: 0 }
-                        }
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className={`p-6 border transition-all duration-300 cursor-pointer flex flex-col justify-between text-left group rounded-none h-full relative overflow-hidden ${
-                          isSelected
-                            ? 'border-brand-secondary bg-[#13110E] shadow-[0_15px_45px_rgba(197,168,128,0.22)] ring-1 ring-brand-secondary/35'
-                            : 'border-brand-secondary/15 bg-[#0D0D0D] hover:border-brand-secondary/40 hover:shadow-[0_12px_30px_rgba(197,168,128,0.12)]'
-                        } ${cat.id === 'Other' ? 'sm:col-span-2' : ''}`}
+                            ? 'border-brand-secondary ring-2 ring-brand-secondary/60 shadow-[0_20px_50px_rgba(197,168,128,0.25)] bg-[#12100E]'
+                            : 'border-brand-secondary/20 bg-brand-surface hover:border-brand-secondary/50'
+                        }`}
                       >
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-gradient-to-tr from-brand-secondary/5 via-transparent to-transparent pointer-events-none" />
-                        )}
-
-                        <div className="space-y-5">
-                          <div className="flex justify-between items-center">
-                            <div className={`p-3 rounded-full border transition-all duration-300 ${
-                              isSelected 
-                                ? 'border-brand-secondary/40 bg-brand-secondary/10' 
-                                : 'border-brand-secondary/10 bg-brand-surface group-hover:border-brand-secondary/30 group-hover:bg-brand-secondary/5'
-                            }`}>
-                              <Icon className={`h-5 w-5 transition-colors duration-300 ${
-                                isSelected ? 'text-brand-secondary' : 'text-brand-text-muted group-hover:text-brand-secondary'
-                              }`} />
-                            </div>
-
-                            {isSelected ? (
-                              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-brand-secondary border border-brand-secondary/35 px-3 py-1 bg-brand-secondary/10">
-                                SELECTED
-                              </span>
-                            ) : (
-                              <span className="font-mono text-[8px] text-brand-text-muted uppercase tracking-[0.25em] group-hover:text-brand-secondary transition-colors">
-                                SELECT
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brand-gold-dark font-medium block">
-                              {cat.tagline}
-                            </span>
-                            <h4 className="font-serif text-xl font-bold text-brand-primary group-hover:text-brand-secondary transition-colors duration-300">
-                              {cat.title}
-                            </h4>
-                            <p className="font-sans text-xs text-brand-text-muted leading-relaxed font-normal">
-                              {cat.description}
-                            </p>
-                          </div>
+                        {/* Background Photography with Luxury Dark Overlays */}
+                        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                          <img
+                            src={cat.image}
+                            alt={cat.title}
+                            className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transform-none"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                          {/* Multi-tier dark gradient overlay for optimal readability while allowing photograph to remain visible */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40" />
+                          <div className="absolute inset-0 bg-[#0A0A0A]/35 backdrop-blur-[0.5px]" />
+                          {/* Subtle warm gold corner glow on hover */}
+                          <div className="absolute -bottom-16 -right-16 w-56 h-56 bg-brand-secondary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-brand-secondary/20 transition-colors duration-500" />
                         </div>
 
-                        <div className="border-t border-brand-secondary/15 mt-6 pt-4 flex justify-between items-center text-brand-text-muted font-mono text-[8px] uppercase tracking-[0.2em] group-hover:text-brand-primary transition-all duration-300">
-                          <span className="group-hover:text-brand-secondary transition-colors">SECURE SELECTION</span>
-                          <span className="flex items-center gap-1.5 text-brand-gold-dark group-hover:text-brand-primary transition-colors">
-                            CONTINUE <ArrowRight className="h-3 w-3 group-hover:translate-x-1.5 transition-transform duration-300" />
-                          </span>
+                        {/* Foreground Content Container */}
+                        <div className="relative z-10 flex flex-col justify-between h-full space-y-6">
+                          {/* Top Section: Badges & Headings */}
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-semibold bg-brand-bg/85 backdrop-blur-md border border-brand-secondary/35 text-brand-secondary">
+                                <Icon className="w-3.5 h-3.5 text-brand-secondary" />
+                                {cat.badge}
+                              </span>
+
+                              {isSelected ? (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono tracking-widest uppercase text-brand-secondary bg-brand-secondary/20 border border-brand-secondary/50 font-bold shadow-sm">
+                                  <Check className="w-3.5 h-3.5 text-brand-secondary stroke-[2.5]" />
+                                  SELECTED
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono tracking-widest uppercase text-brand-secondary/80 bg-brand-secondary/10 px-2.5 py-0.5 rounded-full border border-brand-secondary/20">
+                                  {cat.label}
+                                </span>
+                              )}
+                            </div>
+
+                            <div>
+                              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brand-secondary/90 font-medium block mb-1">
+                                {cat.tagline}
+                              </span>
+                              <h4 className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight group-hover:text-brand-secondary transition-colors duration-300">
+                                {cat.title}
+                              </h4>
+                              <p className={`font-sans text-xs sm:text-sm text-[#E5E5E5]/80 leading-relaxed mt-2 font-normal ${cat.isFullWidth ? 'max-w-2xl' : 'max-w-md'}`}>
+                                {cat.description}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Middle Section: Curated Highlights */}
+                          <div className="bg-brand-bg/70 backdrop-blur-md border border-brand-secondary/20 rounded-xl p-3.5 sm:p-4 space-y-2">
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-brand-text-muted block">
+                              Sanctuary Inclusions
+                            </span>
+                            <div className={`grid gap-1.5 ${cat.isFullWidth ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1'}`}>
+                              {cat.features.map((feat, fIdx) => (
+                                <div key={fIdx} className="flex items-center gap-2 text-[11px] sm:text-xs text-brand-text/90 font-sans">
+                                  <span className="w-3.5 h-3.5 rounded-full bg-brand-secondary/15 border border-brand-secondary/30 flex items-center justify-center shrink-0">
+                                    <Check className="w-2.5 h-2.5 text-brand-secondary" />
+                                  </span>
+                                  <span className="truncate">{feat}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Bottom Section: CTA Action Button */}
+                          <div className="pt-2 flex items-center justify-between gap-4">
+                            <div
+                              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-xl font-sans text-xs sm:text-sm font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-brand-secondary text-[#0A0A0A] shadow-lg shadow-brand-secondary/25'
+                                  : 'bg-brand-secondary/90 text-[#0A0A0A] hover:bg-[#E7D2B4] hover:shadow-lg hover:shadow-brand-secondary/20'
+                              }`}
+                            >
+                              <span>{isSelected ? 'Confirmed Selection' : 'Select Experience'}</span>
+                              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1.5" />
+                            </div>
+
+                            <span className="hidden sm:inline-block font-mono text-[10px] text-brand-secondary/80 tracking-wider uppercase">
+                              {isSelected ? 'Ready for Step 2' : 'Click to Select'}
+                            </span>
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -1203,7 +1442,7 @@ export default function BookingFlow({
                       >
                         <div className="flex gap-4 items-center">
                           <img
-                            src={service.image}
+                            src={service.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                             alt={service.name}
                             referrerPolicy="no-referrer"
                             className="h-14 w-14 object-cover shrink-0 rounded-none"
@@ -1537,6 +1776,93 @@ export default function BookingFlow({
                   {promoErrorMessage && <p className="text-red-500 text-xs font-sans font-medium">{promoErrorMessage}</p>}
                 </div>
 
+                {/* Settlement Protocol Selection */}
+                <div className="bg-brand-surface border border-brand-secondary/25 p-5 space-y-4 text-left">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-sans text-[8px] uppercase tracking-widest text-brand-secondary font-bold block mb-0.5">
+                        SETTLEMENT PROTOCOL
+                      </span>
+                      <h4 className="font-serif text-sm text-brand-primary font-medium flex items-center gap-1.5">
+                        <CreditCard className="h-4 w-4 text-brand-secondary" /> Choose Payment Method
+                      </h4>
+                    </div>
+                    {isRazorpayConfigured && (
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5">
+                        Razorpay Test Mode
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Option 1: Pay Online via Razorpay */}
+                    <button
+                      type="button"
+                      id="payment-method-razorpay"
+                      onClick={() => setPaymentMethod('razorpay')}
+                      className={`p-4 border text-left transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                        paymentMethod === 'razorpay'
+                          ? 'border-brand-secondary bg-brand-secondary/10 shadow-sm'
+                          : 'border-brand-secondary/15 bg-brand-bg/50 hover:border-brand-secondary/40'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-serif text-sm font-semibold text-brand-primary flex items-center gap-1.5">
+                            <CreditCard className="h-4 w-4 text-brand-secondary" /> Pay Online (Razorpay)
+                          </span>
+                          <span className={`h-4 w-4 rounded-full border flex items-center justify-center ${
+                            paymentMethod === 'razorpay' ? 'border-brand-secondary bg-brand-secondary text-brand-bg' : 'border-brand-text-muted/40'
+                          }`}>
+                            {paymentMethod === 'razorpay' && <Check className="h-2.5 w-2.5 stroke-3" />}
+                          </span>
+                        </div>
+                        <p className="font-sans text-[11px] text-brand-text-muted leading-relaxed">
+                          Instant VIP Confirmation. Supports UPI, Cards, Net Banking & Wallets via Razorpay Test Sandbox.
+                        </p>
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-brand-secondary/10 flex items-center gap-2 font-mono text-[8px] text-brand-secondary uppercase tracking-widest">
+                        <span>Zero Surcharge</span>
+                        <span>•</span>
+                        <span>SSL Encrypted</span>
+                      </div>
+                    </button>
+
+                    {/* Option 2: Pay at Salon Desk */}
+                    <button
+                      type="button"
+                      id="payment-method-salon-desk"
+                      onClick={() => setPaymentMethod('pay_at_salon')}
+                      className={`p-4 border text-left transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                        paymentMethod === 'pay_at_salon'
+                          ? 'border-brand-secondary bg-brand-secondary/10 shadow-sm'
+                          : 'border-brand-secondary/15 bg-brand-bg/50 hover:border-brand-secondary/40'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-serif text-sm font-semibold text-brand-primary flex items-center gap-1.5">
+                            <Clock className="h-4 w-4 text-brand-secondary" /> Pay at Salon Desk
+                          </span>
+                          <span className={`h-4 w-4 rounded-full border flex items-center justify-center ${
+                            paymentMethod === 'pay_at_salon' ? 'border-brand-secondary bg-brand-secondary text-brand-bg' : 'border-brand-text-muted/40'
+                          }`}>
+                            {paymentMethod === 'pay_at_salon' && <Check className="h-2.5 w-2.5 stroke-3" />}
+                          </span>
+                        </div>
+                        <p className="font-sans text-[11px] text-brand-text-muted leading-relaxed">
+                          Concierge reservation request. Settle treatment total upon attendance at the front desk via Cash, Card, or UPI.
+                        </p>
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-brand-secondary/10 flex items-center gap-2 font-mono text-[8px] text-brand-text-muted uppercase tracking-widest">
+                        <span>Arrival Settlement</span>
+                        <span>•</span>
+                        <span>No Card Required Now</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Terms of Attendance */}
                 <div className="bg-brand-surface border border-brand-secondary/15 p-5 space-y-2 text-left text-xs text-brand-text-muted">
                   <h5 className="font-serif text-sm text-brand-primary font-medium flex items-center gap-1.5">
@@ -1623,8 +1949,16 @@ export default function BookingFlow({
 
                       <div className="pt-3 flex justify-between items-center">
                         <div>
-                          <span className="font-sans text-[9px] uppercase tracking-widest font-semibold text-brand-primary block">Authoritative Treatment Price</span>
-                          <span className="font-sans text-[10px] text-brand-text-muted block">Pay at Salon upon Confirmation — No Online Charge</span>
+                          <span className="font-sans text-[9px] uppercase tracking-widest font-semibold text-brand-primary block">Treatment Total & Settlement</span>
+                          <span className="font-sans text-[10px] text-brand-text-muted block mt-0.5">
+                            {completedRecord.paymentStatus === 'paid' ? (
+                              <span className="text-emerald-400 font-semibold flex items-center gap-1 font-mono text-[10px]">
+                                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Settled Online via Razorpay ({completedRecord.razorpayPaymentId || 'Verified'})
+                              </span>
+                            ) : (
+                              'Pay at Salon upon Confirmation — Arrival Settlement'
+                            )}
+                          </span>
                         </div>
                         <span className="font-serif text-base font-bold text-brand-gold-dark">₹{completedRecord.totalAmount}</span>
                       </div>
@@ -1811,7 +2145,7 @@ export default function BookingFlow({
                   )}
                   className="font-sans text-[10px] uppercase tracking-widest font-bold px-8 bg-brand-gold-dark text-white hover:bg-brand-primary"
                 >
-                  {isSubmitting ? 'Securing Slot...' : 'Confirm Reservation'}
+                  {isSubmitting ? 'Securing Slot...' : (paymentMethod === 'razorpay' ? 'Proceed to Razorpay Checkout' : 'Confirm Reservation')}
                 </Button>
               )}
             </div>

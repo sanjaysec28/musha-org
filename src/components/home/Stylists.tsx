@@ -133,7 +133,7 @@ export default function Stylists() {
                 {/* Scaled picture window */}
                 <div className="relative w-full aspect-[4/5] bg-brand-primary overflow-hidden">
                   <img
-                    src={stylist.image}
+                    src={stylist.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'}
                     alt={stylist.name}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000 ease-out"
@@ -226,7 +226,7 @@ export default function Stylists() {
               {/* Picture banner */}
               <div className="relative w-full aspect-square border border-brand-accent bg-brand-surface overflow-hidden">
                 <img
-                  src={selectedStylist.image}
+                  src={selectedStylist.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'}
                   alt={selectedStylist.name}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover opacity-90"

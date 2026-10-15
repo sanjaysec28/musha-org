@@ -153,7 +153,7 @@ export default function PromotionalOffers({
               {/* Background Photography with Luxury Dark Overlays */}
               <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 <img
-                  src={promo.image}
+                  src={promo.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                   alt={promo.title}
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transform-none"
                   loading="lazy"

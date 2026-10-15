@@ -245,7 +245,7 @@ export default function DashboardOverview({
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pl-3">
                 <div className="flex gap-4 items-center">
                   <img
-                    src={nextAppointment.stylistAvatar}
+                    src={nextAppointment.stylistAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150'}
                     alt={nextAppointment.stylistName}
                     className="h-14 w-14 border border-brand-accent rounded-none object-cover"
                   />

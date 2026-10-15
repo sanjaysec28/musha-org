@@ -249,7 +249,7 @@ export default function AboutPage({
               >
                 <div className="overflow-hidden relative h-[280px]">
                   <img
-                    src={member.image}
+                    src={member.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'}
                     alt={member.name}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                     referrerPolicy="no-referrer"
@@ -318,7 +318,7 @@ export default function AboutPage({
                 <div key={env.title} id={`env-box-${idx}`} className="space-y-4 group">
                   <div className="overflow-hidden border border-brand-accent/20">
                     <img
-                      src={env.image}
+                      src={env.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                       alt={env.title}
                       className="w-full h-[220px] object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                       referrerPolicy="no-referrer"

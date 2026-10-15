@@ -525,4 +525,13 @@ describe('Musha Empire — Concierge Workflow End-to-End Verification Suite', ()
     expect(clean.customer_phone).toBe('+91 98765 43210');
     expect(clean.total_amount).toBe(153);
   });
+
+  it('Check 13 (PASS): conciergeRequestsRepository includes permission handling fallback to patron profile in Firestore', () => {
+    const firestoreServiceSource = fs.readFileSync(path.resolve(__dirname, '../src/lib/firestoreService.ts'), 'utf8');
+
+    // Verifies the permission-denied fallback pattern to users/{targetUid}
+    expect(firestoreServiceSource).toContain("rootErr?.code === 'permission-denied'");
+    expect(firestoreServiceSource).toContain("isPermissionDenied");
+    expect(firestoreServiceSource).toContain("concierge_requests: [cleanPayload");
+  });
 });

@@ -19,7 +19,9 @@ import {
   Sparkles,
   MapPin,
   CheckCircle,
-  TrendingDown
+  TrendingDown,
+  ShieldCheck,
+  CreditCard
 } from 'lucide-react';
 import { DashboardAppointment } from './types';
 import Button from '../ui/Button';
@@ -399,6 +401,11 @@ export default function DashboardAppointments({
                           <span className={`font-mono text-[8px] uppercase px-2 py-0.5 border ${statusColor}`}>
                             {statusLabel}
                           </span>
+                          {req.payment_status === 'paid' && (
+                            <span className="font-mono text-[8px] uppercase px-2 py-0.5 border bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold flex items-center gap-1">
+                              <ShieldCheck className="h-3 w-3" /> Paid Online
+                            </span>
+                          )}
                         </div>
                         <h4 className="font-serif text-lg font-medium text-brand-primary">
                           {req.service_name || 'Sanctuary Ritual'}
@@ -424,13 +431,24 @@ export default function DashboardAppointments({
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-end gap-2 shrink-0">
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <span className="font-serif text-xl font-bold text-brand-gold-dark">
                           ₹{req.total_amount}
                         </span>
-                        <span className="font-sans text-[10px] text-brand-text-muted uppercase tracking-wider">
-                          Pay upon salon arrival
-                        </span>
+                        {req.payment_status === 'paid' ? (
+                          <span className="font-sans text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-semibold flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3" /> Verified Online (Razorpay)
+                          </span>
+                        ) : (
+                          <span className="font-sans text-[10px] text-brand-text-muted uppercase tracking-wider">
+                            Pay upon salon arrival
+                          </span>
+                        )}
+                        {req.razorpay_payment_id && (
+                          <span className="font-mono text-[9px] text-brand-text-muted">
+                            Ref: {req.razorpay_payment_id}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -474,7 +492,7 @@ export default function DashboardAppointments({
                   {/* Left: Info */}
                   <div className="flex gap-4 items-center">
                     <img
-                      src={app.stylistAvatar}
+                      src={app.stylistAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100'}
                       alt={app.stylistName}
                       className="h-12 w-12 border border-brand-accent rounded-none object-cover"
                     />

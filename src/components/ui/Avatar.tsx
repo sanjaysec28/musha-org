@@ -41,7 +41,7 @@ export default function Avatar({
   return (
     <div id={id} className={`relative inline-block select-none ${className}`} {...props}>
       <div className={`overflow-hidden rounded-full border border-brand-accent bg-brand-surface-muted flex items-center justify-center font-sans font-medium text-brand-text-muted ${sizes[size]}`}>
-        {!src || hasError ? (
+        {!src || !src.trim() || hasError ? (
           <span id={`${id}-fallback`}>{fallback}</span>
         ) : (
           <img

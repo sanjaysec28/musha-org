@@ -228,6 +228,28 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     const trustOccurrences = homepageSectionOrder.filter(id => id === 'trust').length;
     expect(trustOccurrences).toBe(1);
   });
+
+  it('verifies Services Page cards match cinematic promotional cards architecture and responsive grid', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const servicesPageSource = fs.readFileSync(path.resolve(__dirname, '../src/components/services/ServicesPage.tsx'), 'utf8');
+
+    // 1. Responsive grid: 1 col on mobile, 2 col on tablet, 3 col on desktop
+    expect(servicesPageSource).toContain('grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8');
+
+    // 2. Full-card image with cinematic dark gradient overlay
+    expect(servicesPageSource).toContain('bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40');
+    expect(servicesPageSource).toContain('backdrop-blur-[0.5px]');
+    expect(servicesPageSource).toContain('group-hover:scale-105');
+
+    // 3. Editorial image resolver integration
+    expect(servicesPageSource).toContain('getServiceEditorialImage');
+
+    // 4. Booking and details action retention
+    expect(servicesPageSource).toContain('id={`book-service-${service.id}`}');
+    expect(servicesPageSource).toContain('id={`view-detail-${service.id}`}');
+    expect(servicesPageSource).toContain('id={`service-catalog-card-${service.id}`}');
+  });
 });
 
 

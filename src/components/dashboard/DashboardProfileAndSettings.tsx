@@ -213,7 +213,7 @@ export default function DashboardProfileAndSettings({
 
               <div className="relative w-28 h-28 mx-auto group">
                 <img
-                  src={user.avatar}
+                  src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150'}
                   alt={user.name}
                   className="w-28 h-28 border border-brand-accent rounded-none object-cover"
                 />

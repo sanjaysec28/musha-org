@@ -576,7 +576,19 @@ export default function StaffManagement({ id, triggerToast }: StaffManagementPro
                       </div>
                       <div className="flex justify-between text-brand-text-muted">
                         <span>Price Quote:</span>
-                        <span className="font-serif font-bold text-brand-gold-dark">${req.total_amount}</span>
+                        <span className="font-serif font-bold text-brand-gold-dark">₹{req.total_amount}</span>
+                      </div>
+                      <div className="flex justify-between text-brand-text-muted">
+                        <span>Settlement Status:</span>
+                        {req.payment_status === 'paid' ? (
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">
+                            PAID ONLINE ({req.razorpay_payment_id || 'Razorpay'})
+                          </span>
+                        ) : (
+                          <span className="text-amber-400 font-semibold font-mono text-[10px]">
+                            PAY AT DESK (Pending)
+                          </span>
+                        )}
                       </div>
                       {req.notes && (
                         <div className="pt-1 text-[11px] italic text-brand-text-muted border-t border-brand-accent/20">
@@ -803,7 +815,7 @@ export default function StaffManagement({ id, triggerToast }: StaffManagementPro
                   <div className="flex gap-4 items-center">
                     {/* Profile Picture Frame */}
                     <div className="h-20 w-20 bg-brand-bg border border-brand-secondary/35 overflow-hidden shrink-0 flex items-center justify-center relative group">
-                      {imageUrl ? (
+                      {imageUrl && imageUrl.trim() !== '' ? (
                         <img
                           src={imageUrl}
                           alt="Profile Preview"

@@ -148,7 +148,7 @@ export default function OffersPage({
               {/* Promo Image & Badge */}
               <div className="lg:col-span-4 relative overflow-hidden h-[240px] lg:h-auto min-h-[240px]">
                 <img
-                  src={promo.image}
+                  src={promo.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                   alt={promo.title}
                   className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-102 transition-all duration-700"
                   referrerPolicy="no-referrer"

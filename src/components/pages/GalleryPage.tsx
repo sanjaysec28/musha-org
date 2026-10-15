@@ -289,7 +289,7 @@ export default function GalleryPage({
               {/* Image Frame */}
               <div className="relative overflow-hidden aspect-4/3 sm:aspect-square">
                 <img
-                  src={item.image}
+                  src={item.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
                   alt={item.title}
                   className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                   referrerPolicy="no-referrer"
@@ -378,8 +378,8 @@ export default function GalleryPage({
               {/* Image Frame */}
               <div className="md:col-span-8 bg-black flex items-center justify-center relative overflow-hidden h-[40vh] md:h-[75vh]">
                 <img
-                  src={filteredItems[activeLightboxIndex].image}
-                  alt={filteredItems[activeLightboxIndex].title}
+                  src={filteredItems[activeLightboxIndex]?.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
+                  alt={filteredItems[activeLightboxIndex]?.title || 'Gallery display'}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />

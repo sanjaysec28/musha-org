@@ -122,7 +122,7 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                 >
                   <div className="relative w-full h-full bg-[#121212] overflow-hidden">
                     <img
-                      src={item.image}
+                      src={item.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
                       alt={item.title}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-80"
@@ -225,8 +225,8 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                 >
                   <div className="relative aspect-square md:aspect-[4/3] max-h-[65vh] w-full bg-[#121212]/30 border border-brand-secondary/15 p-2 flex items-center justify-center">
                     <img
-                      src={galleryItems[lightboxIndex].image}
-                      alt={galleryItems[lightboxIndex].title}
+                      src={galleryItems[lightboxIndex]?.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
+                      alt={galleryItems[lightboxIndex]?.title || 'Gallery display'}
                       referrerPolicy="no-referrer"
                       className="max-h-full max-w-full object-contain"
                     />

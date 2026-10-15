@@ -148,7 +148,7 @@ export default function Services({ onBookService, onExploreAll }: ServicesProps)
                     {/* Service Image banner */}
                     <div className="relative w-full aspect-[16/10] overflow-hidden bg-brand-primary">
                       <img
-                        src={service.image}
+                        src={service.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
                         alt={service.name}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-700 ease-out"

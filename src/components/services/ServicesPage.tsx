@@ -22,13 +22,15 @@ import {
   Info,
   Calendar,
   Layers,
-  Scissors
+  Scissors,
+  ArrowRight
 } from 'lucide-react';
 import {
   EXTENDED_SERVICES_DATA,
   CATALOG_CATEGORIES,
   ExtendedService
 } from '../../data/servicesExtendedData';
+import { getServiceEditorialImage } from '../../utils/serviceImages';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 
@@ -371,132 +373,166 @@ export default function ServicesPage({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAndSortedServices.map((service) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {filteredAndSortedServices.map((service, idx) => {
                 const isExpanded = expandedTierCardId === service.id;
+                const editorialImage = getServiceEditorialImage(service);
+
+                const genderLabel =
+                  service.gender === 'Men'
+                    ? "King's Service"
+                    : service.gender === 'Women'
+                    ? "Queen's Service"
+                    : service.gender === 'Kids'
+                    ? 'Kids Service'
+                    : 'Unisex Ritual';
+
                 return (
-                  <Card
+                  <motion.div
                     key={service.id}
                     id={`service-catalog-card-${service.id}`}
-                    variant="bordered"
-                    className="flex flex-col justify-between p-0 overflow-hidden bg-brand-surface border-brand-secondary/20 hover:border-brand-secondary/50 transition-all duration-300 relative group text-left"
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.4, delay: Math.min((idx % 3) * 0.08, 0.24) }}
+                    className="group relative rounded-2xl md:rounded-3xl border border-brand-secondary/20 bg-[#0E0E0E] overflow-hidden flex flex-col justify-between min-h-[480px] sm:min-h-[500px] p-6 sm:p-7 hover:border-brand-secondary/50 transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-brand-secondary/10 text-left motion-reduce:transform-none"
                   >
-                    {/* Top image & Category Badge */}
-                    <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#0A0A0A]">
+                    {/* Background Photography with Luxury Dark Overlays */}
+                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <img
-                        src={service.image}
+                        src={editorialImage}
                         alt={service.name}
+                        className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transform-none"
+                        loading="lazy"
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-surface via-transparent to-transparent opacity-80" />
-                      
-                      {/* Price Badge in Indian Rupees (₹) */}
-                      <div className="absolute top-3 right-3 bg-brand-bg/90 backdrop-blur-md border border-brand-secondary/40 text-brand-secondary font-serif text-sm font-bold px-3 py-1 shadow-lg">
-                        {service.price}
-                      </div>
-
-                      {/* Section Tag */}
-                      {service.sectionTitle && (
-                        <div className="absolute top-3 left-3 bg-[#121212]/90 border border-brand-secondary/20 font-mono text-[9px] uppercase tracking-wider text-brand-text-muted px-2 py-0.5">
-                          {service.sectionTitle}
-                        </div>
-                      )}
-
-                      {/* Gender Badge */}
-                      <div className="absolute bottom-3 left-3 bg-brand-secondary/20 text-brand-secondary border border-brand-secondary/30 font-sans text-[9px] uppercase tracking-widest font-semibold px-2 py-0.5">
-                        {service.gender === 'Men' ? "King's Service" : service.gender === 'Women' ? "Queen's Service" : service.gender === 'Kids' ? "Kids Service" : "Unisex Ritual"}
-                      </div>
+                      {/* Multi-tier dark gradient overlay for optimal typography readability while allowing photograph to remain visible */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40" />
+                      <div className="absolute inset-0 bg-[#0A0A0A]/30 backdrop-blur-[0.5px]" />
+                      {/* Subtle warm gold corner glow on hover */}
+                      <div className="absolute -bottom-16 -right-16 w-52 h-52 bg-brand-secondary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-brand-secondary/20 transition-colors duration-500" />
                     </div>
 
-                    {/* Content Section */}
-                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3 text-[10px] font-sans text-brand-secondary uppercase tracking-widest font-semibold">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> {service.duration}
+                    {/* Foreground Content Container */}
+                    <div className="relative z-10 flex flex-col justify-between h-full space-y-5">
+                      {/* Top Section: Badges & Headings */}
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-semibold bg-brand-bg/85 backdrop-blur-md border border-brand-secondary/35 text-brand-secondary">
+                            <Tag className="w-3 h-3 text-brand-secondary" />
+                            {service.category}
                           </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Tag className="h-3 w-3" /> {service.category}
+                          <span className="text-[10px] font-mono tracking-widest uppercase text-brand-secondary/80 bg-brand-secondary/10 px-2.5 py-0.5 rounded-full border border-brand-secondary/20">
+                            {genderLabel}
                           </span>
                         </div>
 
-                        <h3 className="font-serif text-lg font-bold text-brand-primary leading-snug group-hover:text-brand-secondary transition-colors">
-                          {service.name}
-                        </h3>
-
-                        <p className="font-sans text-xs text-brand-text-muted leading-relaxed font-normal line-clamp-2">
-                          {service.shortDescription}
-                        </p>
-                      </div>
-
-                      {/* Unclear price alert notice if applicable */}
-                      {service.unclearPrice && (
-                        <div className="p-2.5 bg-amber-950/20 border border-amber-600/30 text-amber-300 text-[11px] font-sans flex items-start gap-2">
-                          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
-                          <span>{service.reviewNote || 'Price omitted in rate card; marked for manual review with salon front desk.'}</span>
-                        </div>
-                      )}
-
-                      {/* Rate Tiers / Hair Lengths Breakdown */}
-                      {service.tiers && service.tiers.length > 0 && (
-                        <div className="border-t border-brand-secondary/15 pt-3 space-y-2">
-                          <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-brand-secondary">
-                            <span className="flex items-center gap-1">
-                              <Layers className="h-3 w-3" /> Rate Breakdown
+                        <div>
+                          {service.sectionTitle && (
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-brand-secondary/70 block mb-1">
+                              {service.sectionTitle}
                             </span>
-                            {service.tiers.length > 3 && (
-                              <button
-                                onClick={() => toggleTiers(service.id)}
-                                className="text-brand-text-muted hover:text-brand-primary underline cursor-pointer"
-                              >
-                                {isExpanded ? 'Show Less' : `View All (${service.tiers.length})`}
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-1.5 font-sans text-xs">
-                            {(isExpanded ? service.tiers : service.tiers.slice(0, 3)).map((tier) => (
-                              <div
-                                key={tier.name}
-                                className="flex items-center justify-between p-1.5 bg-[#0D0D0D] border border-brand-secondary/15 text-[11px]"
-                              >
-                                <div className="flex items-center gap-1 text-brand-primary font-medium">
-                                  <span>{tier.name}</span>
-                                  {tier.note && <span className="text-[10px] text-brand-text-muted font-normal">({tier.note})</span>}
-                                </div>
-                                <span className="font-serif font-bold text-brand-gold-dark">{tier.price}</span>
-                              </div>
-                            ))}
-                          </div>
+                          )}
+                          <h3 className="font-heading text-xl sm:text-2xl font-bold text-white tracking-tight group-hover:text-brand-secondary transition-colors duration-300 leading-snug">
+                            {service.name}
+                          </h3>
+                          <p className="font-sans text-xs sm:text-[13px] text-[#E5E5E5]/80 leading-relaxed mt-2 font-normal line-clamp-2 sm:line-clamp-3">
+                            {service.shortDescription}
+                          </p>
                         </div>
-                      )}
+                      </div>
 
-                      {/* Card Bottom CTA Actions */}
-                      <div className="pt-3 border-t border-brand-secondary/15 flex items-center gap-3">
-                        <Button
-                          id={`book-service-${service.id}`}
-                          variant="primary"
-                          size="sm"
-                          leftIcon={<Calendar className="h-3.5 w-3.5" />}
-                          onClick={() => onBookService(service.id)}
-                          className="flex-1 text-[11px] uppercase tracking-wider font-semibold cursor-pointer"
-                        >
-                          Book Service
-                        </Button>
-                        <Button
-                          id={`view-detail-${service.id}`}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onSelectService(service.id)}
-                          className="text-[11px] uppercase tracking-wider font-semibold px-3 cursor-pointer"
-                        >
-                          Details
-                        </Button>
+                      {/* Middle Section: Actual Rate & Duration Details Box */}
+                      <div className="space-y-3">
+                        <div className="bg-brand-bg/75 backdrop-blur-md border border-brand-secondary/20 rounded-xl p-3.5 sm:p-4 space-y-2.5">
+                          <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-sans text-[10px] uppercase tracking-wider text-brand-text-muted">
+                                Service Rate:
+                              </span>
+                              <span className="font-heading text-lg sm:text-xl font-bold text-brand-secondary font-mono">
+                                {service.price}
+                              </span>
+                            </div>
+                            <span className="inline-flex items-center gap-1 font-mono text-[10px] sm:text-[11px] text-brand-text-muted font-medium">
+                              <Clock className="w-3 h-3 text-brand-secondary/80" />
+                              {service.duration}
+                            </span>
+                          </div>
+
+                          {/* Rate Tiers / Hair Lengths Breakdown if applicable */}
+                          {service.tiers && service.tiers.length > 0 && (
+                            <div className="border-t border-brand-secondary/15 pt-2.5 space-y-1.5">
+                              <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-brand-secondary">
+                                <span className="flex items-center gap-1">
+                                  <Layers className="h-3 w-3" /> Options Breakdown
+                                </span>
+                                {service.tiers.length > 2 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleTiers(service.id)}
+                                    className="text-brand-secondary/80 hover:text-white underline cursor-pointer text-[10px]"
+                                  >
+                                    {isExpanded ? 'Less' : `All (${service.tiers.length})`}
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-1 gap-1 font-sans text-xs">
+                                {(isExpanded ? service.tiers : service.tiers.slice(0, 2)).map((tier) => (
+                                  <div
+                                    key={tier.name}
+                                    className="flex items-center justify-between px-2.5 py-1 bg-[#0D0D0D]/70 border border-brand-secondary/15 rounded text-[11px]"
+                                  >
+                                    <div className="flex items-center gap-1 text-white/90 truncate mr-2">
+                                      <span className="truncate">{tier.name}</span>
+                                      {tier.note && (
+                                        <span className="text-[9px] text-brand-text-muted font-normal shrink-0">
+                                          ({tier.note})
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="font-mono font-bold text-brand-secondary shrink-0">
+                                      {tier.price}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Advisory Notice if price is unclear */}
+                          {service.unclearPrice && (
+                            <div className="p-2 bg-amber-950/40 border border-amber-600/40 rounded text-amber-200 text-[10px] font-sans flex items-start gap-1.5">
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400 mt-0.5" />
+                              <span>{service.reviewNote || 'Rate subject to salon consultation.'}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bottom Section: Book Now CTA & Details Link */}
+                        <div className="pt-1 flex items-center justify-between gap-3">
+                          <button
+                            id={`book-service-${service.id}`}
+                            onClick={() => onBookService(service.id)}
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-sans text-xs sm:text-sm font-semibold uppercase tracking-wider bg-brand-secondary text-[#0A0A0A] hover:bg-[#E7D2B4] hover:shadow-lg hover:shadow-brand-secondary/20 transition-all duration-300 group/btn cursor-pointer active:scale-[0.98]"
+                          >
+                            <span>Book Now</span>
+                            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1.5" />
+                          </button>
+
+                          <button
+                            id={`view-detail-${service.id}`}
+                            onClick={() => onSelectService(service.id)}
+                            className="px-3.5 py-3 rounded-xl border border-brand-secondary/30 bg-brand-bg/60 text-brand-secondary hover:text-white hover:border-brand-secondary/60 text-xs font-sans uppercase tracking-wider font-semibold transition-colors cursor-pointer"
+                            title="View Service Details"
+                          >
+                            Details
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </Card>
+                  </motion.div>
                 );
               })}
             </div>

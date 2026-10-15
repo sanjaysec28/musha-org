@@ -71,7 +71,7 @@ const DEFAULT_USER: DashboardUser = {
   name: 'Valued Patron',
   email: '',
   phone: '',
-  avatar: '',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
   walletBalance: 0,
   loyaltyPoints: 0,
   membershipPlan: 'None',
@@ -1153,7 +1153,7 @@ export default function DashboardModule({
                 className="flex items-center gap-2 text-left cursor-pointer focus:outline-none"
               >
                 <img
-                  src={user.avatar}
+                  src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150'}
                   alt={user.name}
                   className="h-8.5 w-8.5 border border-brand-accent rounded-none object-cover"
                 />
