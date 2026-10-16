@@ -901,17 +901,18 @@ export default function AuthModule({ id, onAuthSuccess, triggerToast }: AuthModu
 
               <form onSubmit={handleOtpSubmit} id="otp-form-element" className="space-y-6">
                 {/* 6 Digit Numeric Inputs */}
-                <div className="flex justify-between gap-2.5">
+                <div className="flex justify-between gap-1.5 xs:gap-2.5 max-w-full">
                   {otpCodes.map((code, index) => (
                     <input
                       key={index}
                       id={`otp-input-${index}`}
                       type="text"
+                      inputMode="numeric"
                       maxLength={1}
                       value={code}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-14 text-center bg-brand-surface text-brand-primary font-serif text-2xl border border-brand-accent focus:border-brand-secondary focus:ring-1 focus:ring-brand-secondary outline-none transition-all duration-300"
+                      className="w-9 h-12 xs:w-11 xs:h-13 sm:w-12 sm:h-14 text-center bg-brand-surface text-brand-primary font-serif text-lg xs:text-xl sm:text-2xl border border-brand-accent focus:border-brand-secondary focus:ring-1 focus:ring-brand-secondary outline-none transition-all duration-300"
                     />
                   ))}
                 </div>

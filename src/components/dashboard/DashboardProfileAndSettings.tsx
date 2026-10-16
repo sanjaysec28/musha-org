@@ -174,7 +174,7 @@ export default function DashboardProfileAndSettings({
     <div id={id} className="space-y-6">
       
       {/* Sub-tab navigation */}
-      <div className="flex border-b border-brand-accent bg-brand-surface p-2 border">
+      <div className="flex border-b border-brand-accent bg-brand-surface p-1.5 sm:p-2 border">
         {(['profile', 'addresses', 'settings'] as const).map((tab) => {
           const isActive = activeTab === tab;
           return (
@@ -182,13 +182,28 @@ export default function DashboardProfileAndSettings({
               key={tab}
               id={`tab-settings-${tab}`}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-3.5 font-sans text-xs uppercase tracking-wider font-semibold text-center transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 sm:py-3.5 px-1 font-sans text-[10px] sm:text-xs uppercase tracking-normal sm:tracking-wider font-semibold text-center transition-all cursor-pointer ${
                 isActive
                   ? 'bg-brand-secondary text-brand-bg font-bold'
                   : 'text-brand-text-muted hover:text-brand-primary'
               }`}
             >
-              {tab === 'profile' ? 'Identity & Credentials' : tab === 'addresses' ? 'Saved Locations' : 'App preferences'}
+              {tab === 'profile' ? (
+                <>
+                  <span className="hidden sm:inline">Identity & Credentials</span>
+                  <span className="sm:hidden">Identity</span>
+                </>
+              ) : tab === 'addresses' ? (
+                <>
+                  <span className="hidden sm:inline">Saved Locations</span>
+                  <span className="sm:hidden">Locations</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">App Preferences</span>
+                  <span className="sm:hidden">Preferences</span>
+                </>
+              )}
             </button>
           );
         })}
@@ -365,12 +380,12 @@ export default function DashboardProfileAndSettings({
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="flex justify-between items-center bg-brand-surface p-4 border border-brand-accent">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-brand-surface p-4 sm:p-5 border border-brand-accent">
               <div>
                 <h3 className="font-serif text-lg font-semibold text-brand-primary">
                   Stored Locations
                 </h3>
-                <p className="font-sans text-xs text-brand-text-muted">
+                <p className="font-sans text-xs text-brand-text-muted mt-0.5">
                   Manage standard addresses for bespoke home-salon treatments or invoice billing.
                 </p>
               </div>
@@ -381,7 +396,7 @@ export default function DashboardProfileAndSettings({
                 size="sm"
                 leftIcon={<Plus className="h-3.5 w-3.5" />}
                 onClick={() => setIsAddressModalOpen(true)}
-                className="font-sans text-[10px] uppercase tracking-wider font-bold py-2.5 px-4"
+                className="w-full sm:w-auto font-sans text-[10px] uppercase tracking-wider font-bold py-2.5 px-4 justify-center"
               >
                 Add Address
               </Button>

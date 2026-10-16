@@ -276,9 +276,9 @@ export default function DashboardAppointments({
   return (
     <div id={id} className="space-y-6">
       {/* Search, Filter, Sort Controls bar */}
-      <div className="bg-brand-surface border border-brand-accent p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-brand-surface border border-brand-accent p-3.5 sm:p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Search Input */}
-        <div className="relative flex-grow max-w-md">
+        <div className="relative w-full md:max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-muted" />
           <input
             id="appointments-search-field"
@@ -291,19 +291,19 @@ export default function DashboardAppointments({
         </div>
 
         {/* Filter / Sort Selects */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
           {/* Stylist Filter */}
-          <div className="flex items-center gap-1.5">
-            <Filter className="h-3.5 w-3.5 text-brand-secondary" />
+          <div className="flex items-center gap-2 bg-brand-bg border border-brand-accent px-3 py-2 flex-1 xs:flex-initial">
+            <Filter className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
             <select
               id="appointments-stylist-filter"
               value={selectedStylist}
               onChange={(e) => setSelectedStylist(e.target.value)}
-              className="bg-brand-bg text-brand-text border border-brand-accent px-3 py-2.5 font-sans text-xs outline-none focus:border-brand-secondary"
+              className="bg-transparent text-brand-text font-sans text-xs outline-none focus:text-brand-primary cursor-pointer w-full"
             >
-              <option value="all">All Stylists</option>
+              <option value="all" className="bg-brand-surface text-brand-text">All Stylists</option>
               {stylists.map((st) => (
-                <option key={st} value={st}>
+                <option key={st} value={st} className="bg-brand-surface text-brand-text">
                   {st}
                 </option>
               ))}
@@ -311,25 +311,25 @@ export default function DashboardAppointments({
           </div>
 
           {/* Sort Control */}
-          <div className="flex items-center gap-1.5">
-            <ArrowUpDown className="h-3.5 w-3.5 text-brand-secondary" />
+          <div className="flex items-center gap-2 bg-brand-bg border border-brand-accent px-3 py-2 flex-1 xs:flex-initial">
+            <ArrowUpDown className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
             <select
               id="appointments-sorting"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-brand-bg text-brand-text border border-brand-accent px-3 py-2.5 font-sans text-xs outline-none focus:border-brand-secondary"
+              className="bg-transparent text-brand-text font-sans text-xs outline-none focus:text-brand-primary cursor-pointer w-full"
             >
-              <option value="date-asc">Date (Ascending)</option>
-              <option value="date-desc">Date (Descending)</option>
-              <option value="price-desc">Price (High to Low)</option>
-              <option value="price-asc">Price (Low to High)</option>
+              <option value="date-asc" className="bg-brand-surface text-brand-text">Date (Ascending)</option>
+              <option value="date-desc" className="bg-brand-surface text-brand-text">Date (Descending)</option>
+              <option value="price-desc" className="bg-brand-surface text-brand-text">Price (High to Low)</option>
+              <option value="price-asc" className="bg-brand-surface text-brand-text">Price (Low to High)</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Primary Navigation Tabs */}
-      <div className="flex border-b border-brand-accent overflow-x-auto">
+      <div className="flex border-b border-brand-accent overflow-x-auto no-scrollbar scroll-smooth gap-1 sm:gap-0 -mx-1 sm:mx-0 px-1 sm:px-0">
         {(['upcoming', 'requests', 'completed', 'cancelled'] as const).map((tab) => {
           const isActive = activeTab === tab;
           const count = tab === 'requests'
@@ -341,13 +341,13 @@ export default function DashboardAppointments({
               key={tab}
               id={`tab-appointments-${tab}`}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 min-w-[120px] py-4 font-sans text-xs uppercase tracking-widest font-semibold border-b-2 text-center transition-all cursor-pointer ${
+              className={`shrink-0 sm:flex-1 px-3 sm:px-4 py-3 sm:py-3.5 font-sans text-[11px] sm:text-xs uppercase tracking-wider font-semibold border-b-2 text-center transition-all cursor-pointer whitespace-nowrap ${
                 isActive
                   ? 'border-brand-secondary text-brand-primary bg-brand-surface font-bold'
                   : 'border-transparent text-brand-text-muted hover:text-brand-primary'
               }`}
             >
-              {label} ({count})
+              {label} <span className="opacity-75 font-mono text-[10px]">({count})</span>
             </button>
           );
         })}
@@ -388,13 +388,13 @@ export default function DashboardAppointments({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="bg-brand-surface border border-brand-accent p-6 hover:border-brand-secondary/40 transition-all duration-300 relative group"
+                    className="bg-brand-surface border border-brand-accent p-4 sm:p-6 hover:border-brand-secondary/40 transition-all duration-300 relative group"
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
 
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-2 min-w-0 w-full md:w-auto">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-[9px] uppercase tracking-wider text-brand-secondary font-bold">
                             #{req.id}
                           </span>
@@ -407,37 +407,37 @@ export default function DashboardAppointments({
                             </span>
                           )}
                         </div>
-                        <h4 className="font-serif text-lg font-medium text-brand-primary">
+                        <h4 className="font-serif text-lg font-medium text-brand-primary truncate">
                           {req.service_name || 'Sanctuary Ritual'}
                         </h4>
-                        <div className="flex flex-wrap gap-4 text-xs font-sans text-brand-text-muted">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-sans text-brand-text-muted">
                           <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5 text-brand-secondary" /> {req.booking_date}
+                            <Calendar className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {req.booking_date}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-brand-secondary" /> {req.start_time} {req.end_time ? `– ${req.end_time}` : ''}
+                            <Clock className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {req.start_time} {req.end_time ? `– ${req.end_time}` : ''}
                           </span>
                           <span className="flex items-center gap-1">
-                            <User className="h-3.5 w-3.5 text-brand-secondary" /> {req.gender || 'Grooming'}
+                            <User className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {req.gender || 'Grooming'}
                           </span>
                         </div>
                         {req.notes && (
-                          <p className="font-sans text-[11px] text-brand-text-muted italic bg-brand-bg/40 p-2 border border-brand-accent/20">
+                          <p className="font-sans text-[11px] text-brand-text-muted italic bg-brand-bg/40 p-2 border border-brand-accent/20 break-words">
                             Note: "{req.notes}"
                           </p>
                         )}
-                        <p className="font-sans text-[11px] text-brand-text-muted">
+                        <p className="font-sans text-[11px] text-brand-text-muted leading-relaxed">
                           Registered Concierge Request • Quote reference <strong className="text-brand-primary font-mono font-bold">#{req.id}</strong> to salon front-desk to finalize timing.
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto border-t md:border-t-0 border-brand-surface-muted pt-3 md:pt-0 gap-2 shrink-0">
                         <span className="font-serif text-xl font-bold text-brand-gold-dark">
                           ₹{req.total_amount}
                         </span>
                         {req.payment_status === 'paid' ? (
                           <span className="font-sans text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-semibold flex items-center gap-1">
-                            <ShieldCheck className="h-3 w-3" /> Verified Online (Razorpay)
+                            <ShieldCheck className="h-3 w-3" /> Verified Online
                           </span>
                         ) : (
                           <span className="font-sans text-[10px] text-brand-text-muted uppercase tracking-wider">
@@ -445,7 +445,7 @@ export default function DashboardAppointments({
                           </span>
                         )}
                         {req.razorpay_payment_id && (
-                          <span className="font-mono text-[9px] text-brand-text-muted">
+                          <span className="font-mono text-[9px] text-brand-text-muted truncate max-w-[150px]">
                             Ref: {req.razorpay_payment_id}
                           </span>
                         )}
@@ -456,12 +456,12 @@ export default function DashboardAppointments({
               })}
             </div>
           ) : (
-            <div className="bg-brand-surface border border-dashed border-brand-accent p-12 text-center flex flex-col items-center justify-center min-h-[260px]">
+            <div className="bg-brand-surface border border-dashed border-brand-accent p-6 sm:p-12 text-center flex flex-col items-center justify-center min-h-[240px]">
               <div className="h-12 w-12 rounded-none bg-brand-surface-muted flex items-center justify-center text-brand-text-muted mb-4 border border-brand-accent">
                 <Clock className="h-5 w-5" />
               </div>
               <p className="font-serif text-lg font-medium text-brand-primary">No Concierge Requests Logged</p>
-              <p className="font-sans text-xs text-brand-text-muted max-w-sm mt-1.5">
+              <p className="font-sans text-xs text-brand-text-muted max-w-sm mt-1.5 leading-relaxed">
                 When you initiate a scheduling request through the reservations desk, your requests will appear here with live review tracking and front-desk reference codes.
               </p>
             </div>
@@ -475,7 +475,7 @@ export default function DashboardAppointments({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-brand-surface border border-brand-accent p-6 hover:border-brand-secondary/40 transition-all duration-300 relative group"
+                className="bg-brand-surface border border-brand-accent p-4 sm:p-6 hover:border-brand-secondary/40 transition-all duration-300 relative group"
               >
                 {/* Visual state accent */}
                 <div
@@ -490,43 +490,43 @@ export default function DashboardAppointments({
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   {/* Left: Info */}
-                  <div className="flex gap-4 items-center">
+                  <div className="flex gap-3 sm:gap-4 items-center min-w-0 w-full sm:w-auto">
                     <img
                       src={app.stylistAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100'}
                       alt={app.stylistName}
-                      className="h-12 w-12 border border-brand-accent rounded-none object-cover"
+                      className="h-12 w-12 border border-brand-accent rounded-none object-cover shrink-0"
                     />
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-brand-text-muted font-bold">
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-brand-text-muted font-bold truncate">
                           {app.id}
                         </span>
-                        <span className="bg-brand-surface-muted text-brand-text-muted font-mono text-[8px] uppercase px-1.5 py-0.5 border border-brand-accent">
+                        <span className="bg-brand-surface-muted text-brand-text-muted font-mono text-[8px] uppercase px-1.5 py-0.5 border border-brand-accent shrink-0">
                           {app.category}
                         </span>
                       </div>
-                      <h4 className="font-serif text-lg font-medium text-brand-primary mt-1">
+                      <h4 className="font-serif text-base sm:text-lg font-medium text-brand-primary mt-1 truncate">
                         {app.serviceName}
                       </h4>
-                      <p className="font-sans text-xs text-brand-text-muted mt-0.5">
+                      <p className="font-sans text-xs text-brand-text-muted mt-0.5 truncate">
                         Senior Artist: <span className="text-brand-primary font-medium">{app.stylistName}</span>
                       </p>
                     </div>
                   </div>
 
                   {/* Middle: Scheduled Details */}
-                  <div className="flex flex-col md:items-end gap-1 font-sans text-xs text-brand-text-muted">
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-2 sm:gap-1 font-sans text-xs text-brand-text-muted w-full md:w-auto border-t md:border-t-0 border-brand-surface-muted/60 pt-2.5 md:pt-0">
                     <div className="flex items-center gap-1.5 font-serif text-sm font-semibold text-brand-primary">
-                      <Calendar className="h-3.5 w-3.5 text-brand-secondary" /> {app.date}
+                      <Calendar className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {app.date}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-brand-secondary" /> {app.timeSlot} ({app.duration})
+                      <Clock className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {app.timeSlot} ({app.duration})
                     </div>
                   </div>
 
                   {/* Right: Payment Status & Actions */}
-                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-2 border-t md:border-t-0 border-brand-surface-muted pt-4 md:pt-0 w-full md:w-auto">
-                    <div className="text-left md:text-right">
+                  <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end justify-between gap-3 border-t md:border-t-0 border-brand-surface-muted pt-3.5 md:pt-0 w-full md:w-auto">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto">
                       <span className="font-serif text-base font-medium text-brand-primary block">
                         ${app.price.toFixed(2)}
                       </span>
@@ -540,13 +540,13 @@ export default function DashboardAppointments({
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 xs:flex flex-wrap gap-2 w-full sm:w-auto justify-end">
                       <Button
                         id={`app-detail-trigger-${app.id}`}
                         variant="outline"
                         size="sm"
                         onClick={() => setActiveDetailAppointment(app)}
-                        className="font-sans text-[10px] uppercase font-semibold py-1.5 px-3 border-brand-accent hover:border-brand-secondary"
+                        className="font-sans text-[10px] uppercase font-semibold py-2 px-3 border-brand-accent hover:border-brand-secondary flex-1 xs:flex-initial text-center justify-center"
                       >
                         Details
                       </Button>
@@ -562,7 +562,7 @@ export default function DashboardAppointments({
                               setNewDate(app.date);
                               setNewTime(app.timeSlot);
                             }}
-                            className="font-sans text-[10px] uppercase font-semibold py-1.5 px-3"
+                            className="font-sans text-[10px] uppercase font-semibold py-2 px-3 flex-1 xs:flex-initial text-center justify-center"
                           >
                             Reschedule
                           </Button>
@@ -572,7 +572,7 @@ export default function DashboardAppointments({
                               variant="ghost"
                               size="sm"
                               onClick={() => setActiveCancelConfirm(app)}
-                              className="font-sans text-[10px] uppercase font-semibold text-red-500 hover:bg-red-50 py-1.5 px-3 rounded-none"
+                              className="font-sans text-[10px] uppercase font-semibold text-red-500 hover:bg-red-50 py-2 px-3 rounded-none col-span-2 xs:col-span-1 flex-1 xs:flex-initial text-center justify-center"
                             >
                               Cancel
                             </Button>
@@ -682,14 +682,14 @@ export default function DashboardAppointments({
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-3 justify-end pt-1">
+            <div className="flex flex-col-reverse xs:flex-row gap-2.5 justify-end pt-1">
               <Button
                 id="ticket-download-invoice-btn"
                 variant="outline"
                 size="md"
                 leftIcon={<Download className="h-4 w-4" />}
                 onClick={() => handleDownloadInvoice(activeDetailAppointment)}
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary"
+                className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary py-2.5"
               >
                 Invoice Receipt
               </Button>
@@ -698,7 +698,7 @@ export default function DashboardAppointments({
                 variant="primary"
                 size="md"
                 onClick={() => setActiveDetailAppointment(null)}
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold px-6"
+                className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold px-6 py-2.5"
               >
                 Done
               </Button>
@@ -830,14 +830,14 @@ export default function DashboardAppointments({
               )}
             </div>
 
-            <div className="flex gap-3 justify-end pt-3">
+            <div className="flex flex-col-reverse xs:flex-row gap-2.5 justify-end pt-3">
               <Button
                 id="reschedule-cancel-btn"
                 type="button"
                 variant="outline"
                 size="md"
                 onClick={() => setActiveReschedule(null)}
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary"
+                className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary py-2.5"
               >
                 Discard
               </Button>
@@ -846,7 +846,7 @@ export default function DashboardAppointments({
                 type="submit"
                 variant="primary"
                 size="md"
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold px-6"
+                className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold px-6 py-2.5"
               >
                 Confirm Adjustment
               </Button>

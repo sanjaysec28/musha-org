@@ -24,7 +24,6 @@ import PromotionalOffers from './components/home/PromotionalOffers';
 import Services from './components/home/Services';
 import WhyChooseUs from './components/home/WhyChooseUs';
 import Stylists from './components/home/Stylists';
-import Membership from './components/home/Membership';
 import Gallery from './components/home/Gallery';
 import Testimonials from './components/home/Testimonials';
 import FAQ from './components/home/FAQ';
@@ -41,7 +40,6 @@ import CustomerPortal from './components/dashboard/CustomerPortal';
 import AboutPage from './components/pages/AboutPage';
 import GalleryPage from './components/pages/GalleryPage';
 import OffersPage from './components/pages/OffersPage';
-import MembershipPage from './components/pages/MembershipPage';
 import ContactPage from './components/pages/ContactPage';
 import FAQPage from './components/pages/FAQPage';
 import PrivacyPage from './components/pages/PrivacyPage';
@@ -421,9 +419,6 @@ export default function App() {
           {/* Meet Our Stylists */}
           <Stylists />
 
-          {/* Membership Preview */}
-          <Membership />
-
           {/* Gallery Preview */}
           <Gallery onViewAll={() => handleNavigate('gallery')} />
 
@@ -510,16 +505,10 @@ export default function App() {
       )}
 
       {currentView === 'membership' && (
-        <MembershipPage
-          onSubscribe={(planName, billing) => {
-            triggerToast(
-              'success',
-              'Membership Activated!',
-              `Welcome to ${planName}. Your ${billing} subscription is active.`
-            );
-            handleNavigate('portal');
-          }}
-        />
+        (() => {
+          setTimeout(() => handleNavigate('home'), 0);
+          return null;
+        })()
       )}
 
       {currentView === 'contact' && (

@@ -73,14 +73,14 @@ export default function DashboardLoyalty({
         id={`${id}-loyalty-banner`}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-brand-surface border border-brand-accent p-6 md:p-8 hover:border-brand-secondary/30 transition-all duration-300"
+        className="bg-brand-surface border border-brand-accent p-5 sm:p-7 md:p-8 hover:border-brand-secondary/30 transition-all duration-300"
       >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
-          <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 sm:gap-6 mb-6">
+          <div className="min-w-0">
             <span className="font-sans text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-secondary inline-flex items-center gap-1.5 mb-2">
-              <Award className="h-3.5 w-3.5" /> EMPIRE PATRON REWARDS
+              <Award className="h-3.5 w-3.5 shrink-0" /> EMPIRE PATRON REWARDS
             </span>
-            <h2 className="font-serif text-3xl font-medium text-brand-primary">
+            <h2 className="font-serif text-2xl sm:text-3xl font-medium text-brand-primary truncate">
               Privilege Tier: {currentTier}
             </h2>
             <p className="font-sans text-xs text-brand-text-muted mt-1 leading-relaxed max-w-md">
@@ -88,11 +88,11 @@ export default function DashboardLoyalty({
             </p>
           </div>
 
-          <div className="bg-brand-surface-muted text-brand-text px-6 py-4 border border-brand-secondary/15 text-center min-w-[150px]">
+          <div className="bg-brand-surface-muted text-brand-text px-5 py-3.5 border border-brand-secondary/15 text-center w-full sm:w-auto min-w-[140px] shrink-0">
             <span className="font-sans text-[10px] uppercase tracking-widest text-brand-secondary font-bold block">
               TOTAL POINTS
             </span>
-            <span className="font-serif text-3xl font-bold block mt-1 text-white">
+            <span className="font-serif text-2xl sm:text-3xl font-bold block mt-1 text-white">
               {loyaltyPoints} PTS
             </span>
           </div>
@@ -100,12 +100,12 @@ export default function DashboardLoyalty({
 
         {/* Premium Progress Bar */}
         <div className="space-y-2 border-t border-brand-surface-muted pt-5">
-          <div className="flex justify-between items-center text-xs font-sans">
-            <span className="font-semibold text-brand-text flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5 text-brand-secondary" /> {currentTier}
+          <div className="flex justify-between items-center text-xs font-sans gap-2">
+            <span className="font-semibold text-brand-text flex items-center gap-1 truncate">
+              <Shield className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> {currentTier}
             </span>
-            <span className="text-brand-text-muted">
-              {pointsRemaining} points to <strong className="text-brand-primary">{nextTier}</strong>
+            <span className="text-brand-text-muted text-[11px] truncate">
+              {pointsRemaining} pts to <strong className="text-brand-primary">{nextTier}</strong>
             </span>
           </div>
 
@@ -128,7 +128,7 @@ export default function DashboardLoyalty({
       {/* Available Rewards Catalog */}
       <div className="space-y-4">
         <h3 className="font-serif text-lg font-medium text-brand-primary flex items-center gap-2">
-          <Gift className="h-4.5 w-4.5 text-brand-secondary" /> Redeem Exclusive Voucher Vouchers
+          <Gift className="h-4.5 w-4.5 text-brand-secondary shrink-0" /> Redeem Exclusive Vouchers
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,19 +137,19 @@ export default function DashboardLoyalty({
             return (
               <div
                 key={reward.id}
-                className="bg-brand-surface border border-brand-accent p-5 flex flex-col justify-between hover:border-brand-secondary/40 transition-all duration-300 relative group"
+                className="bg-brand-surface border border-brand-accent p-4 sm:p-5 flex flex-col justify-between hover:border-brand-secondary/40 transition-all duration-300 relative group"
               >
                 <div>
-                  <div className="flex justify-between items-start gap-4">
-                    <span className="bg-brand-surface-muted text-brand-text-muted font-mono text-[8px] uppercase tracking-wider px-2 py-0.5 border border-brand-accent">
+                  <div className="flex justify-between items-start gap-3">
+                    <span className="bg-brand-surface-muted text-brand-text-muted font-mono text-[8px] uppercase tracking-wider px-2 py-0.5 border border-brand-accent truncate">
                       {reward.category}
                     </span>
-                    <span className="font-serif text-sm font-bold text-brand-gold-dark bg-brand-gold-light border border-brand-secondary/20 px-2.5 py-0.5">
+                    <span className="font-serif text-sm font-bold text-brand-gold-dark bg-brand-gold-light border border-brand-secondary/20 px-2.5 py-0.5 shrink-0">
                       {reward.pointsCost} PTS
                     </span>
                   </div>
 
-                  <h4 className="font-serif text-lg font-medium text-brand-primary mt-3">
+                  <h4 className="font-serif text-base sm:text-lg font-medium text-brand-primary mt-3">
                     {reward.title}
                   </h4>
                   <p className="font-sans text-xs text-brand-text-muted mt-1 leading-relaxed">
@@ -164,7 +164,7 @@ export default function DashboardLoyalty({
                     size="sm"
                     onClick={() => setSelectedReward(reward)}
                     disabled={!hasEnough}
-                    className="font-sans text-[10px] uppercase tracking-wider font-semibold py-2"
+                    className="font-sans text-[10px] uppercase tracking-wider font-semibold py-2.5 px-4 w-full xs:w-auto text-center justify-center"
                   >
                     {hasEnough ? 'Redeem Voucher' : 'Locked (Low Points)'}
                   </Button>
@@ -201,13 +201,13 @@ export default function DashboardLoyalty({
               </p>
             </div>
 
-            <div className="flex gap-3 justify-center pt-3 border-t border-brand-surface-muted">
+            <div className="flex flex-col-reverse xs:flex-row gap-2.5 justify-center pt-3 border-t border-brand-surface-muted">
               <Button
                 id="loyalty-deny-btn"
                 variant="outline"
                 size="md"
                 onClick={() => setSelectedReward(null)}
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary flex-1"
+                className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary w-full xs:flex-1 py-2.5"
               >
                 Discard
               </Button>
@@ -217,7 +217,7 @@ export default function DashboardLoyalty({
                 size="md"
                 onClick={() => handleClaimSubmit(selectedReward)}
                 isLoading={isProcessing}
-                className="font-sans text-[10px] uppercase tracking-wider font-semibold flex-1"
+                className="font-sans text-[10px] uppercase tracking-wider font-semibold w-full xs:flex-1 py-2.5"
               >
                 Yes, Claim Reward
               </Button>

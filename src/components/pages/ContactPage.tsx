@@ -9,6 +9,7 @@ import { Sparkles, MapPin, Phone, Mail, Clock, MessageSquare, Send, Instagram, F
 import { settingsRepository } from '../../lib/firestoreService';
 import { FirestoreSalonSettings } from '../../types/firestore';
 import Button from '../ui/Button';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export default function ContactPage({
   triggerToast,
@@ -39,40 +40,43 @@ export default function ContactPage({
     return () => { isMounted = false; };
   }, []);
 
-  const phoneDisplay = salonSettings?.phone || 'Contact unavailable';
-  const emailDisplay = salonSettings?.email || 'Email unavailable';
+  const phoneDisplay = salonSettings?.phone || SALON_CONTACT.phoneDisplay;
+  const emailDisplay = salonSettings?.email || SALON_CONTACT.email;
   const hasAddress = Boolean(salonSettings?.address);
   const addressLine1 = typeof salonSettings?.address === 'object'
     ? `${salonSettings.address.line1}${salonSettings.address.line2 ? `, ${salonSettings.address.line2}` : ''}`
-    : (salonSettings?.address || 'Address unavailable');
+    : (salonSettings?.address || SALON_CONTACT.businessName);
   const addressLine2 = typeof salonSettings?.address === 'object'
     ? `${salonSettings.address.city || ''}, ${salonSettings.address.state || ''} ${salonSettings.address.zipCode || ''}`.trim()
-    : (hasAddress ? '' : 'Location details not yet configured');
+    : (hasAddress ? '' : 'Google Maps Navigation');
 
   const contactDetails = [
     {
       icon: <MapPin className="h-5 w-5" />,
-      title: 'Salon Address',
-      line1: addressLine1,
-      line2: addressLine2,
-      link: salonSettings?.address ? 'https://maps.google.com' : '#',
-      linkLabel: salonSettings?.address ? 'Get Directions' : 'Address details pending',
+      title: 'Salon Location',
+      line1: SALON_CONTACT.businessName,
+      line2: hasAddress ? `${addressLine1} ${addressLine2}`.trim() : 'View live map directions',
+      link: SALON_CONTACT.googleMaps,
+      linkLabel: 'Open Google Maps',
+      isExternal: true,
     },
     {
       icon: <Phone className="h-5 w-5" />,
       title: 'Reservations Desk',
       line1: phoneDisplay,
-      line2: salonSettings?.whatsapp ? `WhatsApp: ${salonSettings.whatsapp}` : '',
-      link: salonSettings?.phone ? `tel:${salonSettings.phone.replace(/[^\d+]/g, '')}` : '#',
-      linkLabel: salonSettings?.phone ? 'Call Reservation Desk' : 'Contact pending',
+      line2: `Direct: ${SALON_CONTACT.phone}`,
+      link: SALON_CONTACT.phoneTel,
+      linkLabel: 'Call Reservation Desk',
+      isExternal: false,
     },
     {
       icon: <Mail className="h-5 w-5" />,
       title: 'Concierge Mailbox',
       line1: emailDisplay,
-      line2: '',
-      link: salonSettings?.email ? `mailto:${salonSettings.email}` : '#',
-      linkLabel: salonSettings?.email ? 'Email Concierge Desk' : 'Email pending',
+      line2: 'Priority Response Desk',
+      link: SALON_CONTACT.emailMailto,
+      linkLabel: 'Email Concierge Desk',
+      isExternal: false,
     },
   ];
 
@@ -164,8 +168,8 @@ export default function ContactPage({
                   </p>
                   <a
                     href={item.link}
-                    target="_blank"
-                    rel="noreferrer"
+                    target={item.isExternal ? '_blank' : undefined}
+                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
                     className="inline-block text-[10px] text-brand-gold-dark font-semibold hover:underline underline-offset-4 uppercase tracking-wider pt-1.5"
                   >
                     {item.linkLabel} &rarr;
@@ -194,7 +198,7 @@ export default function ContactPage({
           {/* WhatsApp CTA & Social Card */}
           <div id="whatsapp-direct-card" className="bg-brand-surface border border-brand-secondary/15 p-6 md:p-8 text-brand-text space-y-4">
             <span className="font-sans text-[9px] uppercase tracking-[0.3em] text-brand-secondary font-semibold block">
-              Direct WhatsApp Messenger
+              Direct WhatsApp & Social Concierge
             </span>
             <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
               Need Instant Answers?
@@ -203,46 +207,38 @@ export default function ContactPage({
               Skip the queue entirely. Chat directly with our private lounge concierge live regarding walk-in availability or master therapist standby schedules.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
-              {salonSettings?.whatsapp ? (
-                <a
-                  id="contact-whatsapp-link"
-                  href={`https://wa.me/${salonSettings.whatsapp.replace(/[^\d]/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full sm:w-auto text-center inline-flex justify-center items-center gap-2 bg-[#25D366] text-white font-sans text-xs uppercase tracking-widest font-semibold px-6 py-3 hover:bg-opacity-90 transition-all duration-300"
-                >
-                  <MessageSquare className="h-4 w-4 fill-white text-transparent" /> Message WhatsApp Desk
-                </a>
-              ) : (
-                <span className="w-full sm:w-auto text-center inline-flex justify-center items-center gap-2 border border-brand-accent/30 text-brand-text-muted font-sans text-xs uppercase tracking-widest font-semibold px-6 py-3">
-                  <MessageSquare className="h-4 w-4" /> WhatsApp Unavailable
-                </span>
-              )}
+              <a
+                id="contact-whatsapp-link"
+                href={SALON_CONTACT.whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto text-center inline-flex justify-center items-center gap-2 bg-[#25D366] text-white font-sans text-xs uppercase tracking-widest font-semibold px-6 py-3 hover:bg-opacity-90 transition-all duration-300"
+              >
+                <MessageSquare className="h-4 w-4 fill-white text-transparent" /> Message WhatsApp Desk
+              </a>
               
               {/* Social Directory Links */}
               <div className="flex items-center gap-3">
-                {salonSettings?.social_links?.instagram || salonSettings?.socialLinks?.instagram ? (
-                  <a
-                    href={salonSettings?.social_links?.instagram || salonSettings?.socialLinks?.instagram}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-9 w-9 border border-brand-secondary/20 hover:border-brand-secondary hover:text-brand-secondary rounded-none flex items-center justify-center text-brand-text-muted transition-colors"
-                    aria-label="Instagram Link"
-                  >
-                    <Instagram className="h-4 w-4" />
-                  </a>
-                ) : null}
-                {salonSettings?.social_links?.facebook || salonSettings?.socialLinks?.facebook ? (
-                  <a
-                    href={salonSettings?.social_links?.facebook || salonSettings?.socialLinks?.facebook}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-9 w-9 border border-brand-secondary/20 hover:border-brand-secondary hover:text-brand-secondary rounded-none flex items-center justify-center text-brand-text-muted transition-colors"
-                    aria-label="Facebook Link"
-                  >
-                    <Facebook className="h-4 w-4" />
-                  </a>
-                ) : null}
+                <a
+                  id="contact-instagram-link"
+                  href={SALON_CONTACT.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-10 w-10 border border-brand-secondary/30 hover:border-brand-secondary hover:text-brand-secondary rounded-none flex items-center justify-center text-brand-secondary transition-colors bg-brand-surface-muted/30"
+                  aria-label="Instagram Link"
+                  title="Follow Musha Empire Unisex Saloon on Instagram"
+                >
+                  <Instagram className="h-4.5 w-4.5" />
+                </a>
+                <a
+                  id="contact-instagram-handle-link"
+                  href={SALON_CONTACT.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden sm:inline-block text-[11px] font-sans text-brand-text-muted hover:text-brand-secondary transition-colors underline-offset-4 hover:underline"
+                >
+                  {SALON_CONTACT.instagramHandle}
+                </a>
               </div>
             </div>
           </div>
@@ -388,16 +384,19 @@ export default function ContactPage({
 
       </div>
 
-      {/* Google Maps Blueprint Placeholder */}
+      {/* Google Maps Blueprint Section */}
       <section id="contact-map-section" className="mt-20">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <span className="font-sans text-[10px] uppercase tracking-widest font-semibold text-brand-secondary">
             Find the Lounge
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl text-brand-primary font-bold">
-            An Elegant Blueprint Map Location
+            {SALON_CONTACT.businessName}
           </h2>
           <div className="luxury-divider my-3 max-w-xs mx-auto" />
+          <p className="font-sans text-xs text-brand-text-muted mt-2">
+            Experience royal treatment at our premier unisex salon. Navigate seamlessly via Google Maps.
+          </p>
         </div>
 
         {/* Mock Blueprint Map design */}
@@ -422,12 +421,19 @@ export default function ContactPage({
               <div className="h-4 w-4 rounded-full bg-brand-secondary border-2 border-[#121110] relative z-10" />
             </div>
 
-            {/* Premium Gold overlay tag */}
-            {/* Gold overlay tag */}
-            <div className="bg-[#121110] border border-brand-secondary text-brand-secondary py-3 px-5 -mt-2 shadow-2xl relative z-10 text-center select-none whitespace-nowrap">
-              <p className="font-serif text-sm font-semibold tracking-wide text-brand-secondary">{salonSettings?.salon_name || salonSettings?.salonName || 'MUSHA EMPIRE'}</p>
-              <p className="font-sans text-[8px] text-brand-accent/55 tracking-widest uppercase mt-0.5">{addressLine1}</p>
-            </div>
+            {/* Premium Gold overlay tag - Clickable to open Google Maps */}
+            <a
+              id="map-pin-tag"
+              href={SALON_CONTACT.googleMaps}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#121110] border border-brand-secondary text-brand-secondary py-3 px-5 -mt-2 shadow-2xl relative z-10 text-center hover:bg-brand-surface transition-colors cursor-pointer group"
+            >
+              <p className="font-serif text-sm font-semibold tracking-wide text-brand-secondary">{SALON_CONTACT.businessName}</p>
+              <p className="font-sans text-[8px] text-brand-accent/70 group-hover:text-brand-secondary tracking-widest uppercase mt-0.5 flex items-center justify-center gap-1">
+                <span>Open in Google Maps</span> &rarr;
+              </p>
+            </a>
           </div>
 
           {/* Compass Rose icon */}
@@ -437,23 +443,35 @@ export default function ContactPage({
 
           {/* Leftside map overlay */}
           <div className="absolute left-6 top-6 max-w-xs bg-[#1A1917]/95 border border-brand-accent/20 p-5 space-y-3 text-brand-bg backdrop-blur-sm hidden sm:block">
-            <h4 className="font-serif text-sm text-brand-secondary font-semibold">Salon Arrival</h4>
+            <h4 className="font-serif text-sm text-brand-secondary font-semibold">{SALON_CONTACT.businessName}</h4>
             <p className="font-sans text-[11px] text-brand-accent/70 leading-relaxed">
-              {hasAddress
-                ? `Located at ${addressLine1}. Arrival directions will be provided upon appointment reservation confirmation.`
-                : 'Salon address and arrival directions will be confirmed upon reservation confirmation.'}
+              Open Google Maps to view live directions, estimated travel times, and landmark arrival guidance.
             </p>
-            {hasAddress ? (
-              <a
-                href="https://maps.google.com"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 font-sans text-[10px] uppercase tracking-wider font-bold text-brand-secondary hover:underline"
-              >
-                Open External Google Maps &rarr;
-              </a>
-            ) : null}
+            <a
+              id="contact-map-external-link"
+              href={SALON_CONTACT.googleMaps}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-wider font-bold text-brand-secondary hover:underline cursor-pointer"
+            >
+              <MapPin className="h-3.5 w-3.5" />
+              <span>Open in Google Maps &rarr;</span>
+            </a>
           </div>
+        </div>
+
+        {/* Action Button underneath */}
+        <div className="mt-6 flex justify-center">
+          <a
+            id="contact-google-maps-btn"
+            href={SALON_CONTACT.googleMaps}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-surface border border-brand-secondary/40 hover:border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-[#0A0A0A] font-sans text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+          >
+            <MapPin className="h-4 w-4" />
+            <span>Open Google Maps</span>
+          </a>
         </div>
       </section>
     </div>

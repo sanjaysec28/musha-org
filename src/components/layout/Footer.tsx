@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Sparkles, Instagram, Facebook, Calendar, Mail, CheckCircle } from 'lucide-react';
+import { Sparkles, Instagram, Facebook, Calendar, Mail, CheckCircle, MapPin, Phone } from 'lucide-react';
 import { settingsRepository } from '../../lib/firestoreService';
 import { FirestoreSalonSettings } from '../../types/firestore';
 import Button from '../ui/Button';
 import MushaEmpireLogo from '../ui/MushaEmpireLogo';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export interface FooterProps {
   onNavigate?: (view: 'home' | 'services' | 'service-detail' | 'booking' | 'portal' | 'about' | 'gallery' | 'offers' | 'membership' | 'contact' | 'faq' | 'privacy' | 'terms' | 'refund' | '404') => void;
@@ -83,9 +84,11 @@ export default function Footer({ onNavigate }: FooterProps = {}) {
             <div id="footer-socials" className="flex items-center space-x-4">
               <a
                 id="footer-social-ig"
-                href="#instagram"
+                href={SALON_CONTACT.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-10 w-10 border border-brand-secondary/20 hover:border-brand-secondary text-brand-text-muted hover:text-brand-secondary rounded-none flex items-center justify-center transition-all duration-300 bg-[#121212]/30 hover:shadow-[0_0_12px_rgba(197,168,128,0.1)]"
-                aria-label="Follow Musha on Instagram"
+                aria-label="Follow Musha Empire Unisex Saloon on Instagram"
               >
                 <Instagram className="h-4.5 w-4.5 stroke-[1.5]" />
               </a>
@@ -185,28 +188,55 @@ export default function Footer({ onNavigate }: FooterProps = {}) {
               Salon Concierge
             </h4>
             <div className="space-y-3 font-sans text-xs text-brand-text-muted">
-              <p className="leading-relaxed">
-                {addressDisplay}
-              </p>
+              <div>
+                <p className="font-semibold text-brand-primary leading-tight">
+                  {SALON_CONTACT.businessName}
+                </p>
+                <a
+                  id="footer-maps-link"
+                  href={SALON_CONTACT.googleMaps}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-brand-secondary hover:underline underline-offset-4 mt-1.5 group"
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-brand-secondary" />
+                  <span className="group-hover:text-brand-secondary">Open Google Maps &rarr;</span>
+                </a>
+              </div>
               <p className="space-y-1">
                 <span className="block font-medium text-brand-primary">Reservations Desk:</span>
-                {salonSettings?.phone ? (
-                  <a href={`tel:${salonSettings.phone.replace(/[^\d+]/g, '')}`} className="hover:text-brand-secondary transition-colors text-brand-text-muted hover:underline decoration-brand-secondary/35 underline-offset-4">
-                    {phoneDisplay}
-                  </a>
-                ) : (
-                  <span>{phoneDisplay}</span>
-                )}
+                <a
+                  id="footer-phone-link"
+                  href={SALON_CONTACT.phoneTel}
+                  className="hover:text-brand-secondary transition-colors text-brand-text-muted hover:underline decoration-brand-secondary/35 underline-offset-4 inline-flex items-center gap-1.5"
+                >
+                  <Phone className="h-3 w-3 shrink-0 text-brand-secondary/70" />
+                  <span>{SALON_CONTACT.phoneDisplay}</span>
+                </a>
               </p>
               <p className="space-y-1">
                 <span className="block font-medium text-brand-primary">Concierge Mail:</span>
-                {salonSettings?.email ? (
-                  <a href={`mailto:${salonSettings.email}`} className="hover:text-brand-secondary transition-colors text-brand-text-muted hover:underline decoration-brand-secondary/35 underline-offset-4">
-                    {emailDisplay}
-                  </a>
-                ) : (
-                  <span>{emailDisplay}</span>
-                )}
+                <a
+                  id="footer-email-link"
+                  href={SALON_CONTACT.emailMailto}
+                  className="hover:text-brand-secondary transition-colors text-brand-text-muted hover:underline decoration-brand-secondary/35 underline-offset-4 inline-flex items-center gap-1.5 break-all"
+                >
+                  <Mail className="h-3 w-3 shrink-0 text-brand-secondary/70" />
+                  <span>{SALON_CONTACT.email}</span>
+                </a>
+              </p>
+              <p className="space-y-1 pt-0.5">
+                <span className="block font-medium text-brand-primary">Instagram:</span>
+                <a
+                  id="footer-instagram-link"
+                  href={SALON_CONTACT.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-secondary transition-colors text-brand-text-muted hover:underline decoration-brand-secondary/35 underline-offset-4 inline-flex items-center gap-1.5"
+                >
+                  <Instagram className="h-3 w-3 shrink-0 text-brand-secondary/70" />
+                  <span>{SALON_CONTACT.instagramHandle}</span>
+                </a>
               </p>
             </div>
           </div>
@@ -215,7 +245,7 @@ export default function Footer({ onNavigate }: FooterProps = {}) {
         {/* Bottom copyright and legal line */}
         <div id="footer-bottom-flex" className="pt-10 border-t border-brand-secondary/15 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-brand-text-muted/60 font-sans">
           <p id="footer-copyright" className="leading-relaxed">
-            &copy; 2026 Musha Empire.<br />
+            &copy; {currentYear} {SALON_CONTACT.businessName}.<br />
             Luxury Unisex Salon & Spa.<br />
             All Rights Reserved.
           </p>

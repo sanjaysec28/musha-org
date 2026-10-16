@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Menu, Sparkles, Phone, MapPin, Calendar, Clock } from 'lucide-react';
+import { Menu, Crown, Phone, MapPin, Calendar, Clock, Mail, Instagram } from 'lucide-react';
 import { settingsRepository } from '../../lib/firestoreService';
 import { FirestoreSalonSettings } from '../../types/firestore';
 import { Drawer } from '../ui/Overlay';
 import MushaEmpireLogo from '../ui/MushaEmpireLogo';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export interface NavbarProps {
   currentView?: 'home' | 'services' | 'service-detail' | 'booking' | 'portal' | 'about' | 'gallery' | 'offers' | 'membership' | 'contact' | 'faq' | 'privacy' | 'terms' | 'refund' | '404';
@@ -65,7 +66,6 @@ export default function Navbar({
     { label: 'Services', href: '#services', view: 'services' as const, hash: '' },
     { label: 'Gallery', href: '#gallery', view: 'gallery' as const, hash: '' },
     { label: 'Offers', href: '#offers', view: 'offers' as const, hash: '' },
-    { label: 'Membership', href: '#membership', view: 'membership' as const, hash: '' },
     { label: 'Contact', href: '#contact', view: 'contact' as const, hash: '' },
     { label: 'FAQ', href: '#faq', view: 'faq' as const, hash: '' },
     { label: 'Portal', href: '#portal', view: 'portal' as const, hash: '' },
@@ -174,9 +174,9 @@ export default function Navbar({
           <div id="nav-actions" className="hidden sm:flex items-center space-x-1.5 xl:space-x-2 shrink-0">
             <a
               id="phone-link"
-              href={salonSettings?.phone ? `tel:${salonSettings.phone}` : '#contact'}
+              href={SALON_CONTACT.phoneTel}
               className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
-              title={salonSettings?.phone ? `Call Empire Desk: ${salonSettings.phone}` : 'Contact Empire Desk'}
+              title={`Call Empire Desk: ${SALON_CONTACT.phoneDisplay}`}
             >
               <Phone className="h-4 w-4 stroke-1.5" />
             </a>
@@ -209,41 +209,21 @@ export default function Navbar({
           </div>
 
           {/* Mobile Navigation Controls (Compact, Perfectly Sized, Zero Overlap) */}
-          <div id="mobile-menu-trigger" className="flex items-center gap-1.5 sm:gap-2 lg:hidden shrink-0">
-            {onOpenAppointments && (
-              <button
-                id="mobile-appointments-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  onOpenAppointments();
-                }}
-                className="w-10 h-10 rounded-lg text-brand-secondary hover:text-brand-primary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] flex items-center justify-center relative transition-all"
-                aria-label="View Scheduled Treatments"
-                title="View Scheduled Treatments"
-              >
-                <Calendar className="h-4.5 w-4.5 stroke-[1.75]" />
-                {appointmentsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-brand-secondary text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center border border-brand-bg shadow-sm">
-                    {appointmentsCount}
-                  </span>
-                )}
-              </button>
-            )}
-
+          <div id="mobile-menu-trigger" className="flex items-center gap-2 sm:gap-2.5 lg:hidden shrink-0">
             <button
               id="header-booking-mobile-icon"
               onClick={triggerBookingAction}
-              className="w-10 h-10 rounded-lg text-brand-secondary hover:text-brand-primary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] flex items-center justify-center transition-all"
-              aria-label="Book Experience"
-              title="Book Experience"
+              className="w-10 h-10 rounded-lg text-brand-secondary hover:text-white active:scale-95 border border-brand-secondary/30 hover:border-brand-secondary/60 bg-[#141414] hover:bg-brand-secondary/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+              aria-label="Reserve Royal Experience"
+              title="Reserve Royal Experience"
             >
-              <Sparkles className="h-4.5 w-4.5 stroke-[1.75]" />
+              <Crown className="h-4.5 w-4.5 stroke-[1.75] text-brand-secondary" />
             </button>
 
             <button
               id="mobile-drawer-toggle"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="w-10 h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] flex items-center justify-center cursor-pointer transition-all"
+              className="w-10 h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
               aria-label="Toggle Navigation Menu"
               title="Open Navigation Menu"
             >
@@ -304,12 +284,47 @@ export default function Navbar({
         </div>
 
         {/* Salon Address & Opening Hours at the bottom */}
-        <div id="drawer-contact-details" className="pt-4 border-t border-brand-secondary/20 text-center font-sans text-xs text-brand-text-muted space-y-2 mt-auto shrink-0">
-          <p className="flex items-start justify-center gap-1.5 font-medium text-brand-primary text-center">
+        <div id="drawer-contact-details" className="pt-4 border-t border-brand-secondary/20 text-center font-sans text-xs text-brand-text-muted space-y-2.5 mt-auto shrink-0">
+          <a
+            id="drawer-maps-link"
+            href={SALON_CONTACT.googleMaps}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-start justify-center gap-1.5 font-medium text-brand-primary text-center hover:text-brand-secondary transition-colors"
+          >
             <MapPin className="h-3.5 w-3.5 text-brand-secondary shrink-0 mt-0.5" />
-            <span>{addressDisplay}</span>
-          </p>
-          <p className="flex items-center justify-center gap-1.5 text-neutral-400">
+            <span>{SALON_CONTACT.businessName} (Google Maps)</span>
+          </a>
+          <div className="flex items-center justify-center gap-3 text-xs">
+            <a
+              id="drawer-phone-link"
+              href={SALON_CONTACT.phoneTel}
+              className="flex items-center gap-1.5 text-neutral-300 hover:text-brand-secondary transition-colors"
+            >
+              <Phone className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+              <span>{SALON_CONTACT.phoneDisplay}</span>
+            </a>
+            <span className="text-neutral-600">•</span>
+            <a
+              id="drawer-instagram-link"
+              href={SALON_CONTACT.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-neutral-300 hover:text-brand-secondary transition-colors"
+            >
+              <Instagram className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+              <span>Instagram</span>
+            </a>
+          </div>
+          <a
+            id="drawer-email-link"
+            href={SALON_CONTACT.emailMailto}
+            className="flex items-center justify-center gap-1.5 text-neutral-400 hover:text-brand-secondary transition-colors text-[11px]"
+          >
+            <Mail className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+            <span>{SALON_CONTACT.email}</span>
+          </a>
+          <p className="flex items-center justify-center gap-1.5 text-neutral-400 text-[11px]">
             <Clock className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
             <span>{hoursDisplay}</span>
           </p>

@@ -16,28 +16,54 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(mobileButtonTouchTarget).toBeGreaterThanOrEqual(40);
   });
 
-  it('verifies mobile header layout width budget on 360px screen', () => {
-    const screenWidth = 360;
+  it('verifies mobile header layout width budget on 320px and 360px screens', () => {
+    // 320px smallest mobile breakpoint
+    const screenWidth320 = 320;
     const paddingX = 14 * 2; // px-3.5 on both sides = 28px
-    const availableWidth = screenWidth - paddingX; // 332px
+    const availableWidth320 = screenWidth320 - paddingX; // 292px
 
     const logoEstimatedWidth = 145; // emblem (36px) + gap (8px) + text (~100px)
-    const mobileActionsWidth = (40 * 3) + (6 * 2); // 3 buttons (40px each) + 2 gaps (6px) = 132px
-    const totalRequiredWidth = logoEstimatedWidth + mobileActionsWidth; // 277px
+    const mobileActionsWidth = (40 * 2) + 8; // 2 buttons (Crown + Menu at 40px each) + 1 gap (8px) = 88px
+    const totalRequiredWidth = logoEstimatedWidth + mobileActionsWidth; // 233px
 
-    // Must fit comfortably within available 332px with remaining space
-    expect(totalRequiredWidth).toBeLessThan(availableWidth);
-    const safetyMargin = availableWidth - totalRequiredWidth;
-    expect(safetyMargin).toBeGreaterThanOrEqual(30); // At least 30px buffer to prevent any overlap
+    // Must fit comfortably within available 292px on 320px screen
+    expect(totalRequiredWidth).toBeLessThan(availableWidth320);
+    const safetyMargin320 = availableWidth320 - totalRequiredWidth;
+    expect(safetyMargin320).toBeGreaterThanOrEqual(40); // At least 40px buffer to prevent any overlap
+
+    // 360px screen
+    const availableWidth360 = 360 - paddingX; // 332px
+    const safetyMargin360 = availableWidth360 - totalRequiredWidth;
+    expect(safetyMargin360).toBeGreaterThanOrEqual(80);
   });
 
-  it('verifies mobile header layout across all mobile widths (360px, 375px, 390px, 414px, 430px)', () => {
-    mobileWidths.forEach((width) => {
+  it('verifies mobile header layout across all mobile widths (320px, 360px, 375px, 390px, 414px, 430px)', () => {
+    const allMobileWidths = [320, 360, 375, 390, 414, 430];
+    allMobileWidths.forEach((width) => {
       const paddingX = 28;
       const availableWidth = width - paddingX;
-      const contentWidth = 145 + 132;
+      const contentWidth = 145 + 88; // 233px
       expect(contentWidth).toBeLessThan(availableWidth);
     });
+  });
+
+  it('verifies mobile header contains luxury Crown icon and Menu, with calendar icon removed from mobile header', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const navbarSource = fs.readFileSync(path.resolve(__dirname, '../src/components/layout/Navbar.tsx'), 'utf-8');
+
+    // Desktop header still retains header-appointments-btn with Calendar
+    expect(navbarSource).toContain('id="header-appointments-btn"');
+
+    // Mobile header does NOT have mobile-appointments-btn
+    expect(navbarSource).not.toContain('id="mobile-appointments-btn"');
+
+    // Mobile header contains Crown icon in header-booking-mobile-icon
+    expect(navbarSource).toContain('id="header-booking-mobile-icon"');
+    expect(navbarSource).toContain('<Crown className="h-4.5 w-4.5 stroke-[1.75] text-brand-secondary" />');
+
+    // Mobile header contains mobile-drawer-toggle
+    expect(navbarSource).toContain('id="mobile-drawer-toggle"');
   });
 
   it('verifies desktop header layout width budget at 1024px, 1280px, 1440px, and 1536px', () => {
@@ -249,6 +275,30 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(servicesPageSource).toContain('id={`book-service-${service.id}`}');
     expect(servicesPageSource).toContain('id={`view-detail-${service.id}`}');
     expect(servicesPageSource).toContain('id={`service-catalog-card-${service.id}`}');
+  });
+
+  it('verifies Booking recipient cards match cinematic promotional cards with full-width Universal Experience', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const bookingFlowSource = fs.readFileSync(path.resolve(__dirname, '../src/components/booking/BookingFlow.tsx'), 'utf8');
+
+    // 1. Grid structure with 2 columns on desktop and full-width Universal Experience
+    expect(bookingFlowSource).toContain('cat.isFullWidth');
+    expect(bookingFlowSource).toContain("'md:col-span-2 min-h-[380px] sm:min-h-[400px]'");
+
+    // 2. All 3 recipient options present with their exact titles
+    expect(bookingFlowSource).toContain("title: \"Gentlemen's Grooming\"");
+    expect(bookingFlowSource).toContain("title: \"Women's Sanctuary\"");
+    expect(bookingFlowSource).toContain("title: 'Universal Experience'");
+
+    // 3. Selection IDs and handler retention
+    expect(bookingFlowSource).toContain('id={`select-category-${cat.id.toLowerCase()}`}');
+    expect(bookingFlowSource).toContain('onClick={() => setSelectedCategory(cat.id)}');
+
+    // 4. Background images with dark cinematic overlays
+    expect(bookingFlowSource).toContain('bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40');
+    expect(bookingFlowSource).toContain('backdrop-blur-[0.5px]');
+    expect(bookingFlowSource).toContain('group-hover:scale-105');
   });
 });
 

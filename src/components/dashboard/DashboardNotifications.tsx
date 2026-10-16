@@ -50,12 +50,12 @@ export default function DashboardNotifications({
     <div id={id} className="space-y-6">
       
       {/* Notifications Header Control */}
-      <div className="flex justify-between items-center bg-brand-surface p-4 border border-brand-accent">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-brand-surface p-4 border border-brand-accent">
         <div>
           <h3 className="font-serif text-lg font-semibold text-brand-primary">
             Notification Center
           </h3>
-          <p className="font-sans text-xs text-brand-text-muted">
+          <p className="font-sans text-xs text-brand-text-muted mt-0.5">
             Track scheduling updates, billing credits, and loyalty rewards updates.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function DashboardNotifications({
             size="sm"
             leftIcon={<CheckCheck className="h-3.5 w-3.5" />}
             onClick={handleMarkAllRead}
-            className="font-sans text-[10px] uppercase tracking-wider font-bold py-2.5 px-4 border-brand-accent hover:border-brand-secondary"
+            className="w-full sm:w-auto font-sans text-[10px] uppercase tracking-wider font-bold py-2.5 px-4 border-brand-accent hover:border-brand-secondary justify-center"
           >
             Mark All Read
           </Button>
@@ -85,7 +85,7 @@ export default function DashboardNotifications({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 15 }}
               transition={{ duration: 0.3 }}
-              className={`bg-brand-surface border p-4.5 flex items-start justify-between gap-4 transition-all duration-300 relative group ${
+              className={`bg-brand-surface border p-3.5 sm:p-4.5 flex items-start justify-between gap-3 sm:gap-4 transition-all duration-300 relative group ${
                 notif.isRead ? 'border-brand-accent opacity-75' : 'border-brand-secondary/40 shadow-sm'
               }`}
             >
@@ -94,17 +94,17 @@ export default function DashboardNotifications({
                 <span className="absolute top-4 right-4 h-2 w-2 rounded-full bg-brand-secondary" />
               )}
 
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-3 sm:gap-4 items-start min-w-0 flex-1">
                 {/* Visual Category Icon */}
                 <div className="h-9 w-9 bg-brand-surface-muted border border-brand-accent flex items-center justify-center flex-shrink-0 mt-0.5">
                   {getNotificationIcon(notif.type)}
                 </div>
 
-                <div className="space-y-1 pr-4">
-                  <h4 className={`font-serif text-base font-semibold text-brand-primary ${!notif.isRead ? 'font-bold' : ''}`}>
+                <div className="space-y-1 pr-2 min-w-0 flex-1">
+                  <h4 className={`font-serif text-sm sm:text-base font-semibold text-brand-primary break-words ${!notif.isRead ? 'font-bold' : ''}`}>
                     {notif.title}
                   </h4>
-                  <p className="font-sans text-xs text-brand-text-muted leading-relaxed max-w-2xl">
+                  <p className="font-sans text-xs text-brand-text-muted leading-relaxed max-w-2xl break-words">
                     {notif.description}
                   </p>
                   <span className="font-sans text-[9px] text-brand-text-muted block pt-1">
@@ -114,7 +114,7 @@ export default function DashboardNotifications({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 self-center">
+              <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 shrink-0 self-center">
                 {!notif.isRead && (
                   <button
                     id={`notif-read-btn-${notif.id}`}

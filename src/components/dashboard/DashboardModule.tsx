@@ -118,6 +118,12 @@ export default function DashboardModule({
     }
   }, [initialAppointmentTab]);
 
+  useEffect(() => {
+    if ((currentView as string) === 'membership') {
+      setCurrentView('overview');
+    }
+  }, [currentView]);
+
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAvatarDropdownOpen, setIsAvatarDropdownOpen] = useState(false);
 
@@ -1028,12 +1034,24 @@ export default function DashboardModule({
     ] : []),
     { id: 'wallet' as const, label: 'Wallet balance', icon: Wallet },
     { id: 'rewards' as const, label: 'Patron rewards', icon: Award },
-    { id: 'membership' as const, label: 'Privilege lounge', icon: Crown },
     { id: 'addresses' as const, label: 'Saved locations', icon: MapPin },
     { id: 'notifications' as const, label: 'Alert Center', icon: Bell, badge: notifications.filter((n) => !n.isRead).length },
     { id: 'reviews' as const, label: 'Service Reviews', icon: Star },
     { id: 'profile' as const, label: 'Identity records', icon: User },
     { id: 'settings' as const, label: 'App preferences', icon: Settings },
+  ];
+
+  // Dedicated evenly distributed bottom navigation items for mobile
+  const bottomNavLinks = [
+    { id: 'overview' as const, label: 'Overview', shortLabel: 'Overview', icon: LayoutDashboard },
+    { id: 'appointments' as const, label: 'Upcoming sessions', shortLabel: 'Sessions', icon: Calendar },
+    ...(isStaffUser ? [
+      { id: 'staff' as const, label: 'Staff & Team CMS', shortLabel: 'Staff', icon: Users }
+    ] : [
+      { id: 'wallet' as const, label: 'Wallet balance', shortLabel: 'Wallet', icon: Wallet }
+    ]),
+    { id: 'rewards' as const, label: 'Patron rewards', shortLabel: 'Rewards', icon: Award },
+    { id: 'profile' as const, label: 'Identity records', shortLabel: 'Profile', icon: User },
   ];
 
   return (
@@ -1100,30 +1118,30 @@ export default function DashboardModule({
       {/* ==============================================
           2. PORTAL AREA VIEWPORT WRAPPER (Right Panel)
           ============================================== */}
-      <div id="dashboard-content-viewport" className="flex-grow flex flex-col lg:pl-64 pb-20 lg:pb-6">
+      <div id="dashboard-content-viewport" className="flex-grow flex flex-col lg:pl-64 pb-28 sm:pb-32 lg:pb-8 w-full min-w-0 overflow-x-hidden">
         
         {/* Responsive top header bar */}
         <header
           id="dashboard-header-bar"
-          className="sticky top-0 z-25 bg-brand-bg/95 backdrop-blur-md border-b border-brand-accent py-4 px-6 md:px-8 flex justify-between items-center"
+          className="sticky top-0 z-25 bg-brand-bg/95 backdrop-blur-md border-b border-brand-accent py-3.5 px-3.5 sm:px-6 md:px-8 flex justify-between items-center"
         >
           {/* Left info */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             {/* Mobile menu trigger */}
             <button
               id="dashboard-mobile-sidebar-toggle"
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-1.5 text-brand-primary border border-brand-accent bg-brand-surface cursor-pointer"
+              className="lg:hidden p-1.5 text-brand-primary border border-brand-accent bg-brand-surface cursor-pointer shrink-0"
               aria-label="Toggle Mobile Menu"
             >
               <Menu className="h-4.5 w-4.5" />
             </button>
 
-            <div>
+            <div className="min-w-0">
               <span className="font-mono text-[8px] uppercase tracking-wider text-brand-text-muted font-bold block">
                 CONCIERGERIE DESK
               </span>
-              <h2 className="font-serif text-lg font-bold text-brand-primary">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-brand-primary truncate max-w-[150px] xs:max-w-[220px] sm:max-w-none">
                 {sidebarLinks.find((l) => l.id === currentView)?.label}
               </h2>
             </div>
@@ -1219,7 +1237,7 @@ export default function DashboardModule({
         </header>
 
         {/* Master Subview render node */}
-        <main id="portal-subview-panel" className="flex-grow p-6 md:p-8">
+        <main id="portal-subview-panel" className="flex-grow p-3.5 sm:p-5 md:p-8 pb-24 sm:pb-28 lg:pb-8 w-full min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
@@ -1268,21 +1286,6 @@ export default function DashboardModule({
                   availableRewards={rewards}
                   onClaimReward={handleClaimReward}
                   triggerToast={triggerToast}
-                />
-              )}
-
-              {currentView === 'membership' && (
-                <DashboardMembership
-                  id="portal-membership"
-                  activePlan={user.membershipPlan}
-                  renewalDate={user.membershipRenewalDate}
-                  walletBalance={user.walletBalance}
-                  onUpgradePlan={handleUpgradePlan}
-                  triggerToast={triggerToast}
-                  startDate={user.membershipStartDate}
-                  expiryDate={user.membershipExpiryDate}
-                  remainingDays={user.membershipRemainingDays}
-                  status={user.membershipStatus}
                 />
               )}
 
@@ -1354,9 +1357,9 @@ export default function DashboardModule({
           ============================================== */}
       <nav
         id="dashboard-mobile-bottom-nav"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-brand-surface text-brand-text border-t border-brand-secondary/15 py-2.5 px-4 flex justify-around items-center shadow-lg"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-brand-surface/98 backdrop-blur-md text-brand-text border-t border-brand-secondary/20 py-1.5 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] grid grid-cols-5 items-center shadow-[0_-4px_20px_rgba(0,0,0,0.5)]"
       >
-        {sidebarLinks.slice(0, 5).map((link) => {
+        {bottomNavLinks.map((link) => {
           const LinkIcon = link.icon;
           const isActive = currentView === link.id;
           return (
@@ -1367,13 +1370,13 @@ export default function DashboardModule({
                 setCurrentView(link.id);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-                isActive ? 'text-brand-secondary' : 'text-brand-text-muted hover:text-brand-primary'
+              className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 cursor-pointer transition-colors ${
+                isActive ? 'text-brand-secondary font-bold' : 'text-brand-text-muted hover:text-brand-primary'
               }`}
             >
-              <LinkIcon className="h-4.5 w-4.5" />
-              <span className="font-sans text-[7.5px] uppercase tracking-wider font-semibold">
-                {link.label.split(' ')[0]}
+              <LinkIcon className={`h-4.5 w-4.5 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.5]'}`} />
+              <span className="font-sans text-[8.5px] xs:text-[9.5px] uppercase tracking-wider mt-0.5 truncate max-w-full font-semibold">
+                {link.shortLabel}
               </span>
             </button>
           );

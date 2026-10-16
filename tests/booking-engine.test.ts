@@ -151,7 +151,7 @@ class MockFirestore {
 
 describe('Musha Empire — Authoritative Booking Engine Test Suite', () => {
   let mockDb: any;
-  const testDate = '2026-10-15'; // Future date in 2026
+  const testDate = '2026-10-22'; // Future Thursday in 2026
 
   beforeEach(() => {
     mockDb = new MockFirestore();
@@ -372,7 +372,7 @@ describe('Musha Empire — Authoritative Booking Engine Test Suite', () => {
     const input: CreateBookingInput = {
       serviceId: 'svc-30',
       gender: 'Men',
-      bookingDate: testDate, // 2026-10-15 is Thursday
+      bookingDate: testDate, // 2026-10-22 is Thursday
       startTime: '10:00 AM'
     };
 

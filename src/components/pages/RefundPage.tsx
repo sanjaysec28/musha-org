@@ -4,6 +4,7 @@
  */
 
 import { Calendar, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export default function RefundPage() {
   return (
@@ -87,7 +88,7 @@ export default function RefundPage() {
             5. Concierge Refund Support
           </h2>
           <p>
-            To initiate a product return, check-out adjustment, or membership cancellation refund request, please speak with our Operations Manager at the salon reception desk, or send an email to: <a href="mailto:refunds@mushaempire.com" className="text-brand-gold-dark hover:underline">refunds@mushaempire.com</a>.
+            To initiate a product return, check-out adjustment, or membership cancellation refund request, please speak with our Operations Manager at the salon reception desk, or send an email to: <a href={SALON_CONTACT.emailMailto} className="text-brand-gold-dark hover:underline">{SALON_CONTACT.email}</a>.
           </p>
         </section>
 

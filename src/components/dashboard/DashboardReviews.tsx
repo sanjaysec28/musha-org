@@ -248,7 +248,7 @@ export default function DashboardReviews({ id, triggerToast }: DashboardReviewsP
           <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary font-bold block">
             FEEDBACK PLATFORM
           </span>
-          <h2 className="font-serif text-3.5xl font-semibold text-brand-primary mt-1">
+          <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-brand-primary mt-1">
             Service Reviews
           </h2>
           <p className="font-sans text-xs text-brand-text-muted mt-1 leading-relaxed">
@@ -261,7 +261,7 @@ export default function DashboardReviews({ id, triggerToast }: DashboardReviewsP
           variant="primary"
           size="md"
           onClick={openCreateModal}
-          className="font-sans text-[10px] uppercase tracking-widest font-bold flex items-center gap-2"
+          className="w-full sm:w-auto font-sans text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2"
         >
           <Plus className="h-4 w-4" /> Write a Review
         </Button>

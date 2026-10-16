@@ -134,32 +134,32 @@ export default function DashboardWallet({
         id={`${id}-balance-banner`}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-brand-surface text-brand-text p-8 border border-brand-secondary/15 relative overflow-hidden"
+        className="bg-brand-surface text-brand-text p-5 sm:p-7 md:p-8 border border-brand-secondary/15 relative overflow-hidden"
       >
         <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#C5A880_1px,transparent_1px),linear-gradient(to_bottom,#C5A880_1px,transparent_1px)] bg-[size:2rem_2rem]" />
         
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary font-semibold block mb-2">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
+          <div className="min-w-0">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary font-semibold block mb-1.5">
               EMPIRE PRE-PAID CARD
             </span>
             <span className="font-sans text-xs text-brand-text-muted block">Available Balance</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-white mt-1">
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mt-1">
               ${walletBalance.toFixed(2)}
             </h2>
-            <p className="font-sans text-[11px] text-brand-text-muted mt-3 flex items-center gap-1">
-              <Gift className="h-3.5 w-3.5 text-brand-secondary" /> Enjoy automatic 5% cashback credits on every premium hair spa treatment.
+            <p className="font-sans text-[11px] text-brand-text-muted mt-2.5 flex items-center gap-1 leading-relaxed">
+              <Gift className="h-3.5 w-3.5 text-brand-secondary shrink-0" /> Enjoy automatic 5% cashback credits on every premium hair spa treatment.
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
             <Button
               id="wallet-add-funds-trigger"
               variant="primary"
               size="md"
               leftIcon={<PlusCircle className="h-4 w-4" />}
               onClick={() => setIsAddFundsOpen(true)}
-              className="font-sans text-xs uppercase tracking-widest font-bold px-6"
+              className="w-full xs:w-auto font-sans text-xs uppercase tracking-widest font-bold px-5 py-2.5 justify-center"
             >
               Add Money
             </Button>
@@ -169,7 +169,7 @@ export default function DashboardWallet({
               size="md"
               leftIcon={<Tag className="h-4 w-4" />}
               onClick={() => setIsRedeemOpen(true)}
-              className="border-brand-secondary/30 text-brand-secondary hover:border-brand-secondary hover:text-white hover:bg-brand-secondary/10 font-sans text-xs uppercase tracking-widest font-semibold"
+              className="w-full xs:w-auto border-brand-secondary/30 text-brand-secondary hover:border-brand-secondary hover:text-white hover:bg-brand-secondary/10 font-sans text-xs uppercase tracking-widest font-semibold px-5 py-2.5 justify-center"
             >
               Redeem Code
             </Button>
@@ -187,11 +187,11 @@ export default function DashboardWallet({
           {transactions.length > 0 ? (
             <div className="divide-y divide-brand-surface-muted">
               {transactions.map((tx) => (
-                <div key={tx.id} className="p-4 md:p-5 flex items-center justify-between hover:bg-brand-bg/40 transition-colors">
-                  <div className="flex items-center gap-4">
+                <div key={tx.id} className="p-3.5 sm:p-4 md:p-5 flex items-center justify-between gap-3 hover:bg-brand-bg/40 transition-colors">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                     {/* Icon indicator */}
                     <div
-                      className={`h-9 w-9 border flex items-center justify-center rounded-none ${
+                      className={`h-9 w-9 border flex items-center justify-center rounded-none shrink-0 ${
                         tx.type === 'credit'
                           ? 'bg-emerald-950/25 text-emerald-400 border-emerald-500/20'
                           : 'bg-brand-gold-light text-brand-gold-dark border-brand-secondary/20'
@@ -204,29 +204,29 @@ export default function DashboardWallet({
                       )}
                     </div>
 
-                    <div>
-                      <h4 className="font-serif text-sm font-semibold text-brand-primary">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-serif text-sm font-semibold text-brand-primary truncate">
                         {tx.description}
                       </h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="font-mono text-[8px] uppercase tracking-wider text-brand-text-muted">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 text-brand-text-muted">
+                        <span className="font-mono text-[8px] uppercase tracking-wider truncate">
                           {tx.id}
                         </span>
-                        <span className="text-brand-text-muted font-sans text-[10px]">&bull;</span>
-                        <span className="text-brand-text-muted font-sans text-[10px]">{tx.date}</span>
+                        <span className="text-[10px]">&bull;</span>
+                        <span className="font-sans text-[10px] whitespace-nowrap">{tx.date}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <span
-                      className={`font-serif text-sm font-bold block ${
-                        tx.type === 'credit' ? 'text-emerald-600' : 'text-brand-primary'
+                      className={`font-serif text-sm sm:text-base font-bold block ${
+                        tx.type === 'credit' ? 'text-emerald-500' : 'text-brand-primary'
                       }`}
                     >
                       {tx.type === 'credit' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </span>
-                    <span className="font-sans text-[9px] text-brand-text-muted uppercase tracking-wider font-semibold">
+                    <span className="font-sans text-[9px] text-brand-text-muted uppercase tracking-wider font-semibold block">
                       {tx.status}
                     </span>
                   </div>
@@ -234,10 +234,10 @@ export default function DashboardWallet({
               ))}
             </div>
           ) : (
-            <div className="p-12 text-center flex flex-col items-center justify-center min-h-[220px]">
+            <div className="p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[200px]">
               <Wallet className="h-8 w-8 text-brand-text-muted mb-3" />
               <p className="font-serif text-base font-semibold text-brand-primary">No Transaction Records</p>
-              <p className="font-sans text-xs text-brand-text-muted max-w-xs mt-1">
+              <p className="font-sans text-xs text-brand-text-muted max-w-xs mt-1 leading-relaxed">
                 Fund your wallet or purchase styling plans to see ledger line activities.
               </p>
             </div>
@@ -361,14 +361,14 @@ export default function DashboardWallet({
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end pt-2 border-t border-brand-surface-muted">
+          <div className="flex flex-col-reverse xs:flex-row gap-2.5 justify-end pt-2 border-t border-brand-surface-muted">
             <Button
               id="add-funds-cancel-btn"
               type="button"
               variant="outline"
               size="md"
               onClick={() => setIsAddFundsOpen(false)}
-              className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary"
+              className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary py-2.5"
             >
               Discard
             </Button>
@@ -378,7 +378,7 @@ export default function DashboardWallet({
               variant="primary"
               size="md"
               isLoading={isProcessing}
-              className="font-sans text-[10px] uppercase tracking-wider font-semibold px-6"
+              className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold px-6 py-2.5"
             >
               Authorize Pre-payment
             </Button>
@@ -418,14 +418,14 @@ export default function DashboardWallet({
             required
           />
 
-          <div className="flex gap-3 pt-3">
+          <div className="flex flex-col-reverse xs:flex-row gap-2.5 pt-3">
             <Button
               id="redeem-cancel-btn"
               type="button"
               variant="outline"
               size="md"
               onClick={() => setIsRedeemOpen(false)}
-              className="font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary flex-1"
+              className="w-full xs:flex-1 font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary py-2.5"
             >
               Cancel
             </Button>
@@ -435,7 +435,7 @@ export default function DashboardWallet({
               variant="primary"
               size="md"
               isLoading={isProcessing}
-              className="font-sans text-[10px] uppercase tracking-wider font-semibold flex-1"
+              className="w-full xs:flex-1 font-sans text-[10px] uppercase tracking-wider font-semibold py-2.5"
             >
               Claim Credit
             </Button>

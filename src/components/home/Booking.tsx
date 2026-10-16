@@ -10,6 +10,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/InputFields';
 import { Sparkles, Send, MapPin, Phone, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 interface BookingProps {
   onAddToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, desc?: string) => void;
@@ -168,14 +169,29 @@ export default function Booking({ onAddToast, onLaunchBookingFlow }: BookingProp
                 <MapPin className="h-4.5 w-4.5 text-brand-secondary shrink-0" />
                 <div>
                   <p className="font-semibold text-brand-primary">Salon Location</p>
-                  <p className="font-normal mt-0.5">{addressDisplay}</p>
+                  <a
+                    id="booking-maps-link"
+                    href={SALON_CONTACT.googleMaps}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-normal mt-0.5 hover:text-brand-secondary hover:underline underline-offset-2 flex items-center gap-1 group"
+                  >
+                    <span>{SALON_CONTACT.businessName}</span>
+                    <span className="text-[10px] text-brand-secondary group-hover:translate-x-0.5 transition-transform">&rarr; Map</span>
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-xs text-brand-text-muted">
                 <Phone className="h-4.5 w-4.5 text-brand-secondary shrink-0" />
                 <div>
                   <p className="font-semibold text-brand-primary">Reservations Desk</p>
-                  <p className="font-normal mt-0.5">{contactDisplay}</p>
+                  <a
+                    id="booking-phone-link"
+                    href={SALON_CONTACT.phoneTel}
+                    className="font-normal mt-0.5 hover:text-brand-secondary hover:underline underline-offset-2 block"
+                  >
+                    {SALON_CONTACT.phoneDisplay}
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-xs text-brand-text-muted">

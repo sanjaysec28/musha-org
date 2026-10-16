@@ -4,6 +4,7 @@
  */
 
 import { Calendar, FileText, Compass, AlertTriangle } from 'lucide-react';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export default function TermsPage() {
   return (
@@ -97,7 +98,7 @@ export default function TermsPage() {
             6. Inquiries and Dispute Resolution
           </h2>
           <p>
-            Any disputes regarding salon attendance, styling issues, or reservation billing anomalies will be handled with highest empathy by our Operations Director. Please address formal complaints directly to: <a href="mailto:operations@mushaempire.com" className="text-brand-gold-dark hover:underline">operations@mushaempire.com</a>.
+            Any disputes regarding salon attendance, styling issues, or reservation billing anomalies will be handled with highest empathy by our Operations Director. Please address formal complaints directly to: <a href={SALON_CONTACT.emailMailto} className="text-brand-gold-dark hover:underline">{SALON_CONTACT.email}</a>.
           </p>
         </section>
 

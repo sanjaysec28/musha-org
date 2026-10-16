@@ -4,6 +4,7 @@
  */
 
 import { ShieldCheck, Calendar, Lock, EyeOff } from 'lucide-react';
+import { SALON_CONTACT } from '../../data/salonContact';
 
 export default function PrivacyPage() {
   return (
@@ -106,7 +107,7 @@ export default function PrivacyPage() {
             6. Contact Data Protection Officer
           </h2>
           <p>
-            For any queries regarding your data protection, secure encryptions, or data purge requests, please connect directly with our data privacy desk via email: <a href="mailto:privacy@mushaempire.com" className="text-brand-gold-dark hover:underline">privacy@mushaempire.com</a>.
+            For any queries regarding your data protection, secure encryptions, or data purge requests, please connect directly with our data privacy desk via email: <a href={SALON_CONTACT.emailMailto} className="text-brand-gold-dark hover:underline">{SALON_CONTACT.email}</a>.
           </p>
         </section>
 
