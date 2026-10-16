@@ -249,6 +249,67 @@ export default function MushaEmpireLogo({
     </svg>
   );
 
+  // Single source of truth official logo asset paths
+  const OFFICIAL_LOGO_SRC = '/images/musha_empire_official_logo.png';
+  const UPLOADED_UUID_SRC = '/images/f037879b-80bb-46d4-874a-a3e6c7c383a2.png';
+
+  const [imageFailed, setImageFailed] = React.useState(false);
+  const [activeSrc, setActiveSrc] = React.useState(OFFICIAL_LOGO_SRC);
+
+  const handleImageError = () => {
+    if (activeSrc === OFFICIAL_LOGO_SRC) {
+      // Try fallback to UUID path if official named path is not found
+      setActiveSrc(UPLOADED_UUID_SRC);
+    } else {
+      // Both image paths unavailable, fallback gracefully to luxury SVG vector
+      setImageFailed(true);
+    }
+  };
+
+  if (!imageFailed) {
+    if (variant === 'mark') {
+      return (
+        <div className={`inline-flex items-center justify-center transition-all duration-300 ease-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(197,168,128,0.45)] cursor-pointer ${className}`}>
+          <img
+            src={activeSrc}
+            alt="Musha Empire Unisex Saloon & Beauty Lounge"
+            onError={handleImageError}
+            className={`w-9 h-9 sm:w-11 sm:h-11 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] ${classNameLogo}`}
+            loading="eager"
+          />
+        </div>
+      );
+    }
+
+    if (variant === 'horizontal') {
+      return (
+        <div className={`flex items-center gap-2 sm:gap-3 select-none transition-all duration-300 ease-out hover:scale-[1.02] cursor-pointer shrink-0 ${className}`}>
+          <img
+            src={activeSrc}
+            alt="Musha Empire Unisex Saloon & Beauty Lounge — Style for Everyone"
+            onError={handleImageError}
+            className={`h-9 sm:h-11 md:h-12 w-auto max-w-[160px] sm:max-w-[200px] md:max-w-[230px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] ${classNameLogo}`}
+            loading="eager"
+          />
+        </div>
+      );
+    }
+
+    // Vertical layout - Ideal for Loading Screen, Footer, Login screen, portal landing blocks
+    return (
+      <div className={`flex flex-col items-center text-center select-none transition-all duration-300 ease-out hover:scale-[1.03] cursor-pointer ${className}`}>
+        <img
+          src={activeSrc}
+          alt="Musha Empire Unisex Saloon & Beauty Lounge — Style for Everyone"
+          onError={handleImageError}
+          className={`max-h-44 sm:max-h-52 md:max-h-60 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] ${classNameLogo}`}
+          loading="eager"
+        />
+      </div>
+    );
+  }
+
+  // Graceful fallback to authentic Vector rendering if image file is not yet placed on disk
   if (variant === 'mark') {
     return (
       <div className={`inline-flex items-center justify-center transition-all duration-300 ease-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(197,168,128,0.45)] cursor-pointer ${className}`}>
@@ -278,7 +339,7 @@ export default function MushaEmpireLogo({
     );
   }
 
-  // Vertical layout - Ideal for Footer, Login screen, portal landing blocks
+  // Vertical layout fallback
   return (
     <div className={`flex flex-col items-center text-center select-none transition-all duration-300 ease-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(197,168,128,0.45)] cursor-pointer ${className}`}>
       {/* Grand Emblem */}
