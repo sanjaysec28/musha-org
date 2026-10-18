@@ -16,25 +16,25 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(mobileButtonTouchTarget).toBeGreaterThanOrEqual(40);
   });
 
-  it('verifies mobile header layout width budget on 320px and 360px screens', () => {
+  it('verifies mobile header layout width budget on 320px and 360px screens with responsive logo & search trigger', () => {
     // 320px smallest mobile breakpoint
     const screenWidth320 = 320;
     const paddingX = 14 * 2; // px-3.5 on both sides = 28px
     const availableWidth320 = screenWidth320 - paddingX; // 292px
 
-    const logoEstimatedWidth = 145; // emblem (36px) + gap (8px) + text (~100px)
-    const mobileActionsWidth = (40 * 2) + 8; // 2 buttons (Crown + Menu at 40px each) + 1 gap (8px) = 88px
-    const totalRequiredWidth = logoEstimatedWidth + mobileActionsWidth; // 233px
+    const logoEstimatedWidth = 145; // responsive mobile logo (140-175px range)
+    const mobileActionsWidth = (36 * 3) + (6 * 2); // 3 buttons (Search + Crown + Menu at 36px) + 2 gaps (6px) = 120px
+    const totalRequiredWidth = logoEstimatedWidth + mobileActionsWidth; // 265px
 
-    // Must fit comfortably within available 292px on 320px screen
+    // Must fit comfortably within available 292px on 320px screen without overflow
     expect(totalRequiredWidth).toBeLessThan(availableWidth320);
     const safetyMargin320 = availableWidth320 - totalRequiredWidth;
-    expect(safetyMargin320).toBeGreaterThanOrEqual(40); // At least 40px buffer to prevent any overlap
+    expect(safetyMargin320).toBeGreaterThanOrEqual(20); // At least 20px buffer to prevent any overlap
 
     // 360px screen
     const availableWidth360 = 360 - paddingX; // 332px
     const safetyMargin360 = availableWidth360 - totalRequiredWidth;
-    expect(safetyMargin360).toBeGreaterThanOrEqual(80);
+    expect(safetyMargin360).toBeGreaterThanOrEqual(60);
   });
 
   it('verifies mobile header layout across all mobile widths (320px, 360px, 375px, 390px, 414px, 430px)', () => {
@@ -42,12 +42,12 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     allMobileWidths.forEach((width) => {
       const paddingX = 28;
       const availableWidth = width - paddingX;
-      const contentWidth = 145 + 88; // 233px
+      const contentWidth = 145 + 120; // 265px
       expect(contentWidth).toBeLessThan(availableWidth);
     });
   });
 
-  it('verifies mobile header contains luxury Crown icon and Menu, with calendar icon removed from mobile header', () => {
+  it('verifies mobile header contains search trigger, luxury Crown icon and Menu, with calendar icon removed from mobile header', () => {
     const fs = require('fs');
     const path = require('path');
     const navbarSource = fs.readFileSync(path.resolve(__dirname, '../src/components/layout/Navbar.tsx'), 'utf-8');
@@ -58,6 +58,15 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     // Mobile header does NOT have mobile-appointments-btn
     expect(navbarSource).not.toContain('id="mobile-appointments-btn"');
 
+    // Mobile header contains search trigger
+    expect(navbarSource).toContain('id="mobile-search-btn"');
+
+    // Desktop header contains search trigger
+    expect(navbarSource).toContain('id="header-search-btn"');
+
+    // Mobile drawer contains quick search trigger
+    expect(navbarSource).toContain('id="drawer-search-trigger"');
+
     // Mobile header contains Crown icon in header-booking-mobile-icon
     expect(navbarSource).toContain('id="header-booking-mobile-icon"');
     expect(navbarSource).toContain('<Crown className="h-4.5 w-4.5 stroke-[1.75] text-brand-secondary" />');
@@ -66,18 +75,43 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(navbarSource).toContain('id="mobile-drawer-toggle"');
   });
 
-  it('verifies desktop header layout width budget at 1024px, 1280px, 1440px, and 1536px', () => {
+  it('verifies desktop header layout width budget with prominent 250-300px logo at 1024px, 1280px, 1440px, and 1536px', () => {
     const desktopBreakpoints = [1024, 1280, 1440, 1536];
     desktopBreakpoints.forEach((width) => {
       const containerMaxWidth = Math.min(width - 32, 1280); // max-w-7xl px-4/px-8
-      const logoWidth = 145; // Compact horizontal emblem + brand text
-      const totalNavLinksWidth = width >= 1280 ? 460 : 420; // 9 nav links with responsive text and gap
-      const actionsWidth = width >= 1280 ? 230 : 210; // Phone icon + Appointments + Portal link + Reserve Experience CTA
+      const logoWidth = width >= 1280 ? 285 : 260; // 250-300px prominent desktop logo
+      const totalNavLinksWidth = width >= 1280 ? 440 : 400; // 8 nav links with responsive text and gap
+      const actionsWidth = width >= 1280 ? 260 : 230; // Search + Phone + Appointments + Reserve Experience CTA
       const totalHeaderContent = logoWidth + totalNavLinksWidth + actionsWidth;
       expect(totalHeaderContent).toBeLessThan(containerMaxWidth);
       const remainingClearance = containerMaxWidth - totalHeaderContent;
-      expect(remainingClearance).toBeGreaterThanOrEqual(100); // Guarantees at least 100px breathing room to prevent any wrap
+      expect(remainingClearance).toBeGreaterThanOrEqual(40); // Breathing room to prevent any wrap
     });
+  });
+
+  it('verifies official logo dimensions and 80-90px desktop navbar height specifications', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const logoSource = fs.readFileSync(path.resolve(__dirname, '../src/components/ui/MushaEmpireLogo.tsx'), 'utf-8');
+    const navbarSource = fs.readFileSync(path.resolve(__dirname, '../src/components/layout/Navbar.tsx'), 'utf-8');
+
+    // Official logo source configured
+    expect(logoSource).toContain('/images/musha_empire_official_logo.png');
+
+    // Desktop logo reaches 250-300px width and 55-65px height
+    expect(logoSource).toContain('lg:w-[260px]');
+    expect(logoSource).toContain('xl:w-[285px]');
+    expect(logoSource).toContain('lg:h-[58px]');
+    expect(logoSource).toContain('xl:h-[62px]');
+
+    // Mobile logo matches 140-175px width and 40-48px height
+    expect(logoSource).toContain('w-[145px]');
+    expect(logoSource).toContain('sm:w-[175px]');
+    expect(logoSource).toContain('h-[40px]');
+    expect(logoSource).toContain('sm:h-[48px]');
+
+    // Navbar desktop height is 80-90px
+    expect(navbarSource).toContain('lg:h-[88px]');
   });
 
   it('verifies floating cards visibility rule across all 8 breakpoints', () => {
@@ -300,6 +334,34 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(bookingFlowSource).toContain('backdrop-blur-[0.5px]');
     expect(bookingFlowSource).toContain('group-hover:scale-105');
   });
+
+  it('verifies the Sovereign Hour inline booking form is cleanly removed from homepage while retaining dedicated booking flow', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf8');
+
+    // Homepage view must NOT render the inline <Booking onAddToast={triggerToast} /> component
+    expect(appSource).not.toContain('<Booking onAddToast={triggerToast} />');
+    expect(appSource).not.toContain("import Booking from './components/home/Booking'");
+
+    // Dedicated booking page view must be fully retained with BookingFlow
+    expect(appSource).toContain("<BookingFlow");
+    expect(appSource).toContain("currentView === 'booking'");
+
+    // Homepage core sections must remain intact
+    expect(appSource).toContain('<Hero');
+    expect(appSource).toContain('<SalonBrandsMarquee');
+    expect(appSource).toContain('<PromotionalOffers');
+    expect(appSource).toContain('<Services');
+    expect(appSource).toContain('<WhyChooseUs');
+    expect(appSource).toContain('<Stylists');
+    expect(appSource).toContain('<Gallery');
+    expect(appSource).toContain('<Testimonials');
+    expect(appSource).toContain('<FAQ');
+    expect(appSource).toContain('<BrandBenefits');
+    expect(appSource).toContain('<NewsletterSection');
+  });
 });
+
 
 

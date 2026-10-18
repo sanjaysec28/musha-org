@@ -27,7 +27,6 @@ import Stylists from './components/home/Stylists';
 import Gallery from './components/home/Gallery';
 import Testimonials from './components/home/Testimonials';
 import FAQ from './components/home/FAQ';
-import Booking from './components/home/Booking';
 
 // New Sub-pages & Core Interactive Components
 import ServicesPage from './components/services/ServicesPage';
@@ -381,6 +380,7 @@ export default function App() {
       onNavigate={handleNavigate}
       onOpenAppointments={() => setIsAppointmentsDrawerOpen(true)}
       appointmentsCount={appointments.length}
+      onBookService={handleBookService}
     >
       {/* Toast Render Node for custom actions */}
       <Toast id="global-toast-container" messages={toasts} onRemove={removeToast} />
@@ -430,9 +430,6 @@ export default function App() {
 
           {/* Brand Benefits - Four Pillars (Certified Masters, Pure Botanicals, Private Suites, Bespoke Care) */}
           <BrandBenefits />
-
-          {/* Final CTA Banner & Appointment Form */}
-          <Booking onAddToast={triggerToast} />
         </div>
       )}
 

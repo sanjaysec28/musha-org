@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Menu, Crown, Phone, MapPin, Calendar, Clock, Mail, Instagram } from 'lucide-react';
+import { Menu, Crown, Phone, MapPin, Calendar, Clock, Mail, Instagram, Search } from 'lucide-react';
 import { settingsRepository } from '../../lib/firestoreService';
 import { FirestoreSalonSettings } from '../../types/firestore';
 import { Drawer } from '../ui/Overlay';
 import MushaEmpireLogo from '../ui/MushaEmpireLogo';
+import GlobalSearchModal from '../ui/GlobalSearchModal';
 import { SALON_CONTACT } from '../../data/salonContact';
 
 export interface NavbarProps {
@@ -16,16 +17,19 @@ export interface NavbarProps {
   onNavigate?: (view: 'home' | 'services' | 'service-detail' | 'booking' | 'portal' | 'about' | 'gallery' | 'offers' | 'membership' | 'contact' | 'faq' | 'privacy' | 'terms' | 'refund' | '404') => void;
   onOpenAppointments?: () => void;
   appointmentsCount?: number;
+  onBookService?: (serviceId: string) => void;
 }
 
 export default function Navbar({
   currentView = 'home',
   onNavigate,
   onOpenAppointments,
-  appointmentsCount = 0
+  appointmentsCount = 0,
+  onBookService
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [salonSettings, setSalonSettings] = useState<FirestoreSalonSettings | null>(null);
 
   useEffect(() => {
@@ -58,6 +62,18 @@ export default function Navbar({
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Global search keyboard shortcut (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const navLinks = [
@@ -108,11 +124,6 @@ export default function Navbar({
     setIsMobileMenuOpen(false);
     if (onNavigate) {
       onNavigate('booking');
-    } else {
-      const el = document.getElementById('booking');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
     }
   };
 
@@ -120,133 +131,174 @@ export default function Navbar({
     <>
       <header
         id="main-header"
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-[#0B0B0B]/95 backdrop-blur-md border-b border-brand-secondary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)] py-2.5 sm:py-3'
-          : 'bg-[#0B0B0B]/85 backdrop-blur-md border-b border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.4)] py-3 sm:py-3.5'
-      }`}
-    >
-      <div id="nav-container" className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
-        <div id="nav-flex" className="flex items-center justify-between gap-3 xl:gap-4">
-          
-          {/* Logo / Brand - Guaranteed No Distortion or Squeeze */}
-          <a
-            id="brand-logo"
-            href="/"
-            onClick={(e) => {
-              if (onNavigate) {
-                e.preventDefault();
-                onNavigate('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            className="flex items-center select-none group shrink-0 min-w-0"
-          >
-            <MushaEmpireLogo variant="horizontal" />
-          </a>
-
-          {/* Desktop Navigation Links - Soft-Rounded Individual Boxes */}
-          <nav id="desktop-nav" className="hidden lg:flex items-center gap-1 xl:gap-1.5 2xl:gap-2">
-            {navLinks.map((link) => {
-              const isLinkActive = currentView === link.view;
-              return (
-                <a
-                  key={link.label}
-                  id={`nav-link-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
-                  href={link.href}
-                  onClick={(e) => handleLinkClick(e, link)}
-                  className={`font-heading text-[11px] xl:text-[11.5px] 2xl:text-xs uppercase tracking-wider px-2.5 xl:px-3 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap relative select-none ${
-                    isLinkActive
-                      ? 'bg-[#1C1C1C] border border-brand-secondary/40 text-white font-bold shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
-                      : 'text-neutral-300 hover:text-brand-secondary hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 font-semibold'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {isLinkActive && (
-                    <span className="absolute bottom-1 left-2.5 right-2.5 h-[1.5px] bg-brand-secondary rounded-full shadow-[0_0_6px_rgba(197,168,128,0.6)]" />
-                  )}
-                </a>
-              );
-            })}
-          </nav>
-
-          {/* CTA & Actions (Desktop & Tablet) */}
-          <div id="nav-actions" className="hidden sm:flex items-center space-x-1.5 xl:space-x-2 shrink-0">
-            <a
-              id="phone-link"
-              href={SALON_CONTACT.phoneTel}
-              className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
-              title={`Call Empire Desk: ${SALON_CONTACT.phoneDisplay}`}
-            >
-              <Phone className="h-4 w-4 stroke-1.5" />
-            </a>
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 flex items-center ${
+          isScrolled
+            ? 'bg-[#0B0B0B]/95 backdrop-blur-md border-b border-brand-secondary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)] h-[72px] sm:h-[80px] lg:h-[84px]'
+            : 'bg-[#0B0B0B]/85 backdrop-blur-md border-b border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.4)] h-[76px] sm:h-[84px] lg:h-[88px]'
+        }`}
+      >
+        <div id="nav-container" className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+          <div id="nav-flex" className="flex items-center justify-between gap-3 xl:gap-5">
             
-            {onOpenAppointments && (
+            {/* Logo / Brand - Dedicated Horizontal Space, Crisp & Unconstrained */}
+            <a
+              id="brand-logo"
+              href="/"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault();
+                  onNavigate('home');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="flex items-center select-none group shrink-0 min-w-0 pr-1 sm:pr-2 lg:pr-4"
+            >
+              <MushaEmpireLogo variant="horizontal" />
+            </a>
+
+            {/* Desktop Navigation Links - Soft-Rounded Individual Boxes */}
+            <nav id="desktop-nav" className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 2xl:gap-2">
+              {navLinks.map((link) => {
+                const isLinkActive = currentView === link.view;
+                return (
+                  <a
+                    key={link.label}
+                    id={`nav-link-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={link.href}
+                    onClick={(e) => handleLinkClick(e, link)}
+                    className={`font-heading text-[10.5px] xl:text-[11px] 2xl:text-xs uppercase tracking-wider px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap relative select-none ${
+                      isLinkActive
+                        ? 'bg-[#1C1C1C] border border-brand-secondary/40 text-white font-bold shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
+                        : 'text-neutral-300 hover:text-brand-secondary hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 font-semibold'
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    {isLinkActive && (
+                      <span className="absolute bottom-1 left-2 right-2 h-[1.5px] bg-brand-secondary rounded-full shadow-[0_0_6px_rgba(197,168,128,0.6)]" />
+                    )}
+                  </a>
+                );
+              })}
+            </nav>
+
+            {/* CTA & Actions (Desktop & Tablet) */}
+            <div id="nav-actions" className="hidden sm:flex items-center space-x-1.5 xl:space-x-2 shrink-0">
+              {/* Global Search Button */}
               <button
-                id="header-appointments-btn"
-                onClick={onOpenAppointments}
-                className="relative text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
-                title="View Scheduled Treatments"
+                id="header-search-btn"
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer flex items-center gap-1.5"
+                title="Search Services & Stylists (Cmd+K)"
+                aria-label="Search Salon Catalog"
               >
-                <Calendar className="h-4 w-4 stroke-1.5" />
-                {appointmentsCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 bg-brand-secondary text-[#0A0A0A] text-[8px] font-bold rounded-full flex items-center justify-center border border-[#0A0A0A]">
-                    {appointmentsCount}
-                  </span>
-                )}
+                <Search className="h-4 w-4 stroke-1.5" />
+                <span className="hidden xl:inline text-[9.5px] font-mono text-neutral-400 bg-neutral-900/80 px-1.5 py-0.5 rounded border border-neutral-700/60">
+                  ⌘K
+                </span>
               </button>
-            )}
 
-            {/* Primary Reservation CTA - Rounded Champagne-Gold Button with Dark Text */}
-            <button
-              id="header-booking-btn"
-              onClick={triggerBookingAction}
-              className="font-heading font-bold text-[11px] xl:text-xs uppercase tracking-wider text-[#0A0A0A] bg-brand-secondary hover:bg-[#D4BE9B] px-3.5 xl:px-5 py-2 xl:py-2.5 rounded-full transition-all duration-300 shadow-[0_2px_14px_rgba(197,168,128,0.25)] hover:shadow-[0_4px_20px_rgba(197,168,128,0.4)] hover:-translate-y-0.5 active:scale-95 inline-flex items-center gap-1.5 xl:gap-2 shrink-0 cursor-pointer"
-            >
-              <Calendar className="h-3.5 w-3.5 text-[#0A0A0A] stroke-[2.2]" />
-              <span>Reserve Experience</span>
-            </button>
+              <a
+                id="phone-link"
+                href={SALON_CONTACT.phoneTel}
+                className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
+                title={`Call Empire Desk: ${SALON_CONTACT.phoneDisplay}`}
+              >
+                <Phone className="h-4 w-4 stroke-1.5" />
+              </a>
+              
+              {onOpenAppointments && (
+                <button
+                  id="header-appointments-btn"
+                  onClick={onOpenAppointments}
+                  className="relative text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
+                  title="View Scheduled Treatments"
+                >
+                  <Calendar className="h-4 w-4 stroke-1.5" />
+                  {appointmentsCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 bg-brand-secondary text-[#0A0A0A] text-[8px] font-bold rounded-full flex items-center justify-center border border-[#0A0A0A]">
+                      {appointmentsCount}
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {/* Primary Reservation CTA - Rounded Champagne-Gold Button with Dark Text */}
+              <button
+                id="header-booking-btn"
+                onClick={triggerBookingAction}
+                className="font-heading font-bold text-[11px] xl:text-xs uppercase tracking-wider text-[#0A0A0A] bg-brand-secondary hover:bg-[#D4BE9B] px-3.5 xl:px-4 py-2 xl:py-2.5 rounded-full transition-all duration-300 shadow-[0_2px_14px_rgba(197,168,128,0.25)] hover:shadow-[0_4px_20px_rgba(197,168,128,0.4)] hover:-translate-y-0.5 active:scale-95 inline-flex items-center gap-1.5 xl:gap-2 shrink-0 cursor-pointer"
+              >
+                <Calendar className="h-3.5 w-3.5 text-[#0A0A0A] stroke-[2.2]" />
+                <span>Reserve Experience</span>
+              </button>
+            </div>
+
+            {/* Mobile Navigation Controls (Compact, Perfectly Sized, Zero Overlap) */}
+            <div id="mobile-menu-trigger" className="flex items-center gap-1.5 xs:gap-2 lg:hidden shrink-0">
+              {/* Mobile Search Button */}
+              <button
+                id="mobile-search-btn"
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-neutral-300 hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                aria-label="Search Services & Stylists"
+                title="Search Services & Stylists"
+              >
+                <Search className="h-4 w-4 stroke-[1.75]" />
+              </button>
+
+              <button
+                id="header-booking-mobile-icon"
+                onClick={triggerBookingAction}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-secondary hover:text-white active:scale-95 border border-brand-secondary/30 hover:border-brand-secondary/60 bg-[#141414] hover:bg-brand-secondary/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                aria-label="Reserve Royal Experience"
+                title="Reserve Royal Experience"
+              >
+                <Crown className="h-4.5 w-4.5 stroke-[1.75] text-brand-secondary" />
+              </button>
+
+              <button
+                id="mobile-drawer-toggle"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                aria-label="Toggle Navigation Menu"
+                title="Open Navigation Menu"
+              >
+                <Menu className="h-5 w-5 stroke-[1.75]" />
+              </button>
+            </div>
+
           </div>
-
-          {/* Mobile Navigation Controls (Compact, Perfectly Sized, Zero Overlap) */}
-          <div id="mobile-menu-trigger" className="flex items-center gap-2 sm:gap-2.5 lg:hidden shrink-0">
-            <button
-              id="header-booking-mobile-icon"
-              onClick={triggerBookingAction}
-              className="w-10 h-10 rounded-lg text-brand-secondary hover:text-white active:scale-95 border border-brand-secondary/30 hover:border-brand-secondary/60 bg-[#141414] hover:bg-brand-secondary/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
-              aria-label="Reserve Royal Experience"
-              title="Reserve Royal Experience"
-            >
-              <Crown className="h-4.5 w-4.5 stroke-[1.75] text-brand-secondary" />
-            </button>
-
-            <button
-              id="mobile-drawer-toggle"
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="w-10 h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
-              aria-label="Toggle Navigation Menu"
-              title="Open Navigation Menu"
-            >
-              <Menu className="h-5 w-5 stroke-[1.75]" />
-            </button>
-          </div>
-
         </div>
-      </div>
-    </header>
+      </header>
 
-    {/* Mobile Drawer Navigation Menu */}
-    <Drawer
-      id="mobile-nav-drawer"
-      isOpen={isMobileMenuOpen}
-      onClose={() => setIsMobileMenuOpen(false)}
-      title="MENU"
-      position="right"
-    >
-      <div id="drawer-menu-container" className="flex flex-col min-h-full justify-between gap-6 pb-8">
-        <div className="flex flex-col space-y-4">
-          {/* Menu Links Arranged Vertically with Consistent Spacing Directly Below Header */}
-          <nav id="drawer-links-nav" className="flex flex-col space-y-2">
+      {/* Mobile Drawer Navigation Menu */}
+      <Drawer
+        id="mobile-nav-drawer"
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        title="MENU"
+        position="right"
+      >
+        <div id="drawer-menu-container" className="flex flex-col min-h-full justify-between gap-6 pb-8">
+          <div className="flex flex-col space-y-4">
+            {/* Quick Search in Drawer */}
+            <button
+              id="drawer-search-trigger"
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsSearchOpen(true);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#141414] border border-white/[0.08] hover:border-brand-secondary/40 text-neutral-400 hover:text-white transition-all text-xs font-sans text-left cursor-pointer"
+            >
+              <Search className="h-4 w-4 text-brand-secondary shrink-0" />
+              <span className="truncate">Search hair treatments, facials, stylists...</span>
+            </button>
+
+            {/* Menu Links Arranged Vertically with Consistent Spacing Directly Below Header */}
+            <nav id="drawer-links-nav" className="flex flex-col space-y-2">
             {navLinks.map((link) => {
               const isLinkActive = currentView === link.view;
               return (
@@ -331,6 +383,26 @@ export default function Navbar({
         </div>
       </div>
     </Drawer>
-  </>
-);
+
+      {/* Global Search Modal */}
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectService={(serviceId) => {
+          setIsSearchOpen(false);
+          if (onBookService) {
+            onBookService(serviceId);
+          } else if (onNavigate) {
+            onNavigate('booking');
+          }
+        }}
+        onSelectStylist={(_stylistId) => {
+          setIsSearchOpen(false);
+          if (onNavigate) {
+            onNavigate('booking');
+          }
+        }}
+      />
+    </>
+  );
 }

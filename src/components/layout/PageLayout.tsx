@@ -15,6 +15,7 @@ interface PageLayoutProps {
   onNavigate?: (view: 'home' | 'services' | 'service-detail' | 'booking' | 'portal' | 'about' | 'gallery' | 'offers' | 'membership' | 'contact' | 'faq' | 'privacy' | 'terms' | 'refund' | '404') => void;
   onOpenAppointments?: () => void;
   appointmentsCount?: number;
+  onBookService?: (serviceId: string) => void;
 }
 
 export default function PageLayout({
@@ -23,7 +24,8 @@ export default function PageLayout({
   currentView,
   onNavigate,
   onOpenAppointments,
-  appointmentsCount
+  appointmentsCount,
+  onBookService
 }: PageLayoutProps) {
   const isPortal = currentView === 'portal';
 
@@ -39,6 +41,7 @@ export default function PageLayout({
           onNavigate={onNavigate}
           onOpenAppointments={onOpenAppointments}
           appointmentsCount={appointmentsCount}
+          onBookService={onBookService}
         />
       )}
 

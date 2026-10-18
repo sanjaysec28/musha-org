@@ -283,12 +283,12 @@ export default function MushaEmpireLogo({
 
     if (variant === 'horizontal') {
       return (
-        <div className={`flex items-center gap-2 sm:gap-3 select-none transition-all duration-300 ease-out hover:scale-[1.02] cursor-pointer shrink-0 ${className}`}>
+        <div className={`flex items-center select-none transition-all duration-300 ease-out hover:scale-[1.01] cursor-pointer shrink-0 ${className}`}>
           <img
             src={activeSrc}
             alt="Musha Empire Unisex Saloon & Beauty Lounge — Style for Everyone"
             onError={handleImageError}
-            className={`h-9 sm:h-11 md:h-12 w-auto max-w-[160px] sm:max-w-[200px] md:max-w-[230px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] ${classNameLogo}`}
+            className={`w-[145px] xs:w-[160px] sm:w-[175px] md:w-[210px] lg:w-[260px] xl:w-[285px] 2xl:w-[300px] h-[40px] xs:h-[44px] sm:h-[48px] md:h-[52px] lg:h-[58px] xl:h-[62px] 2xl:h-[65px] object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] ${classNameLogo}`}
             loading="eager"
           />
         </div>
