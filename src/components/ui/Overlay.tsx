@@ -64,7 +64,7 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
+            className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-md cursor-pointer"
           />
 
           {/* Modal Container */}
@@ -74,10 +74,10 @@ export function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.1 } as any}
-            className={`relative w-full ${sizes[size]} bg-[#0A0A0A] rounded-none border border-brand-secondary/15 shadow-2xl z-10 overflow-hidden flex flex-col`}
+            className={`relative w-full ${sizes[size]} bg-brand-surface rounded-2xl border border-brand-accent shadow-2xl z-10 overflow-hidden flex flex-col`}
           >
             {/* Header */}
-            <div id={`${id}-header`} className="px-6 py-5 border-b border-brand-secondary/15 flex items-start justify-between">
+            <div id={`${id}-header`} className="px-6 py-5 border-b border-brand-accent bg-brand-surface flex items-start justify-between">
               <div>
                 <h3 id={`${id}-title`} className="text-xl md:text-2xl font-serif text-brand-primary">
                   {title}
@@ -178,24 +178,24 @@ export function Drawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/90 backdrop-blur-md cursor-pointer select-none"
+            className="fixed inset-0 bg-black/60 dark:bg-black/90 backdrop-blur-md cursor-pointer select-none"
           />
 
-          {/* Drawer Container - Solid 100% Opaque Luxury Matte Black */}
+          {/* Drawer Container - Solid Luxury Panel */}
           <motion.div
             id={id}
             {...motionProps}
-            className={`fixed inset-y-0 ${isRight ? 'right-0' : 'left-0'} w-full sm:max-w-md bg-[#0A0A0A] border-l border-brand-secondary/20 shadow-[-8px_0_40px_rgba(0,0,0,0.9)] z-10 flex flex-col h-full max-h-[100dvh] overflow-hidden`}
+            className={`fixed inset-y-0 ${isRight ? 'right-0' : 'left-0'} w-full sm:max-w-md bg-[#FAF7F0] border-l border-[#E6DCCB] shadow-[-8px_0_40px_rgba(33,29,24,0.12)] z-10 flex flex-col h-full max-h-[100dvh] overflow-hidden`}
           >
             {/* Header */}
-            <div id={`${id}-header`} className="shrink-0 sticky top-0 z-20 px-6 py-4 sm:py-5 border-b border-brand-secondary/20 bg-[#0A0A0A] flex items-center justify-between">
-              <h3 id={`${id}-title`} className="text-lg sm:text-xl font-serif text-brand-primary uppercase tracking-wider font-bold">
+            <div id={`${id}-header`} className="shrink-0 sticky top-0 z-20 px-6 py-4 sm:py-5 border-b border-[#E6DCCB] bg-[#FAF7F0] flex items-center justify-between">
+              <h3 id={`${id}-title`} className="text-lg sm:text-xl font-serif text-[#211D18] uppercase tracking-wider font-bold">
                 {title}
               </h3>
               <button
                 id={`${id}-close`}
                 onClick={onClose}
-                className="text-neutral-400 hover:text-brand-secondary transition-colors p-2 -mr-2 rounded-lg hover:bg-white/[0.08] active:scale-95 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                className="text-[#211D18] hover:text-brand-secondary transition-colors p-2 -mr-2 rounded-lg hover:bg-black/5 active:scale-95 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                 aria-label="Close menu"
               >
                 <svg className="h-5 w-5 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
@@ -206,7 +206,7 @@ export function Drawer({
             </div>
 
             {/* Scrollable Content */}
-            <div id={`${id}-content`} className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5 sm:py-6 text-brand-text font-sans text-sm leading-relaxed touch-pan-y">
+            <div id={`${id}-content`} className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5 sm:py-6 text-brand-text font-sans text-sm leading-relaxed touch-pan-y bg-[#FAF7F0]">
               {children}
             </div>
 

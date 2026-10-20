@@ -133,8 +133,8 @@ export default function Navbar({
         id="main-header"
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 flex items-center ${
           isScrolled
-            ? 'bg-[#0B0B0B]/95 backdrop-blur-md border-b border-brand-secondary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)] h-[72px] sm:h-[80px] lg:h-[84px]'
-            : 'bg-[#0B0B0B]/85 backdrop-blur-md border-b border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.4)] h-[76px] sm:h-[84px] lg:h-[88px]'
+            ? 'bg-brand-bg/95 backdrop-blur-md border-b border-brand-accent shadow-[0_4px_24px_rgba(33,29,24,0.08)] h-[72px] sm:h-[80px] lg:h-[84px]'
+            : 'bg-brand-bg/85 backdrop-blur-md border-b border-brand-accent/60 shadow-[0_2px_16px_rgba(33,29,24,0.04)] h-[76px] sm:h-[84px] lg:h-[88px]'
         }`}
       >
         <div id="nav-container" className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
@@ -168,13 +168,13 @@ export default function Navbar({
                     onClick={(e) => handleLinkClick(e, link)}
                     className={`font-heading text-[10.5px] xl:text-[11px] 2xl:text-xs uppercase tracking-wider px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap relative select-none ${
                       isLinkActive
-                        ? 'bg-[#1C1C1C] border border-brand-secondary/40 text-white font-bold shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
-                        : 'text-neutral-300 hover:text-brand-secondary hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 font-semibold'
+                        ? 'bg-brand-surface border border-brand-secondary/40 text-brand-primary font-bold shadow-sm'
+                        : 'text-brand-text-muted hover:text-brand-secondary hover:bg-brand-surface/60 border border-transparent hover:border-brand-secondary/20 font-semibold'
                     }`}
                   >
                     <span>{link.label}</span>
                     {isLinkActive && (
-                      <span className="absolute bottom-1 left-2 right-2 h-[1.5px] bg-brand-secondary rounded-full shadow-[0_0_6px_rgba(197,168,128,0.6)]" />
+                      <span className="absolute bottom-1 left-2 right-2 h-[1.5px] bg-brand-secondary rounded-full shadow-[0_0_6px_rgba(184,138,69,0.6)]" />
                     )}
                   </a>
                 );
@@ -188,12 +188,12 @@ export default function Navbar({
                 id="header-search-btn"
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer flex items-center gap-1.5"
+                className="text-brand-primary hover:text-brand-secondary p-2 rounded-lg hover:bg-brand-surface/70 border border-brand-accent/60 hover:border-brand-secondary/30 transition-all cursor-pointer flex items-center gap-1.5"
                 title="Search Services & Stylists (Cmd+K)"
                 aria-label="Search Salon Catalog"
               >
                 <Search className="h-4 w-4 stroke-1.5" />
-                <span className="hidden xl:inline text-[9.5px] font-mono text-neutral-400 bg-neutral-900/80 px-1.5 py-0.5 rounded border border-neutral-700/60">
+                <span className="hidden xl:inline text-[9.5px] font-mono text-brand-text-muted bg-brand-surface-muted px-1.5 py-0.5 rounded border border-brand-accent">
                   ⌘K
                 </span>
               </button>
@@ -201,7 +201,7 @@ export default function Navbar({
               <a
                 id="phone-link"
                 href={SALON_CONTACT.phoneTel}
-                className="text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
+                className="text-brand-primary hover:text-brand-secondary p-2 rounded-lg hover:bg-brand-surface/70 border border-brand-accent/60 hover:border-brand-secondary/30 transition-all cursor-pointer"
                 title={`Call Empire Desk: ${SALON_CONTACT.phoneDisplay}`}
               >
                 <Phone className="h-4 w-4 stroke-1.5" />
@@ -211,12 +211,12 @@ export default function Navbar({
                 <button
                   id="header-appointments-btn"
                   onClick={onOpenAppointments}
-                  className="relative text-neutral-300 hover:text-brand-secondary p-2 rounded-lg hover:bg-white/[0.06] border border-transparent hover:border-brand-secondary/20 transition-all cursor-pointer"
+                  className="relative text-brand-primary hover:text-brand-secondary p-2 rounded-lg hover:bg-brand-surface/70 border border-brand-accent/60 hover:border-brand-secondary/30 transition-all cursor-pointer"
                   title="View Scheduled Treatments"
                 >
                   <Calendar className="h-4 w-4 stroke-1.5" />
                   {appointmentsCount > 0 && (
-                    <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 bg-brand-secondary text-[#0A0A0A] text-[8px] font-bold rounded-full flex items-center justify-center border border-[#0A0A0A]">
+                    <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 bg-brand-secondary text-brand-bg text-[8px] font-bold rounded-full flex items-center justify-center border border-brand-bg">
                       {appointmentsCount}
                     </span>
                   )}
@@ -241,7 +241,7 @@ export default function Navbar({
                 id="mobile-search-btn"
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-neutral-300 hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-brand-accent hover:border-brand-secondary/35 bg-brand-surface hover:bg-brand-surface/80 flex items-center justify-center cursor-pointer transition-all shadow-sm"
                 aria-label="Search Services & Stylists"
                 title="Search Services & Stylists"
               >
@@ -251,7 +251,7 @@ export default function Navbar({
               <button
                 id="header-booking-mobile-icon"
                 onClick={triggerBookingAction}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-secondary hover:text-white active:scale-95 border border-brand-secondary/30 hover:border-brand-secondary/60 bg-[#141414] hover:bg-brand-secondary/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-secondary hover:text-brand-primary active:scale-95 border border-brand-secondary/30 hover:border-brand-secondary/60 bg-brand-surface hover:bg-brand-secondary/10 flex items-center justify-center transition-all cursor-pointer shadow-sm"
                 aria-label="Reserve Royal Experience"
                 title="Reserve Royal Experience"
               >
@@ -261,7 +261,7 @@ export default function Navbar({
               <button
                 id="mobile-drawer-toggle"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-white/[0.1] hover:border-brand-secondary/35 bg-[#141414] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-brand-primary hover:text-brand-secondary active:scale-95 border border-brand-accent hover:border-brand-secondary/35 bg-brand-surface hover:bg-brand-surface/80 flex items-center justify-center cursor-pointer transition-all shadow-sm"
                 aria-label="Toggle Navigation Menu"
                 title="Open Navigation Menu"
               >
@@ -291,7 +291,7 @@ export default function Navbar({
                 setIsMobileMenuOpen(false);
                 setIsSearchOpen(true);
               }}
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#141414] border border-white/[0.08] hover:border-brand-secondary/40 text-neutral-400 hover:text-white transition-all text-xs font-sans text-left cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-[#E6DCCB] hover:border-brand-secondary/50 text-[#746B60] hover:text-[#211D18] transition-all text-xs font-sans text-left cursor-pointer shadow-[0_2px_10px_rgba(33,29,24,0.04)]"
             >
               <Search className="h-4 w-4 text-brand-secondary shrink-0" />
               <span className="truncate">Search hair treatments, facials, stylists...</span>
@@ -309,15 +309,15 @@ export default function Navbar({
                   onClick={(e) => handleLinkClick(e, link)}
                   className={`w-full px-4 py-3 rounded-xl font-heading text-xs sm:text-sm uppercase tracking-wider flex items-center justify-between transition-all duration-200 select-none ${
                     isLinkActive
-                      ? 'bg-[#1C1C1C] border border-brand-secondary/50 text-brand-secondary font-bold shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
-                      : 'bg-[#141414] border border-white/[0.08] hover:border-brand-secondary/30 hover:bg-[#1A1A1A] text-brand-primary hover:text-brand-secondary font-semibold'
+                      ? 'bg-[#F1E9DC] border border-brand-secondary/70 text-brand-secondary font-bold shadow-sm'
+                      : 'bg-white border border-[#E6DCCB] hover:border-brand-secondary/50 hover:bg-[#F1E9DC] text-[#211D18] hover:text-brand-secondary font-semibold shadow-[0_2px_8px_rgba(33,29,24,0.04)]'
                   }`}
                 >
                   <span>{link.label}</span>
                   {isLinkActive ? (
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-secondary shadow-[0_0_6px_rgba(197,168,128,0.8)]" />
+                    <span className="w-2 h-2 rounded-full bg-brand-secondary shadow-[0_0_8px_rgba(184,138,69,0.7)]" />
                   ) : (
-                    <span className="text-neutral-500 text-xs">&rarr;</span>
+                    <span className="text-[#746B60] text-xs font-sans">&rarr;</span>
                   )}
                 </a>
               );
@@ -328,21 +328,21 @@ export default function Navbar({
           <button
             id="drawer-book-btn"
             onClick={triggerBookingAction}
-            className="w-full font-heading font-bold text-xs uppercase tracking-wider text-[#0A0A0A] bg-brand-secondary hover:bg-[#D4BE9B] py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_2px_14px_rgba(197,168,128,0.25)] hover:shadow-[0_4px_20px_rgba(197,168,128,0.4)] flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
+            className="w-full font-heading font-bold text-xs uppercase tracking-wider text-[#211D18] bg-brand-secondary hover:bg-[#D8B77A] py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_4px_16px_rgba(184,138,69,0.25)] hover:shadow-[0_6px_22px_rgba(184,138,69,0.35)] flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
           >
-            <Calendar className="h-4 w-4 stroke-[2.2]" />
+            <Calendar className="h-4 w-4 stroke-[2.2] text-[#211D18]" />
             <span>Reserve Experience</span>
           </button>
         </div>
 
         {/* Salon Address & Opening Hours at the bottom */}
-        <div id="drawer-contact-details" className="pt-4 border-t border-brand-secondary/20 text-center font-sans text-xs text-brand-text-muted space-y-2.5 mt-auto shrink-0">
+        <div id="drawer-contact-details" className="pt-4 border-t border-[#E6DCCB] text-center font-sans text-xs text-[#746B60] space-y-2.5 mt-auto shrink-0">
           <a
             id="drawer-maps-link"
             href={SALON_CONTACT.googleMaps}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start justify-center gap-1.5 font-medium text-brand-primary text-center hover:text-brand-secondary transition-colors"
+            className="flex items-start justify-center gap-1.5 font-medium text-[#211D18] text-center hover:text-brand-secondary transition-colors"
           >
             <MapPin className="h-3.5 w-3.5 text-brand-secondary shrink-0 mt-0.5" />
             <span>{SALON_CONTACT.businessName} (Google Maps)</span>
@@ -351,33 +351,33 @@ export default function Navbar({
             <a
               id="drawer-phone-link"
               href={SALON_CONTACT.phoneTel}
-              className="flex items-center gap-1.5 text-neutral-300 hover:text-brand-secondary transition-colors"
+              className="flex items-center gap-1.5 text-[#211D18] hover:text-brand-secondary transition-colors font-medium"
             >
-              <Phone className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+              <Phone className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
               <span>{SALON_CONTACT.phoneDisplay}</span>
             </a>
-            <span className="text-neutral-600">•</span>
+            <span className="text-[#746B60]/60">•</span>
             <a
               id="drawer-instagram-link"
               href={SALON_CONTACT.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-neutral-300 hover:text-brand-secondary transition-colors"
+              className="flex items-center gap-1.5 text-[#211D18] hover:text-brand-secondary transition-colors font-medium"
             >
-              <Instagram className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+              <Instagram className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
               <span>Instagram</span>
             </a>
           </div>
           <a
             id="drawer-email-link"
             href={SALON_CONTACT.emailMailto}
-            className="flex items-center justify-center gap-1.5 text-neutral-400 hover:text-brand-secondary transition-colors text-[11px]"
+            className="flex items-center justify-center gap-1.5 text-[#746B60] hover:text-brand-secondary transition-colors text-[11px]"
           >
-            <Mail className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+            <Mail className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
             <span>{SALON_CONTACT.email}</span>
           </a>
-          <p className="flex items-center justify-center gap-1.5 text-neutral-400 text-[11px]">
-            <Clock className="h-3.5 w-3.5 text-brand-secondary/80 shrink-0" />
+          <p className="flex items-center justify-center gap-1.5 text-[#746B60] text-[11px]">
+            <Clock className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
             <span>{hoursDisplay}</span>
           </p>
         </div>

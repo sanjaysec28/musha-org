@@ -1,17 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500;1,9..40,600&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* 
+ * ============================================================================
+ * MUSHA EMPIRE — PERMANENT BRIGHT CREAMY LUXURY THEME TOKENS
+ * ============================================================================
+ */
+
+:root,
+html,
+html[data-theme="light"],
+.light {
+  /* Approved Permanent Bright Creamy Luxury Design Tokens */
+  --brand-bg: #FAF7F0;             /* Main background: Warm Ivory */
+  --brand-surface: #FFFFFF;        /* Cards and elevated surfaces: Pure White */
+  --brand-surface-muted: #F1E9DC;  /* Secondary section background: Soft Cream */
+  --brand-surface-alt: #F6F0E6;    /* Muted surfaces */
+  --brand-primary: #211D18;        /* Primary text / Headings: Deep Charcoal */
+  --brand-text: #211D18;           /* Primary text: Deep Charcoal */
+  --brand-text-muted: #746B60;     /* Secondary text: Warm Taupe */
+  --brand-secondary: #B88A45;      /* Primary accent: Champagne Gold */
+  --brand-secondary-hover: #A07435;
+  --brand-gold-soft: #D8B77A;      /* Secondary accent: Soft Gold */
+  --brand-gold-dark: #B88A45;
+  --brand-gold-light: #F6F0E6;
+  --brand-accent: #E6DCCB;         /* Borders and dividers: Warm Beige */
+  --brand-border: #E6DCCB;
+  --brand-divider: rgba(184, 138, 69, 0.35);
+  --brand-nav-bg: rgba(250, 247, 240, 0.96);
+  --brand-nav-border: #E6DCCB;
+  --brand-card-bg: #FFFFFF;
+  --brand-card-border: #E6DCCB;
+  --brand-glass-bg: rgba(255, 255, 255, 0.95);
+  --brand-shadow: 0 4px 20px rgba(33, 29, 24, 0.06);
+  --brand-shadow-lg: 0 10px 30px rgba(33, 29, 24, 0.1);
+  color-scheme: light;
+}
+
 @theme {
-  --color-brand-primary: #FFFFFF; /* Editorial heading white */
-  --color-brand-secondary: #C5A880; /* Premium Champagne Gold */
-  --color-brand-accent: rgba(197, 168, 128, 0.18); /* Thin gold transparent border */
-  --color-brand-bg: #0A0A0A; /* Matte Black background */
-  --color-brand-surface: #121212; /* Charcoal Black surface */
-  --color-brand-surface-muted: #1E1E1E; /* Dark Graphite surface */
-  --color-brand-text: #F8F8F8; /* Crisp pure white body text for dark contrast */
-  --color-brand-text-muted: #A3A3A3; /* Elevated high-contrast soft gray */
-  --color-brand-gold-dark: #C5A880; /* Gold for highlight states */
-  --color-brand-gold-light: #1A1612; /* Dark luxury gold-charcoal */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-muted: var(--brand-surface-muted);
+  --color-brand-surface-alt: var(--brand-surface-alt);
+  --color-brand-text: var(--brand-text);
+  --color-brand-text-muted: var(--brand-text-muted);
+  --color-brand-gold-dark: var(--brand-gold-dark);
+  --color-brand-gold-light: var(--brand-gold-light);
+  --color-brand-border: var(--brand-border);
+  --color-brand-card: var(--brand-card-bg);
   
   --font-serif: "Manrope", system-ui, -apple-system, sans-serif;
   --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
@@ -30,20 +69,22 @@
 /* Custom Base Layer Overrides */
 @layer base {
   body {
-    background-color: var(--color-brand-bg);
-    color: var(--color-brand-text);
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
     font-family: var(--font-sans);
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     scroll-behavior: smooth;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
     letter-spacing: -0.02em;
+    color: var(--brand-primary);
   }
 
   p {
@@ -64,7 +105,7 @@
 }
 
 .text-gold-gradient {
-  background: linear-gradient(135deg, #C5A880 0%, #A4845B 100%);
+  background: linear-gradient(135deg, var(--brand-secondary) 0%, #8A6635 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
@@ -72,12 +113,12 @@
 }
 
 .bg-gold-gradient {
-  background: linear-gradient(135deg, #C5A880 0%, #A4845B 100%);
+  background: linear-gradient(135deg, var(--brand-secondary) 0%, #8A6635 100%);
 }
 
 .gold-border-glow:hover {
-  border-color: var(--color-brand-secondary);
-  box-shadow: 0 0 15px rgba(197, 168, 128, 0.15);
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 15px rgba(184, 138, 69, 0.2);
 }
 
 /* Scrollbar Styling for Premium Aesthetic */
@@ -87,30 +128,30 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-brand-bg);
+  background: var(--brand-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(197, 168, 128, 0.2);
+  background: var(--brand-accent);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-brand-secondary);
+  background: var(--brand-secondary);
 }
 
 /* Custom utilities for Framer Motion replacement/micro-effects */
 .premium-blur-glass {
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(197, 168, 128, 0.15);
+  background: var(--brand-nav-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--brand-nav-border);
 }
 
 /* Elegant gold divider decoration */
 .luxury-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197, 168, 128, 0.3) 50%, transparent);
+  background: linear-gradient(90deg, transparent, var(--brand-divider) 50%, transparent);
   width: 100%;
 }
 

@@ -75,4 +75,16 @@ describe('Musha Empire Unisex Saloon — Verified Contact Details', () => {
     expect(source).toContain('SALON_CONTACT.phoneTel');
     expect(source).toContain('SALON_CONTACT.businessName');
   });
+
+  it('verifies ContactPage embeds real interactive Google Maps iframe with open in maps action', () => {
+    const contactPagePath = path.resolve(__dirname, '../src/components/pages/ContactPage.tsx');
+    const source = fs.readFileSync(contactPagePath, 'utf-8');
+
+    expect(source).toContain('id="google-maps-embed-container"');
+    expect(source).toContain('id="google-maps-iframe"');
+    expect(source).toContain('https://www.google.com/maps/embed');
+    expect(source).toContain('id="contact-map-external-link"');
+    expect(source).toContain('id="contact-google-maps-btn"');
+    expect(source).toContain('Open in Google Maps');
+  });
 });

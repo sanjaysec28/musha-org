@@ -18,7 +18,7 @@ export default function Card({
     bordered: 'border border-brand-secondary/15 bg-brand-surface',
     elevated: 'border border-brand-secondary/20 bg-brand-surface-muted shadow-lg shadow-black/40',
     glass: 'bg-brand-surface/75 backdrop-blur-md border border-brand-secondary/15',
-    dark: 'bg-[#121212] text-brand-text border border-brand-secondary/15',
+    dark: 'bg-brand-surface text-brand-text border border-brand-accent dark:border-brand-secondary/15',
   };
 
   const hoverClasses = hoverable

@@ -240,53 +240,17 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     });
   });
 
-  it('verifies the four brand-benefit cards layout integrity and placement below FAQ section', () => {
-    // Four canonical brand-benefit cards
-    const expectedBenefitCards = [
-      'Certified Masters',
-      'Pure Botanicals',
-      'Private Suites',
-      'Bespoke Care'
-    ];
+  it('verifies the four brand-benefit cards section is removed from Homepage, collapsing space above The Royal Dispatch', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf8');
 
-    expect(expectedBenefitCards).toHaveLength(4);
-    expect(expectedBenefitCards).toEqual([
-      'Certified Masters',
-      'Pure Botanicals',
-      'Private Suites',
-      'Bespoke Care'
-    ]);
+    // Four brand-benefit cards section is removed from homepage
+    expect(appSource).not.toContain('<BrandBenefits');
 
-    // Section IDs on homepage verifying layout order
-    const homepageSectionOrder = [
-      'hero',
-      'salon-brands-marquee',
-      'promotions',
-      'services',
-      'why-choose-us',
-      'stylists',
-      'membership',
-      'gallery',
-      'testimonials',
-      'faq',
-      'trust', // four brand-benefit cards moved here
-      'booking'
-    ];
-
-    const faqIndex = homepageSectionOrder.indexOf('faq');
-    const trustIndex = homepageSectionOrder.indexOf('trust');
-    const marqueeIndex = homepageSectionOrder.indexOf('salon-brands-marquee');
-    const promotionsIndex = homepageSectionOrder.indexOf('promotions');
-
-    // Benefit cards section sits strictly below FAQ
-    expect(trustIndex).toBeGreaterThan(faqIndex);
-    // Marquee stays at the top below hero
-    expect(marqueeIndex).toBe(1);
-    // Promotional cards stay in place
-    expect(promotionsIndex).toBe(2);
-    // Benefit cards appear only once
-    const trustOccurrences = homepageSectionOrder.filter(id => id === 'trust').length;
-    expect(trustOccurrences).toBe(1);
+    // Homepage flow collapses directly from FAQ into The Royal Dispatch
+    expect(appSource).toContain('<FAQ');
+    expect(appSource).toContain('<NewsletterSection');
   });
 
   it('verifies Services Page cards match cinematic promotional cards architecture and responsive grid', () => {
@@ -354,11 +318,11 @@ describe('Musha Empire — Mobile Typography & Navigation Responsive Tests', () 
     expect(appSource).toContain('<PromotionalOffers');
     expect(appSource).toContain('<Services');
     expect(appSource).toContain('<WhyChooseUs');
-    expect(appSource).toContain('<Stylists');
+    expect(appSource).not.toContain('<Stylists');
     expect(appSource).toContain('<Gallery');
     expect(appSource).toContain('<Testimonials');
     expect(appSource).toContain('<FAQ');
-    expect(appSource).toContain('<BrandBenefits');
+    expect(appSource).not.toContain('<BrandBenefits');
     expect(appSource).toContain('<NewsletterSection');
   });
 });

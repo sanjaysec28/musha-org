@@ -120,7 +120,7 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                   variant="bordered"
                   className="p-0 border-brand-secondary/15 bg-brand-surface overflow-hidden aspect-square flex flex-col justify-between"
                 >
-                  <div className="relative w-full h-full bg-[#121212] overflow-hidden">
+                  <div className="relative w-full h-full bg-[#F1E9DC] overflow-hidden">
                     <img
                       src={item.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
                       alt={item.title}
@@ -188,14 +188,14 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 bg-[#0A0A0A]/95 backdrop-blur-md flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
               onClick={() => setLightboxIndex(null)}
             >
               {/* Close Button */}
               <button
                 id="lightbox-close-btn"
                 onClick={() => setLightboxIndex(null)}
-                className="absolute top-6 right-6 text-brand-primary/60 hover:text-brand-secondary border border-brand-secondary/15 p-2.5 rounded-none cursor-pointer"
+                className="absolute top-6 right-6 text-[#211D18] hover:text-brand-secondary bg-white/95 border border-[#E6DCCB] p-2.5 rounded-xl cursor-pointer shadow-md"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -207,7 +207,7 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                 <button
                   id="lightbox-prev-btn"
                   onClick={handlePrev}
-                  className="absolute left-4 z-10 text-brand-primary/60 hover:text-brand-secondary border border-brand-secondary/15 p-2.5 bg-[#121212]/80 backdrop-blur-sm rounded-none cursor-pointer hidden md:block"
+                  className="absolute left-4 z-10 text-[#211D18] hover:text-brand-secondary bg-white/95 border border-[#E6DCCB] p-2.5 rounded-xl cursor-pointer hidden md:block shadow-md"
                 >
                   <svg className="h-5 w-5 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
                     <path d="M15 19l-7-7 7-7" />
@@ -221,9 +221,9 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full flex flex-col items-center"
+                  className="w-full h-full flex flex-col items-center bg-[#FAF7F0] border border-[#E6DCCB] p-6 rounded-2xl shadow-2xl"
                 >
-                  <div className="relative aspect-square md:aspect-[4/3] max-h-[65vh] w-full bg-[#121212]/30 border border-brand-secondary/15 p-2 flex items-center justify-center">
+                  <div className="relative aspect-square md:aspect-[4/3] max-h-[60vh] w-full bg-white border border-[#E6DCCB] p-2 flex items-center justify-center rounded-xl overflow-hidden shadow-xs">
                     <img
                       src={galleryItems[lightboxIndex]?.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
                       alt={galleryItems[lightboxIndex]?.title || 'Gallery display'}
@@ -234,11 +234,11 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
 
                   {/* Footnote details */}
                   <div className="w-full text-center mt-4 space-y-1.5 max-w-lg">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary bg-brand-secondary/10 px-2 py-0.5 border border-brand-secondary/20 inline-block">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary bg-[#F1E9DC] px-2.5 py-1 border border-[#E6DCCB] rounded-md inline-block font-semibold">
                       {galleryItems[lightboxIndex].category}
                     </span>
-                    <h3 className="font-serif text-xl md:text-2xl text-brand-primary font-bold">{galleryItems[lightboxIndex].title}</h3>
-                    <p className="font-sans text-xs text-brand-text-muted/60">
+                    <h3 className="font-serif text-xl md:text-2xl text-[#211D18] font-bold">{galleryItems[lightboxIndex].title}</h3>
+                    <p className="font-sans text-xs text-[#746B60]">
                       Photography from the main suite — Artistry by Master Arthur and Team.
                     </p>
                   </div>
@@ -248,7 +248,7 @@ export default function Gallery({ onViewAll }: GalleryProps = {}) {
                 <button
                   id="lightbox-next-btn"
                   onClick={handleNext}
-                  className="absolute right-4 z-10 text-brand-primary/60 hover:text-brand-secondary border border-brand-secondary/15 p-2.5 bg-[#121212]/80 backdrop-blur-sm rounded-none cursor-pointer hidden md:block"
+                  className="absolute right-4 z-10 text-[#211D18] hover:text-brand-secondary bg-white/95 border border-[#E6DCCB] p-2.5 rounded-xl cursor-pointer hidden md:block shadow-md"
                 >
                   <svg className="h-5 w-5 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
                     <path d="M9 5l7 7-7 7" />

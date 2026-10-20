@@ -374,7 +374,7 @@ export default function AboutPage({
           <span className="font-sans text-[9px] uppercase tracking-[0.4em] text-brand-secondary font-semibold block">
             Royal Client Invitation
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-white max-w-2xl mx-auto leading-snug">
+          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-brand-primary max-w-2xl mx-auto leading-snug">
             Ready to experience a premium standard of beauty care?
           </h2>
           <p className="font-sans text-xs text-brand-text-muted max-w-md mx-auto leading-relaxed">

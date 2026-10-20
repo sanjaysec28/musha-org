@@ -81,7 +81,7 @@ export default function DashboardMembership({
         'Complimentary premium hair & beard grooming care gift-boxes'
       ],
       icon: Crown,
-      bg: 'bg-gradient-to-br from-[#121212] to-[#1E1E1E] text-brand-text border-brand-secondary/60'
+      bg: 'bg-gradient-to-br from-[#FFFFFF] to-[#F1E9DC] text-[#211D18] border-brand-secondary ring-1 ring-brand-secondary/30 shadow-md'
     }
   ];
 

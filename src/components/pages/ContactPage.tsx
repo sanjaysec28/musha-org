@@ -200,7 +200,7 @@ export default function ContactPage({
             <span className="font-sans text-[9px] uppercase tracking-[0.3em] text-brand-secondary font-semibold block">
               Direct WhatsApp & Social Concierge
             </span>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
+            <h3 className="font-serif text-xl sm:text-2xl font-bold text-brand-primary">
               Need Instant Answers?
             </h3>
             <p className="font-sans text-xs text-brand-text-muted leading-relaxed">
@@ -384,7 +384,7 @@ export default function ContactPage({
 
       </div>
 
-      {/* Google Maps Blueprint Section */}
+      {/* Google Maps Real Interactive Section */}
       <section id="contact-map-section" className="mt-20">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <span className="font-sans text-[10px] uppercase tracking-widest font-semibold text-brand-secondary">
@@ -399,63 +399,49 @@ export default function ContactPage({
           </p>
         </div>
 
-        {/* Mock Blueprint Map design */}
+        {/* Real Interactive Google Maps Container */}
         <div
-          id="mock-blueprint-map"
-          className="relative w-full h-[350px] md:h-[450px] border border-brand-secondary/35 bg-[#121110] overflow-hidden select-none"
+          id="google-maps-embed-container"
+          className="relative w-full h-[400px] sm:h-[480px] md:h-[520px] border border-[#E6DCCB] bg-[#FAF7F0] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(33,29,24,0.06)] group"
         >
-          {/* Subtle vectors grid lines representing roads */}
-          <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#C5A880_1px,transparent_1px)] bg-[size:1.5rem_1.5rem]" />
-          
-          {/* Abstract map roads as gold pathways */}
-          <div className="absolute inset-x-0 top-1/3 h-[2px] bg-brand-secondary/35" />
-          <div className="absolute inset-x-0 top-2/3 h-[2px] bg-brand-secondary/20" />
-          <div className="absolute left-1/4 inset-y-0 w-[2px] bg-brand-secondary/25" />
-          <div className="absolute left-2/3 inset-y-0 w-[2px] bg-brand-secondary/40" />
-          
-          {/* Centralized landmark point representing Musha Empire */}
-          <div className="absolute left-2/3 top-1/3 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-            {/* Pulsing indicator circle */}
-            <div className="relative h-14 w-14 flex items-center justify-center">
-              <span className="absolute animate-ping h-8 w-8 rounded-full bg-brand-secondary opacity-60" />
-              <div className="h-4 w-4 rounded-full bg-brand-secondary border-2 border-[#121110] relative z-10" />
+          {/* Interactive Google Maps iframe */}
+          <iframe
+            id="google-maps-iframe"
+            title="Musha Empire Unisex Saloon Google Maps Location"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.331405834807!2d78.5022432!3d13.5618237!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb267c1e2fad32d%3A0x30d259b47450d413!2sMusha%20Empire%20Unisex%20Saloon%20and%20Beauty%20Lounge!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="w-full h-full block"
+          />
+
+          {/* Luxury Floating Location Card */}
+          <div
+            id="map-floating-card"
+            className="absolute top-4 left-4 max-w-[280px] sm:max-w-xs bg-white/95 backdrop-blur-md border border-[#E6DCCB] p-4 sm:p-5 rounded-xl shadow-[0_8px_24px_rgba(33,29,24,0.08)] pointer-events-auto"
+          >
+            <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-brand-secondary font-semibold mb-1">
+              <MapPin className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
+              <span>Flagship Sanctuary</span>
             </div>
-
-            {/* Premium Gold overlay tag - Clickable to open Google Maps */}
-            <a
-              id="map-pin-tag"
-              href={SALON_CONTACT.googleMaps}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#121110] border border-brand-secondary text-brand-secondary py-3 px-5 -mt-2 shadow-2xl relative z-10 text-center hover:bg-brand-surface transition-colors cursor-pointer group"
-            >
-              <p className="font-serif text-sm font-semibold tracking-wide text-brand-secondary">{SALON_CONTACT.businessName}</p>
-              <p className="font-sans text-[8px] text-brand-accent/70 group-hover:text-brand-secondary tracking-widest uppercase mt-0.5 flex items-center justify-center gap-1">
-                <span>Open in Google Maps</span> &rarr;
-              </p>
-            </a>
-          </div>
-
-          {/* Compass Rose icon */}
-          <div className="absolute bottom-6 right-6 h-12 w-12 border border-brand-secondary/25 flex items-center justify-center text-brand-secondary font-mono text-[9px]">
-            N &uarr;
-          </div>
-
-          {/* Leftside map overlay */}
-          <div className="absolute left-6 top-6 max-w-xs bg-[#1A1917]/95 border border-brand-accent/20 p-5 space-y-3 text-brand-bg backdrop-blur-sm hidden sm:block">
-            <h4 className="font-serif text-sm text-brand-secondary font-semibold">{SALON_CONTACT.businessName}</h4>
-            <p className="font-sans text-[11px] text-brand-accent/70 leading-relaxed">
-              Open Google Maps to view live directions, estimated travel times, and landmark arrival guidance.
+            <h4 className="font-serif text-sm sm:text-base font-semibold text-[#211D18]">
+              {SALON_CONTACT.businessName}
+            </h4>
+            <p className="font-sans text-[11px] text-[#746B60] mt-1 leading-relaxed">
+              {hasAddress ? `${addressLine1} ${addressLine2}`.trim() : 'Gnanodaya Ground, Prasanth Nagar, A.V.Naidu Colony, Madanapalle, Andhra Pradesh 517325'}
             </p>
             <a
               id="contact-map-external-link"
               href={SALON_CONTACT.googleMaps}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-wider font-bold text-brand-secondary hover:underline cursor-pointer"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-heading uppercase tracking-wider font-bold text-brand-secondary hover:text-[#211D18] transition-colors cursor-pointer"
             >
-              <MapPin className="h-3.5 w-3.5" />
-              <span>Open in Google Maps &rarr;</span>
+              <span>Open in Google Maps</span>
+              <span className="text-sm font-normal">&rarr;</span>
             </a>
           </div>
         </div>
@@ -467,10 +453,10 @@ export default function ContactPage({
             href={SALON_CONTACT.googleMaps}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-surface border border-brand-secondary/40 hover:border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-[#0A0A0A] font-sans text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-secondary hover:bg-[#D8B77A] text-[#211D18] border border-brand-secondary/40 hover:border-transparent font-heading text-xs font-bold uppercase tracking-widest transition-all rounded-xl shadow-xs hover:shadow-md cursor-pointer"
           >
             <MapPin className="h-4 w-4" />
-            <span>Open Google Maps</span>
+            <span>Open in Google Maps</span>
           </a>
         </div>
       </section>

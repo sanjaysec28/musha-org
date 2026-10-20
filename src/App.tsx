@@ -19,14 +19,14 @@ import Toast from './components/ui/Toast';
 import { ToastMessage } from './types';
 
 import Hero from './components/home/Hero';
-import { SalonBrandsMarquee, BrandBenefits } from './components/home/TrustIndicators';
+import { SalonBrandsMarquee } from './components/home/TrustIndicators';
 import PromotionalOffers from './components/home/PromotionalOffers';
 import Services from './components/home/Services';
 import WhyChooseUs from './components/home/WhyChooseUs';
-import Stylists from './components/home/Stylists';
 import Gallery from './components/home/Gallery';
 import Testimonials from './components/home/Testimonials';
 import FAQ from './components/home/FAQ';
+import PatronCategories from './components/home/PatronCategories';
 
 // New Sub-pages & Core Interactive Components
 import ServicesPage from './components/services/ServicesPage';
@@ -401,6 +401,14 @@ export default function App() {
           {/* Slim Seamless Right-to-Left Scrolling Marquee */}
           <SalonBrandsMarquee />
 
+          {/* Curated Patron Categories (Men, Women, Boys, Girls, Universal / Third Gender) */}
+          <PatronCategories
+            onSelectCategory={(categoryId) => {
+              setSelectedRecipientCategory(categoryId);
+              handleNavigate('services');
+            }}
+          />
+
           {/* Curated Promotional Offers */}
           <PromotionalOffers
             onBookService={handleBookService}
@@ -416,9 +424,6 @@ export default function App() {
           {/* Why Choose Musha Empire */}
           <WhyChooseUs />
 
-          {/* Meet Our Stylists */}
-          <Stylists />
-
           {/* Gallery Preview */}
           <Gallery onViewAll={() => handleNavigate('gallery')} />
 
@@ -427,9 +432,6 @@ export default function App() {
 
           {/* FAQ (Animated Accordion) */}
           <FAQ />
-
-          {/* Brand Benefits - Four Pillars (Certified Masters, Pure Botanicals, Private Suites, Bespoke Care) */}
-          <BrandBenefits />
         </div>
       )}
 

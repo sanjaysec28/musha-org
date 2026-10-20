@@ -69,10 +69,10 @@ describe('Musha Empire — Global Search Feature Verification', () => {
     expect(matches.length).toBeGreaterThan(0);
   });
 
-  it('verifies filtering categories are supported in GlobalSearchModal', () => {
+  it('verifies filtering categories are supported in GlobalSearchModal with Stylists tab removed', () => {
     expect(searchModalSource).toContain('id="filter-all-btn"');
     expect(searchModalSource).toContain('id="filter-services-btn"');
-    expect(searchModalSource).toContain('id="filter-stylists-btn"');
+    expect(searchModalSource).not.toContain('id="filter-stylists-btn"');
   });
 
   it('verifies booking action is triggered directly from search results', () => {

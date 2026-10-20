@@ -15,14 +15,14 @@ export default function StickyBookMobile({
   return (
     <div
       id="sticky-mobile-booking-bar"
-      className="lg:hidden fixed bottom-0 inset-x-0 bg-[#0E0E0E]/95 border-t border-brand-secondary/20 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] z-35 backdrop-blur-md flex items-center justify-between gap-3 shadow-[0_-8px_30px_rgba(0,0,0,0.8)]"
+      className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 border-t border-[#E6DCCB] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,12px))] z-40 backdrop-blur-md flex items-center justify-between gap-3 shadow-[0_-4px_24px_rgba(33,29,24,0.08)]"
     >
       {/* Brand micro-label */}
       <div className="flex flex-col select-none">
         <span className="font-serif text-[13px] font-bold tracking-wide text-brand-secondary uppercase leading-none">
           Musha Empire
         </span>
-        <span className="text-[8px] tracking-[0.22em] text-brand-text-muted uppercase font-sans mt-1 font-semibold">
+        <span className="text-[8px] tracking-[0.22em] text-[#746B60] uppercase font-sans mt-1 font-semibold">
           Royal Treatment Suites
         </span>
       </div>
@@ -34,7 +34,7 @@ export default function StickyBookMobile({
         size="sm"
         leftIcon={<Calendar className="h-4 w-4" />}
         onClick={onClick}
-        className="px-5 py-2.5 h-[44px] min-h-[44px] uppercase tracking-wider text-[11px] font-bold shadow-md active:scale-95 transition-transform cursor-pointer"
+        className="px-5 py-2.5 h-[44px] min-h-[44px] uppercase tracking-wider text-[11px] font-bold shadow-md active:scale-95 transition-transform cursor-pointer bg-brand-secondary text-[#211D18] hover:bg-[#D8B77A]"
       >
         Book Experience
       </Button>

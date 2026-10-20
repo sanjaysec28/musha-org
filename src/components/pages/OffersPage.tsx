@@ -112,10 +112,10 @@ export default function OffersPage({
             key={f.value}
             id={`offers-filter-${f.value}`}
             onClick={() => setActiveFilter(f.value as any)}
-            className={`px-5 py-2.5 font-sans text-[10px] md:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-none cursor-pointer ${
+            className={`px-5 py-2.5 font-sans text-[10px] md:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-xl cursor-pointer ${
               activeFilter === f.value
-                ? 'bg-brand-primary border-brand-primary text-brand-bg font-bold'
-                : 'bg-brand-surface border-brand-accent/25 text-brand-text hover:border-brand-secondary'
+                ? 'bg-[#F1E9DC] border-brand-secondary/70 text-brand-secondary font-bold shadow-xs'
+                : 'bg-white border-[#E6DCCB] text-[#211D18] hover:border-brand-secondary/40 hover:text-brand-secondary shadow-xs'
             }`}
           >
             {f.label}

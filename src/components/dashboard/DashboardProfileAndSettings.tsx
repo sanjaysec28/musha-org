@@ -236,7 +236,7 @@ export default function DashboardProfileAndSettings({
                   id="avatar-upload-icon-trigger"
                   type="button"
                   onClick={handleAvatarUpdateClick}
-                  className="absolute inset-0 bg-[#121212]/90 text-brand-secondary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                  className="absolute inset-0 bg-[#211D18]/80 text-brand-secondary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-full"
                   title="Upload profile picture"
                 >
                   <Camera className="h-6 w-6 text-brand-secondary" />

@@ -1289,7 +1289,7 @@ export default function BookingFlow({
                             : 'min-h-[460px] sm:min-h-[480px]'
                         } ${
                           isSelected
-                            ? 'border-brand-secondary ring-2 ring-brand-secondary/60 shadow-[0_20px_50px_rgba(197,168,128,0.25)] bg-[#12100E]'
+                            ? 'border-brand-secondary ring-2 ring-brand-secondary/60 shadow-[0_20px_50px_rgba(197,168,128,0.25)] bg-[#F1E9DC]'
                             : 'border-brand-secondary/20 bg-brand-surface hover:border-brand-secondary/50'
                         }`}
                       >
@@ -1638,33 +1638,33 @@ export default function BookingFlow({
                     <div className="bg-brand-surface border border-brand-secondary/15 p-6 space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
                             Patron Name
                           </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#121212] border border-brand-secondary/15 text-sm text-brand-primary font-serif">
+                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-serif rounded-xl">
                             <User className="h-4 w-4 text-brand-secondary shrink-0" />
                             <span>{user.displayName || user.user_metadata?.name || user.email?.split('@')[0] || 'Noble Guest'}</span>
                           </div>
                         </div>
 
                         <div>
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
                             Contact Email
                           </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#121212] border border-brand-secondary/15 text-sm text-brand-primary font-mono text-xs">
+                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-mono text-xs rounded-xl">
                             <Mail className="h-4 w-4 text-brand-secondary shrink-0" />
                             <span>{user.email || 'Email unavailable'}</span>
                           </div>
                         </div>
 
                         <div className="sm:col-span-2">
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
                             Authenticated Phone (Firebase Auth Verified)
                           </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#121212] border border-brand-secondary/15 text-sm text-brand-primary font-mono text-xs">
+                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-mono text-xs rounded-xl">
                             <Phone className="h-4 w-4 text-brand-secondary shrink-0" />
                             <span>{user.phoneNumber || user.phone || 'Phone verified with session'}</span>
-                            <span className="ml-auto text-[8px] font-mono uppercase tracking-widest text-emerald-500 font-bold bg-emerald-950/40 px-2 py-0.5 border border-emerald-800/30">
+                            <span className="ml-auto text-[8px] font-mono uppercase tracking-widest text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 border border-emerald-300 rounded">
                               Immutable Auth
                             </span>
                           </div>
@@ -1673,7 +1673,7 @@ export default function BookingFlow({
 
                       {/* Special Notes & Requests */}
                       <div className="pt-2">
-                        <label className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                        <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
                           Special Sanctuary Requests (Optional)
                         </label>
                         <textarea
@@ -1682,7 +1682,7 @@ export default function BookingFlow({
                           value={specialNotes}
                           onChange={(e) => setSpecialNotes(e.target.value)}
                           placeholder="e.g. Preferred ambient temperature, rare tea selections, or specific skin sensitivities."
-                          className="w-full bg-[#121212] border border-brand-secondary/15 p-3 text-xs text-brand-primary font-sans focus:outline-none focus:border-brand-secondary resize-none"
+                          className="w-full bg-[#FAF7F0] border border-[#E6DCCB] p-3 text-xs text-[#211D18] placeholder-[#746B60] font-sans focus:outline-none focus:border-brand-secondary resize-none rounded-xl"
                         />
                       </div>
 
@@ -1766,7 +1766,7 @@ export default function BookingFlow({
                       placeholder="e.g., ROYAL15"
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
-                      className="bg-[#121212] text-brand-primary uppercase font-mono text-xs px-3 py-3.5 border border-brand-secondary/15 focus:border-brand-secondary outline-none w-full"
+                      className="bg-[#FAF7F0] text-[#211D18] placeholder-[#746B60] uppercase font-mono text-xs px-3 py-3.5 border border-[#E6DCCB] focus:border-brand-secondary outline-none w-full rounded-xl"
                     />
                     <Button id="apply-promo-btn" variant="outline" size="sm" onClick={handleApplyPromo} className="px-6 shrink-0 text-[10px] font-sans font-bold uppercase tracking-wider">
                       Apply Code
@@ -1906,7 +1906,7 @@ export default function BookingFlow({
                     </div>
 
                     {/* Request Summary Card */}
-                    <div className="bg-[#121212] border border-brand-secondary/35 p-6 divide-y divide-brand-secondary/15 text-left relative overflow-hidden shadow-2xl">
+                    <div className="bg-white border border-[#E6DCCB] p-6 divide-y divide-[#E6DCCB] text-left relative overflow-hidden shadow-[0_8px_30px_rgba(33,29,24,0.08)] rounded-2xl">
                       <div className="flex justify-between items-center pb-3 mb-3">
                         <div>
                           <span className="font-sans text-[8px] uppercase tracking-widest text-brand-secondary font-bold block">MUSHA EMPIRE REQUEST SUMMARY</span>
@@ -2022,7 +2022,7 @@ export default function BookingFlow({
                     </div>
 
                     {/* Digital Ticket Pass Card */}
-                    <div className="bg-[#121212] border border-brand-secondary/35 p-6 divide-y divide-brand-secondary/15 text-left relative overflow-hidden shadow-2xl">
+                    <div className="bg-white border border-[#E6DCCB] p-6 divide-y divide-[#E6DCCB] text-left relative overflow-hidden shadow-[0_8px_30px_rgba(33,29,24,0.08)] rounded-2xl">
                       <div className="absolute top-2 right-2 opacity-10 pointer-events-none">
                         <QrCode className="h-24 w-24 text-brand-secondary" />
                       </div>

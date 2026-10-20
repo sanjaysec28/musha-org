@@ -79,9 +79,9 @@ export default function Membership() {
                 <div
                   key={benefit.id}
                   id={`benefit-item-${benefit.id}`}
-                  className="p-5 border border-brand-secondary/15 bg-[#121212] hover:border-brand-secondary/35 transition-colors duration-300 rounded-none flex items-start gap-4"
+                  className="p-5 border border-[#E6DCCB] bg-white hover:border-brand-secondary/40 transition-colors duration-300 rounded-xl flex items-start gap-4 shadow-sm"
                 >
-                  <div className="h-9 w-9 bg-brand-bg/40 border border-brand-secondary/20 rounded-none flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 bg-[#FAF7F0] border border-[#E6DCCB] rounded-lg flex items-center justify-center shrink-0">
                     {getIcon(benefit.id)}
                   </div>
                   <div className="space-y-1">
@@ -97,8 +97,8 @@ export default function Membership() {
           <div className="lg:col-span-5 flex justify-center">
             <Card
               id="royal-club-application-card"
-              variant="dark"
-              className="w-full max-w-[420px] bg-[#121212] border-brand-secondary/30 p-8 relative overflow-hidden shadow-2xl"
+              variant="bordered"
+              className="w-full max-w-[420px] bg-white border border-[#E6DCCB] p-8 relative overflow-hidden shadow-xl rounded-2xl"
             >
               {/* Gold borders */}
               <div className="absolute top-0 left-0 w-3.5 h-3.5 border-t border-l border-brand-secondary" />

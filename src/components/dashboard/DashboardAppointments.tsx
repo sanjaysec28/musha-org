@@ -612,29 +612,29 @@ export default function DashboardAppointments({
         {activeDetailAppointment && (
           <div className="space-y-6 pt-2 pb-4">
             {/* Ticket Header QR layout */}
-            <div className="bg-[#121212] text-brand-text p-6 border border-brand-secondary/25 relative text-center">
-              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#C5A880_1px,transparent_1px)] bg-[size:1rem_1rem]" />
+            <div className="bg-[#FAF7F0] text-brand-text p-6 border border-[#E6DCCB] rounded-2xl relative text-center shadow-sm">
+              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#B88A45_1px,transparent_1px)] bg-[size:1rem_1rem]" />
               
               <span className="font-mono text-[9px] uppercase tracking-widest text-brand-secondary font-bold block mb-1">
                 TICKET SECURE PASS
               </span>
-              <h3 className="font-serif text-2xl font-medium text-brand-primary">
+              <h3 className="font-serif text-2xl font-bold text-[#211D18]">
                 {activeDetailAppointment.serviceName}
               </h3>
-              <p className="font-mono text-[10px] text-brand-secondary/70 mt-1">
+              <p className="font-mono text-[10px] text-brand-secondary mt-1 font-semibold">
                 ID: {activeDetailAppointment.id}
               </p>
 
               {/* QR Code Placeholder Box */}
-              <div className="bg-[#0A0A0A] border border-brand-secondary/20 p-4 h-36 w-36 mx-auto my-5 flex flex-col items-center justify-center shadow-lg relative group">
+              <div className="bg-white border border-[#E6DCCB] p-4 h-36 w-36 mx-auto my-5 flex flex-col items-center justify-center shadow-md rounded-xl relative group">
                 <QrCode className="h-28 w-28 text-brand-secondary stroke-[1.25]" />
-                <div className="absolute inset-0 bg-[#121212]/95 text-brand-primary flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-white/95 text-[#211D18] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl">
                   <span className="font-sans text-[8px] uppercase tracking-widest font-semibold mb-1">Priority Scanner</span>
                   <span className="font-mono text-[9px] font-bold text-brand-secondary">MSH-SECURE-99</span>
                 </div>
               </div>
 
-              <p className="font-sans text-[10px] text-brand-text-muted max-w-xs mx-auto leading-relaxed">
+              <p className="font-sans text-[10px] text-[#746B60] max-w-xs mx-auto leading-relaxed">
                 Present this QR ticket pass at the concierge desk upon priority arrival for instant check-in.
               </p>
             </div>

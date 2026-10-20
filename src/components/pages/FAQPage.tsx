@@ -145,10 +145,10 @@ export default function FAQPage({
             key={cat.value}
             id={`faq-cat-${cat.value}`}
             onClick={() => setSelectedCategory(cat.value as any)}
-            className={`px-4 py-2 font-sans text-[10px] sm:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-none cursor-pointer ${
+            className={`px-4 py-2 font-sans text-[10px] sm:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-xl cursor-pointer ${
               selectedCategory === cat.value
-                ? 'bg-brand-primary border-brand-primary text-brand-bg font-bold'
-                : 'bg-brand-surface border-brand-accent/25 text-brand-text hover:border-brand-secondary'
+                ? 'bg-[#F1E9DC] border-brand-secondary/70 text-brand-secondary font-bold shadow-xs'
+                : 'bg-white border-[#E6DCCB] text-[#211D18] hover:border-brand-secondary/40 hover:text-brand-secondary shadow-xs'
             }`}
           >
             {cat.label}

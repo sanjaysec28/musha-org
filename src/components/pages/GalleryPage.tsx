@@ -252,10 +252,10 @@ export default function GalleryPage({
             key={cat.value}
             id={`filter-btn-${cat.value}`}
             onClick={() => setSelectedCategory(cat.value as any)}
-            className={`px-5 py-2.5 font-sans text-[10px] md:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-none cursor-pointer ${
+            className={`px-5 py-2.5 font-sans text-[10px] md:text-xs uppercase tracking-widest font-semibold border transition-all duration-300 rounded-xl cursor-pointer ${
               selectedCategory === cat.value
-                ? 'bg-brand-primary border-brand-primary text-brand-bg font-bold'
-                : 'bg-brand-surface border-brand-accent/25 text-brand-text hover:border-brand-secondary'
+                ? 'bg-[#F1E9DC] border-brand-secondary/70 text-brand-secondary font-bold shadow-xs'
+                : 'bg-white border-[#E6DCCB] text-[#211D18] hover:border-brand-secondary/40 hover:text-brand-secondary shadow-xs'
             }`}
           >
             {cat.label}
@@ -336,13 +336,13 @@ export default function GalleryPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-brand-primary/95 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
           >
             {/* Close trigger button */}
             <button
               id="close-lightbox-btn"
               onClick={() => setActiveLightboxIndex(null)}
-              className="absolute top-6 right-6 text-brand-bg hover:text-brand-secondary p-2.5 bg-brand-surface-muted/5 border border-brand-accent/15 rounded-none z-50 cursor-pointer"
+              className="absolute top-6 right-6 text-[#211D18] hover:text-brand-secondary p-2.5 bg-white border border-[#E6DCCB] rounded-xl z-50 cursor-pointer shadow-md"
               aria-label="Close Lightbox"
             >
               <X className="h-5 w-5" />
@@ -352,7 +352,7 @@ export default function GalleryPage({
             <button
               id="prev-lightbox-btn"
               onClick={handlePrevLightbox}
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-bg hover:text-brand-secondary p-3 border border-brand-accent/15 rounded-none cursor-pointer z-40 hidden md:block bg-brand-primary"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-[#211D18] hover:text-brand-secondary p-3 border border-[#E6DCCB] rounded-xl cursor-pointer z-40 hidden md:block bg-white shadow-md"
               aria-label="Previous Look"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -360,7 +360,7 @@ export default function GalleryPage({
             <button
               id="next-lightbox-btn"
               onClick={handleNextLightbox}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-bg hover:text-brand-secondary p-3 border border-brand-accent/15 rounded-none cursor-pointer z-40 hidden md:block bg-brand-primary"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-[#211D18] hover:text-brand-secondary p-3 border border-[#E6DCCB] rounded-xl cursor-pointer z-40 hidden md:block bg-white shadow-md"
               aria-label="Next Look"
             >
               <ChevronRight className="h-6 w-6" />
@@ -373,10 +373,10 @@ export default function GalleryPage({
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25 }}
-              className="w-full max-w-5xl bg-brand-bg border border-brand-secondary/30 grid grid-cols-1 md:grid-cols-12 overflow-hidden max-h-[90vh]"
+              className="w-full max-w-5xl bg-[#FAF7F0] border border-[#E6DCCB] grid grid-cols-1 md:grid-cols-12 overflow-hidden max-h-[90vh] rounded-2xl shadow-2xl"
             >
               {/* Image Frame */}
-              <div className="md:col-span-8 bg-black flex items-center justify-center relative overflow-hidden h-[40vh] md:h-[75vh]">
+              <div className="md:col-span-8 bg-[#F1E9DC] flex items-center justify-center relative overflow-hidden h-[40vh] md:h-[75vh]">
                 <img
                   src={filteredItems[activeLightboxIndex]?.image || 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=800&q=80'}
                   alt={filteredItems[activeLightboxIndex]?.title || 'Gallery display'}

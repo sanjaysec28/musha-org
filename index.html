@@ -3,6 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Permanent Bright Creamy Luxury Theme -->
+    <script>
+      (function() {
+        try {
+          localStorage.removeItem('musha_theme_mode');
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.classList.add('light');
+        }
+      })();
+    </script>
+
     <title>Musha Empire | Luxury Unisex Salon & Spa</title>
     
     <!-- SEO & Metadata -->

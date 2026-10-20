@@ -1392,10 +1392,10 @@ export default function DashboardModule({
             {/* Tinted backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="absolute inset-0 bg-black"
+              className="absolute inset-0 bg-[#211D18]/50 backdrop-blur-xs"
             />
 
             {/* Sidebar element panel */}
@@ -1404,7 +1404,7 @@ export default function DashboardModule({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="absolute left-0 top-0 bottom-0 w-64 bg-brand-surface text-brand-text border-r border-brand-secondary/15 p-6 flex flex-col justify-between"
+              className="absolute left-0 top-0 bottom-0 w-64 bg-[#FAF7F0] text-[#211D18] border-r border-[#E6DCCB] p-6 flex flex-col justify-between shadow-xl"
             >
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b border-brand-secondary/15 pb-4">

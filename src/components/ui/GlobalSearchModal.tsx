@@ -25,7 +25,7 @@ export default function GlobalSearchModal({
   onSelectStylist
 }: GlobalSearchModalProps) {
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'services' | 'stylists'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'services'>('all');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when opened
@@ -80,7 +80,7 @@ export default function GlobalSearchModal({
   }, [query]);
 
   const hasServices = (activeFilter === 'all' || activeFilter === 'services') && filteredServices.length > 0;
-  const hasStylists = (activeFilter === 'all' || activeFilter === 'stylists') && filteredStylists.length > 0;
+  const hasStylists = activeFilter === 'all' && filteredStylists.length > 0;
   const totalCount = filteredServices.length + filteredStylists.length;
   const isQueryEmpty = query.trim().length === 0;
 
@@ -104,10 +104,10 @@ export default function GlobalSearchModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -10 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-[#0F0F0F] border border-brand-secondary/35 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[82vh] z-10"
+            className="relative w-full max-w-2xl bg-[#FAF7F0] border border-[#E6DCCB] rounded-2xl shadow-[0_12px_48px_rgba(33,29,24,0.12)] overflow-hidden flex flex-col max-h-[82vh] z-10"
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-brand-secondary/20 bg-[#141414]">
+            <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-[#E6DCCB] bg-[#F1E9DC]">
               <Search className="h-5 w-5 text-brand-secondary shrink-0 stroke-[2]" />
               <input
                 ref={inputRef}
@@ -116,21 +116,21 @@ export default function GlobalSearchModal({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search haircuts, spa facials, balayage, or stylists..."
-                className="w-full bg-transparent text-white placeholder-neutral-500 font-sans text-sm sm:text-base outline-none focus:outline-none"
+                className="w-full bg-transparent text-[#211D18] placeholder-[#746B60] font-sans text-sm sm:text-base outline-none focus:outline-none"
               />
               {query && (
                 <button
                   type="button"
                   id="search-clear-btn"
                   onClick={() => setQuery('')}
-                  className="p-1 rounded-md text-neutral-400 hover:text-white transition-colors"
+                  className="p-1 rounded-md text-[#746B60] hover:text-[#211D18] transition-colors"
                   title="Clear input"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
-              <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-neutral-800">
-                <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-neutral-400 bg-neutral-900 border border-neutral-700 rounded">
+              <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-[#E6DCCB]">
+                <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-[#746B60] bg-white border border-[#E6DCCB] rounded shadow-xs">
                   ESC
                 </kbd>
               </div>
@@ -138,7 +138,7 @@ export default function GlobalSearchModal({
                 type="button"
                 id="search-close-btn"
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-brand-secondary hover:bg-white/[0.05] transition-all cursor-pointer"
+                className="p-1.5 rounded-lg text-[#746B60] hover:text-[#211D18] hover:bg-white/60 transition-all cursor-pointer"
                 title="Close search"
               >
                 <X className="h-5 w-5" />
@@ -146,16 +146,16 @@ export default function GlobalSearchModal({
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2 px-4 sm:px-6 py-2.5 bg-[#0C0C0C] border-b border-white/[0.06] text-xs">
-              <span className="text-neutral-500 font-heading text-[10px] uppercase tracking-wider mr-1">Filter:</span>
+            <div className="flex items-center gap-2 px-4 sm:px-6 py-2.5 bg-[#F6F0E6] border-b border-[#E6DCCB] text-xs">
+              <span className="text-[#746B60] font-heading text-[10px] uppercase tracking-wider mr-1">Filter:</span>
               <button
                 type="button"
                 id="filter-all-btn"
                 onClick={() => setActiveFilter('all')}
                 className={`px-3 py-1 rounded-full text-xs font-heading font-medium transition-all cursor-pointer ${
                   activeFilter === 'all'
-                    ? 'bg-brand-secondary text-[#0A0A0A] font-bold shadow-sm'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                    ? 'bg-brand-secondary text-[#211D18] font-bold shadow-xs'
+                    : 'text-[#746B60] hover:text-[#211D18] hover:bg-white'
                 }`}
               >
                 All Results ({totalCount})
@@ -166,28 +166,16 @@ export default function GlobalSearchModal({
                 onClick={() => setActiveFilter('services')}
                 className={`px-3 py-1 rounded-full text-xs font-heading font-medium transition-all cursor-pointer ${
                   activeFilter === 'services'
-                    ? 'bg-brand-secondary text-[#0A0A0A] font-bold shadow-sm'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                    ? 'bg-brand-secondary text-[#211D18] font-bold shadow-xs'
+                    : 'text-[#746B60] hover:text-[#211D18] hover:bg-white'
                 }`}
               >
                 Services ({filteredServices.length})
               </button>
-              <button
-                type="button"
-                id="filter-stylists-btn"
-                onClick={() => setActiveFilter('stylists')}
-                className={`px-3 py-1 rounded-full text-xs font-heading font-medium transition-all cursor-pointer ${
-                  activeFilter === 'stylists'
-                    ? 'bg-brand-secondary text-[#0A0A0A] font-bold shadow-sm'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-                }`}
-              >
-                Stylists ({filteredStylists.length})
-              </button>
             </div>
 
             {/* Scrollable Results Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 divide-y divide-white/[0.06]">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 divide-y divide-[#E6DCCB]/60">
               {isQueryEmpty && (
                 <div className="pb-2">
                   <div className="flex items-center gap-2 text-brand-secondary text-xs font-heading uppercase tracking-widest font-semibold mb-3">
@@ -200,11 +188,11 @@ export default function GlobalSearchModal({
               {/* Services Section */}
               {hasServices && (
                 <div className="space-y-3 pt-3 first:pt-0">
-                  <div className="flex items-center justify-between text-xs text-neutral-400 font-heading uppercase tracking-wider">
+                  <div className="flex items-center justify-between text-xs text-[#746B60] font-heading uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-brand-secondary font-semibold">
                       <Scissors className="h-3.5 w-3.5" /> Signature Salon Services
                     </span>
-                    <span className="text-[11px] text-neutral-500 font-mono">{filteredServices.length} found</span>
+                    <span className="text-[11px] text-[#746B60] font-mono">{filteredServices.length} found</span>
                   </div>
 
                   <div className="space-y-2.5">
@@ -216,21 +204,21 @@ export default function GlobalSearchModal({
                           onSelectService(svc.id);
                           onClose();
                         }}
-                        className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#141414] hover:bg-[#1A1A1A] border border-white/[0.08] hover:border-brand-secondary/40 transition-all cursor-pointer"
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white hover:bg-[#F1E9DC]/60 border border-[#E6DCCB] hover:border-brand-secondary/50 transition-all cursor-pointer shadow-xs hover:shadow-sm"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-serif text-sm sm:text-base font-semibold text-white group-hover:text-brand-secondary transition-colors">
+                            <h4 className="font-serif text-sm sm:text-base font-semibold text-[#211D18] group-hover:text-brand-secondary transition-colors">
                               {svc.name}
                             </h4>
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider bg-brand-secondary/15 text-brand-secondary border border-brand-secondary/25">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider bg-[#F1E9DC] text-brand-secondary border border-brand-secondary/30 font-semibold">
                               {svc.category}
                             </span>
                           </div>
-                          <p className="font-sans text-xs text-neutral-400 mt-1 line-clamp-1">
+                          <p className="font-sans text-xs text-[#746B60] mt-1 line-clamp-1">
                             {svc.shortDescription}
                           </p>
-                          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-neutral-500 font-sans">
+                          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[#746B60] font-sans">
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3 text-brand-secondary" /> {svc.duration}
                             </span>
@@ -240,13 +228,13 @@ export default function GlobalSearchModal({
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-800">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E6DCCB]">
                           <span className="font-serif text-base sm:text-lg font-bold text-brand-secondary">
                             {svc.price}
                           </span>
                           <button
                             type="button"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-secondary/20 group-hover:bg-brand-secondary text-brand-secondary group-hover:text-[#0A0A0A] font-heading text-xs uppercase tracking-wider font-bold transition-all"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF7F0] group-hover:bg-brand-secondary text-brand-secondary group-hover:text-[#211D18] border border-brand-secondary/30 group-hover:border-transparent font-heading text-xs uppercase tracking-wider font-bold transition-all"
                           >
                             <span>Book</span>
                             <ArrowRight className="h-3 w-3" />
@@ -261,11 +249,11 @@ export default function GlobalSearchModal({
               {/* Stylists Section */}
               {hasStylists && (
                 <div className="space-y-3 pt-6">
-                  <div className="flex items-center justify-between text-xs text-neutral-400 font-heading uppercase tracking-wider">
+                  <div className="flex items-center justify-between text-xs text-[#746B60] font-heading uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-brand-secondary font-semibold">
                       <User className="h-3.5 w-3.5" /> Master Stylists & Artists
                     </span>
-                    <span className="text-[11px] text-neutral-500 font-mono">{filteredStylists.length} available</span>
+                    <span className="text-[11px] text-[#746B60] font-mono">{filteredStylists.length} available</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -281,25 +269,25 @@ export default function GlobalSearchModal({
                           }
                           onClose();
                         }}
-                        className="group flex items-center gap-3 p-3 rounded-xl bg-[#141414] hover:bg-[#1A1A1A] border border-white/[0.08] hover:border-brand-secondary/40 transition-all cursor-pointer"
+                        className="group flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-[#F1E9DC]/60 border border-[#E6DCCB] hover:border-brand-secondary/50 transition-all cursor-pointer shadow-xs hover:shadow-sm"
                       >
                         <img
                           src={stylist.image}
                           alt={stylist.name}
-                          className="h-12 w-12 rounded-lg object-cover border border-brand-secondary/30 shrink-0"
+                          className="h-12 w-12 rounded-lg object-cover border border-[#E6DCCB] shrink-0"
                         />
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-serif text-sm font-semibold text-white group-hover:text-brand-secondary transition-colors truncate">
+                          <h4 className="font-serif text-sm font-semibold text-[#211D18] group-hover:text-brand-secondary transition-colors truncate">
                             {stylist.name}
                           </h4>
-                          <p className="text-[11px] text-brand-secondary/90 font-medium truncate">
+                          <p className="text-[11px] text-brand-secondary font-semibold truncate">
                             {stylist.role}
                           </p>
-                          <p className="text-[10px] text-neutral-400 font-sans truncate mt-0.5">
+                          <p className="text-[10px] text-[#746B60] font-sans truncate mt-0.5">
                             {stylist.specialty}
                           </p>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-neutral-500 group-hover:text-brand-secondary group-hover:translate-x-0.5 transition-all shrink-0" />
+                        <ArrowRight className="h-4 w-4 text-[#746B60] group-hover:text-brand-secondary group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
                     ))}
                   </div>
@@ -309,13 +297,13 @@ export default function GlobalSearchModal({
               {/* Empty Results State */}
               {!hasServices && !hasStylists && (
                 <div className="py-12 text-center space-y-3">
-                  <div className="h-12 w-12 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto text-neutral-500">
-                    <Search className="h-6 w-6" />
+                  <div className="h-12 w-12 rounded-full bg-[#F1E9DC] border border-[#E6DCCB] flex items-center justify-center mx-auto text-[#746B60]">
+                    <Search className="h-6 w-6 text-brand-secondary" />
                   </div>
-                  <h4 className="font-serif text-base font-semibold text-white">
+                  <h4 className="font-serif text-base font-semibold text-[#211D18]">
                     No results found for "{query}"
                   </h4>
-                  <p className="font-sans text-xs text-neutral-400 max-w-sm mx-auto">
+                  <p className="font-sans text-xs text-[#746B60] max-w-sm mx-auto">
                     Try searching for haircuts, hair spa, beard trim, balayage, facial, or browse our comprehensive service menu.
                   </p>
                 </div>
@@ -323,12 +311,12 @@ export default function GlobalSearchModal({
             </div>
 
             {/* Modal Footer */}
-            <div className="px-4 sm:px-6 py-3 bg-[#141414] border-t border-white/[0.06] flex items-center justify-between text-[11px] text-neutral-500 font-sans">
+            <div className="px-4 sm:px-6 py-3 bg-[#F1E9DC] border-t border-[#E6DCCB] flex items-center justify-between text-[11px] text-[#746B60] font-sans">
               <span className="flex items-center gap-1.5">
                 <Tag className="h-3 w-3 text-brand-secondary" />
                 <span>Instant reservations available 7 days a week</span>
               </span>
-              <span className="font-mono text-neutral-400">
+              <span className="font-mono text-[#211D18] font-semibold">
                 Musha Empire Unisex Saloon
               </span>
             </div>
