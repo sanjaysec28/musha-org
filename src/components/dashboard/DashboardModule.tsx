@@ -36,7 +36,7 @@ import {
 } from './types';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { isFirebaseConfigured, auth } from '../../lib/firebase';
-import { bookingsRepository } from '../../lib/firestoreService';
+import { bookingsRepository, conciergeRequestsRepository } from '../../lib/firestoreService';
 import { callCancelBooking } from '../../lib/firebaseFunctions';
 import { EXTENDED_SERVICES_DATA } from '../../data/servicesExtendedData';
 import { STYLISTS_DATA } from '../../data/salonData';
@@ -484,39 +484,72 @@ export default function DashboardModule({
     const fetchBookings = async () => {
       if (isFirebaseConfigured && auth?.currentUser) {
         try {
-          // Authorized staff/admin can view all salon bookings; customers only view their own records
-          const fbBookings = isStaffUser
-            ? await bookingsRepository.getAll()
-            : await bookingsRepository.getMyBookings(auth.currentUser.uid);
+          const uid = auth.currentUser.uid;
+          const [fbBookings, conciergeReqs] = await Promise.all([
+            isStaffUser ? bookingsRepository.getAll() : bookingsRepository.getMyBookings(uid),
+            conciergeRequestsRepository.getMyRequests(uid)
+          ]);
 
           if (isMounted) {
-            if (fbBookings && fbBookings.length > 0) {
-              const mapped: DashboardAppointment[] = fbBookings.map((b) => {
-                const localService = EXTENDED_SERVICES_DATA.find(s => s.id === b.service_id || s.name.toLowerCase() === (b.service_name || '').toLowerCase());
-                const duration = b.duration_minutes ? `${b.duration_minutes} Mins` : localService?.duration || '60 Mins';
-                const price = b.price || localService?.priceValue || 95;
-                return {
-                  id: b.id,
-                  serviceId: b.service_id || 'service-1',
-                  serviceName: b.service_name || localService?.name || 'Sanctuary Ritual',
-                  category: localService?.category || 'Exclusive',
-                  stylistName: 'Salon Concierge',
-                  stylistAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100',
-                  date: b.booking_date,
-                  timeSlot: b.start_time,
-                  price,
-                  duration,
-                  status: b.status === 'cancelled' ? 'cancelled' : (b.status === 'completed' ? 'completed' : 'upcoming'),
-                  paymentStatus: b.payment_status === 'paid' ? 'paid' : (b.status === 'cancelled' ? 'refunded' : 'pending'),
-                  qrCodeUrl: '#qr-code-placeholder',
-                  invoiceUrl: '#invoice-download',
-                  realStatus: b.status as any
-                };
-              });
-              setAppointments(mapped);
-            } else {
-              setAppointments([]);
-            }
+            const mappedFb: DashboardAppointment[] = (fbBookings || []).map((b) => {
+              const localService = EXTENDED_SERVICES_DATA.find(s => s.id === b.service_id || s.name.toLowerCase() === (b.service_name || '').toLowerCase());
+              const duration = b.duration_minutes ? `${b.duration_minutes} Mins` : localService?.duration || '60 Mins';
+              const price = b.price || localService?.priceValue || 95;
+              return {
+                id: b.id,
+                serviceId: b.service_id || 'service-1',
+                serviceName: b.service_name || localService?.name || 'Sanctuary Ritual',
+                category: localService?.category || 'Exclusive',
+                stylistName: b.staff_name || 'Master Arthur Musha',
+                stylistAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100',
+                date: b.booking_date,
+                timeSlot: b.start_time,
+                price,
+                duration,
+                status: b.status === 'cancelled' ? 'cancelled' : (b.status === 'completed' ? 'completed' : 'upcoming'),
+                paymentStatus: b.payment_status === 'paid' ? 'paid' : (b.status === 'cancelled' ? 'refunded' : 'pending'),
+                qrCodeUrl: '#qr-code-placeholder',
+                invoiceUrl: '#invoice-download',
+                realStatus: b.status as any,
+                services: (b as any).services
+              };
+            });
+
+            const mappedReqs: DashboardAppointment[] = (conciergeReqs || []).map((r) => {
+              const localService = EXTENDED_SERVICES_DATA.find(s => s.id === r.service_id || s.name.toLowerCase() === (r.service_name || '').toLowerCase());
+              const duration = r.duration_minutes ? `${r.duration_minutes} Mins` : localService?.duration || '60 Mins';
+              const price = r.total_amount || localService?.priceValue || 95;
+              return {
+                id: r.id,
+                serviceId: r.service_id || 'service-1',
+                serviceName: r.service_name || localService?.name || 'Sanctuary Ritual',
+                category: (r.gender as string) || localService?.category || 'Exclusive',
+                stylistName: 'Master Arthur Musha',
+                stylistAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100',
+                date: r.booking_date,
+                timeSlot: r.start_time,
+                endTime: r.end_time,
+                price,
+                duration,
+                status: r.status === 'cancelled' ? 'cancelled' : (r.status === 'completed' ? 'completed' : 'upcoming'),
+                paymentStatus: r.payment_status === 'paid' ? 'paid' : (r.status === 'cancelled' ? 'refunded' : 'pending'),
+                qrCodeUrl: '#qr-code-placeholder',
+                invoiceUrl: '#invoice-download',
+                realStatus: r.status as any,
+                services: r.services,
+                customerName: r.customer_name,
+                notes: r.notes,
+                ticketCode: r.id
+              };
+            });
+
+            // Combine both without duplicates
+            const allAppointments = [
+              ...mappedReqs,
+              ...mappedFb.filter(fb => !mappedReqs.some(r => r.id === fb.id))
+            ];
+
+            setAppointments(allAppointments);
           }
         } catch (err) {
           console.warn('Notice reading bookings from Firestore in dashboard:', err);

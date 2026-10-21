@@ -7,34 +7,28 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Calendar as CalendarIcon,
-  User,
+  Calendar,
   Clock,
   Sparkles,
+  ChevronRight,
+  ShieldCheck,
   CheckCircle,
   Tag,
-  ArrowRight,
-  ArrowLeft,
-  ChevronRight,
-  MapPin,
-  ShieldCheck,
-  Compass,
-  Check,
-  Lock,
+  AlertCircle,
+  User,
   Phone,
   Mail,
-  QrCode,
-  AlertTriangle,
-  CalendarX,
-  WifiOff,
-  AlertCircle,
+  MapPin,
+  ArrowRight,
+  ArrowLeft,
   RefreshCw,
-  CreditCard,
   Plus,
   Trash2,
   X,
   ShoppingBag,
-  Info
+  Info,
+  Printer,
+  QrCode
 } from 'lucide-react';
 import { EXTENDED_SERVICES_DATA, ExtendedService } from '../../data/servicesExtendedData';
 import { StylistItem, STYLISTS_DATA } from '../../data/salonData';
@@ -42,91 +36,82 @@ import Button from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { auth } from '../../lib/firebase';
+import { auth, isFirebaseConfigured } from '../../lib/firebase';
+import { FirestoreSalonSettings } from '../../types/firestore';
 import {
   servicesRepository,
   slotsRepository,
-  bookingsRepository,
   settingsRepository,
+  bookingsRepository,
   conciergeRequestsRepository,
   normalizeConciergeRequestPayload
 } from '../../lib/firestoreService';
-import { FirestoreSalonSettings } from '../../types/firestore';
-import { callCreateBooking, mapBookingError } from '../../lib/firebaseFunctions';
-import {
-  loadRazorpayScript,
-  getRazorpayConfig,
-  createRazorpayOrder,
-  verifyRazorpayPayment
-} from '../../lib/razorpay';
-import AuthModule from '../dashboard/AuthModule';
 
-// Approved Category Item Definition for Step 1
-export interface ApprovedCategoryItem {
-  id: 'Men' | 'Women' | 'Boy' | 'Girl' | 'Other';
-  title: string;
-  image: string;
-  ariaLabel: string;
-  tagline: string;
-  badge: string;
-  description: string;
-  features: string[];
-  isFullWidth: boolean;
-}
+// The 5 Approved 16:9 Landscape Category Cards
+export const APPROVED_CATEGORIES = [
+  {
+    id: 'Men',
+    routeParam: 'men',
+    title: "Men's Grooming",
+    image: '/images/men-groom.png',
+    alt: "Men's Grooming services at Musha Empire"
+  },
+  {
+    id: 'Women',
+    routeParam: 'women',
+    title: "Women's Grooming",
+    image: '/images/women-groom.png',
+    alt: "Women's Grooming services at Musha Empire"
+  },
+  {
+    id: 'Boy',
+    routeParam: 'boys',
+    title: "Boys Grooming",
+    image: '/images/boys-groom.png',
+    alt: "Boys' Grooming services at Musha Empire"
+  },
+  {
+    id: 'Girl',
+    routeParam: 'girls',
+    title: "Girls Grooming",
+    image: '/images/girls-groom.png',
+    alt: "Girls' Grooming services at Musha Empire"
+  },
+  {
+    id: 'Other',
+    routeParam: 'universal',
+    title: 'Universal Grooming',
+    image: '/images/universal-groom.png',
+    alt: 'Universal Grooming services at Musha Empire'
+  }
+];
 
-export const APPROVED_CATEGORIES: ApprovedCategoryItem[] = [
+// Aesthetic recipient cards for category presentation
+export const RECIPIENT_CATEGORIES = [
   {
     id: 'Men',
     title: "Gentlemen's Grooming",
-    ariaLabel: "Men's Grooming — View Men's Services",
-    tagline: 'Refined Masculine Style',
-    badge: "King's Sanctuary",
-    description: 'Master scissor craftsmanship, traditional hot-towel straight razor shaves, beard contouring, and rejuvenating charcoal skin detox.',
-    image: '/images/men-groom.png',
-    features: ['Precision Scissor Cuts & Fades', 'Hot Towel Beard Sculpting', 'Clarifying Scalp Rinses'],
+    tagline: 'Precision Barbering & Hair Craft',
+    description: 'Bespoke razor fades, executive beard architecture, royal hot towel shaves & revitalizing scalp rituals.',
+    image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1200',
+    features: ['Master Barber Consultation', 'Straight Razor Hot Lather Finish', 'Botanical Scalp Therapy'],
     isFullWidth: false,
   },
   {
     id: 'Women',
     title: "Women's Sanctuary",
-    ariaLabel: "Women's Grooming — View Women's Services",
-    tagline: 'High-Artistry Feminine Rituals',
-    badge: "Queen's Sanctuary",
-    description: 'Haute hair artistry, dimensional balayage, holistic botanical spa therapies, designer royal bridal updos, and bespoke nail care.',
-    image: '/images/women-groom.png',
-    features: ['Dimensional Balayage & Highlights', 'Botanical Hair Spa & Botox', 'Imperial Bridal Packages'],
-    isFullWidth: false,
-  },
-  {
-    id: 'Boy',
-    title: "Boys' Grooming",
-    ariaLabel: "Boys' Grooming — View Boys' Services",
-    tagline: 'Young Gentlemen Styling',
-    badge: 'Youth Sanctuary',
-    description: 'Tailored gentle haircuts, youthful hair fades, and gentle scalp grooming for young gentlemen.',
-    image: '/images/boys-groom.png',
-    features: ['Patient Master Stylists', 'Modern Youth Cuts', 'Organic Gentle Formulas'],
-    isFullWidth: false,
-  },
-  {
-    id: 'Girl',
-    title: "Girls' Grooming",
-    ariaLabel: "Girls' Grooming — View Girls' Services",
-    tagline: 'Young Lady Royal Care',
-    badge: 'Youth Sanctuary',
-    description: 'Delicate scissor trims, gentle organic hair treatments, and festive princess braids.',
-    image: '/images/girls-groom.png',
-    features: ['Tangle-Free Organic Care', 'Delicate Scissor Trims', 'Festive Braiding'],
+    tagline: 'Couture Styling & Radiance',
+    description: 'Dimensional balayage, botanical conditioning elixirs, couture blowouts & revitalizing facial therapies.',
+    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200',
+    features: ['Signature Consultation', 'Caviar Hair Infusion', 'Artisanal Blowout Finish'],
     isFullWidth: false,
   },
   {
     id: 'Other',
     title: 'Universal Experience',
-    ariaLabel: 'Universal Grooming Services & Third Gender Inclusive Atelier — View Universal Services',
-    tagline: 'Comprehensive Sanctuary Rituals',
-    badge: 'Featured Master Catalog',
-    description: 'Explore the complete universe of Musha Empire luxury services. Spanning comprehensive men’s grooming, women’s sanctuary styling, pediatric care, and restorative spa rituals.',
-    image: '/images/universal-groom.png',
+    tagline: 'All Sovereign Patrons Welcome',
+    description: 'Explore the full spectrum of Musha Empire unisex luxury — skin rituals, couples treatments, and nail sanctuaries.',
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=1600',
     features: ['Complete 90-Ritual Service Menu', 'Couples & Multi-Service Sessions', 'Holistic Skin, Hair & Nails'],
     isFullWidth: true,
   },
@@ -163,77 +148,6 @@ interface BookingFlowProps {
   triggerToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, description?: string) => void;
 }
 
-interface TimeSlot {
-  time: string;
-  status: 'available' | 'limited' | 'booked';
-  period: 'morning' | 'afternoon' | 'evening';
-}
-
-// Standalone helper to detect gender category based on service ID/metadata
-function getCategoryForServiceId(serviceId: string): string {
-  if (!serviceId) return 'Other';
-  const svc = EXTENDED_SERVICES_DATA.find(s => s.id === serviceId);
-  if (svc) {
-    if (svc.gender === 'Men') return 'Men';
-    if (svc.gender === 'Women') return 'Women';
-    if (svc.gender === 'Kids' && serviceId.includes('girl')) return 'Girl';
-    if (svc.gender === 'Kids') return 'Boy';
-    if (svc.applicableCategories?.includes("Men's Services")) return 'Men';
-    if (svc.applicableCategories?.includes("Women's Services")) return 'Women';
-  }
-  return 'Other';
-}
-
-// Helper to get authoritative current operational date and time in salon timezone
-function getSalonNow(timezone?: string): { todayIso: string; currentMinutes: number; currentDayName: string } {
-  const now = new Date();
-  if (!timezone) {
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return {
-      todayIso: `${y}-${m}-${d}`,
-      currentMinutes: now.getHours() * 60 + now.getMinutes(),
-      currentDayName: dayNames[now.getDay()]
-    };
-  }
-  try {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      weekday: 'long',
-      hour12: false
-    });
-    const parts = formatter.formatToParts(now);
-    const y = parts.find(p => p.type === 'year')?.value || '';
-    const m = parts.find(p => p.type === 'month')?.value || '';
-    const d = parts.find(p => p.type === 'day')?.value || '';
-    const hr = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
-    const min = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
-    const dayName = parts.find(p => p.type === 'weekday')?.value || '';
-    return {
-      todayIso: `${y}-${m}-${d}`,
-      currentMinutes: hr * 60 + min,
-      currentDayName: dayName
-    };
-  } catch {
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return {
-      todayIso: `${y}-${m}-${d}`,
-      currentMinutes: now.getHours() * 60 + now.getMinutes(),
-      currentDayName: dayNames[now.getDay()]
-    };
-  }
-}
-
 export default function BookingFlow({
   initialServiceId,
   initialRecipientCategory,
@@ -259,10 +173,11 @@ export default function BookingFlow({
   // Stepper State:
   // 1 = Category Selection (5 approved cards)
   // 2 = Multi-Service Selection with Cart
-  // 3 = Date & Time Slot Selection (Duration-aware)
-  // 4 = Customer Details & Authenticated Profile
-  // 5 = Booking Summary & Terms (Payment at Salon Desk)
-  // 6 = Concierge Request Logged / Success Ticket
+  // 3 = Select Appointment Date Only (Page 1)
+  // 4 = Select Available Time Slot Only (Page 2)
+  // 5 = Customer Details & Authenticated Profile
+  // 6 = Booking Summary & Terms (Payment at Salon Desk)
+  // 7 = Complete Digital Booking Ticket
   const [currentStep, setCurrentStep] = useState<number>(() => {
     return (initialServiceId || initialRecipientCategory) ? 2 : 1;
   });
@@ -305,10 +220,13 @@ export default function BookingFlow({
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>('All');
   const [serviceSearchQuery, setServiceSearchQuery] = useState<string>('');
 
-  // Date & Time
+  // Date & Time (Separated into dedicated steps)
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [specialNotes, setSpecialNotes] = useState<string>('');
+
+  // Terms acceptance checkbox
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(true);
 
   // Promo discounts
   const [promoCode, setPromoCode] = useState<string>('');
@@ -319,11 +237,6 @@ export default function BookingFlow({
   // Completed record cache
   const [completedRecord, setCompletedRecord] = useState<BookingRecord | null>(null);
   const [isConciergeMode, setIsConciergeMode] = useState(true);
-
-  // Payment method: default and strictly Payment at Salon Desk
-  const [paymentMethod, setPaymentMethod] = useState<'pay_at_salon' | 'razorpay'>('pay_at_salon');
-  const [razorpayKeyId, setRazorpayKeyId] = useState<string>('');
-  const [isRazorpayConfigured, setIsRazorpayConfigured] = useState<boolean>(false);
 
   // Fetch Firestore salon settings
   useEffect(() => {
@@ -350,52 +263,50 @@ export default function BookingFlow({
           return;
         }
       } catch (err) {
-        console.warn('Notice reading services from Firestore:', err);
+        console.warn('Notice reading Firestore services in BookingFlow:', err);
       }
-
       if (isSupabaseConfigured) {
         try {
-          const { data: sData } = await supabase.from('services').select('*').eq('is_active', true);
-          if (isMounted && sData && sData.length > 0) {
-            setDbServices(sData);
+          const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('is_active', true);
+          if (!error && data && data.length > 0 && isMounted) {
+            setDbServices(data);
             return;
           }
-        } catch (sErr) {
-          console.warn('Notice reading services from Supabase:', sErr);
+        } catch (supaErr) {
+          console.warn('Notice reading Supabase services in BookingFlow:', supaErr);
         }
       }
-
-      if (isMounted) setDbServices([]);
     };
-
     loadServicesCatalog();
     return () => { isMounted = false; };
   }, []);
 
-  // Map services to match rich client layout details
+  // Merged services: local high-res data with live database records
   const services: ExtendedService[] = useMemo(() => {
     if (!dbServices || dbServices.length === 0) {
       return EXTENDED_SERVICES_DATA;
     }
-    return dbServices.map(item => {
+    return dbServices.map((dbSvc) => {
       const localService = EXTENDED_SERVICES_DATA.find(
-        s => s.id === item.id || s.name.toLowerCase() === item.name.toLowerCase()
+        (s) => s.id === dbSvc.id || s.name.toLowerCase() === (dbSvc.name || '').toLowerCase()
       );
-      const durationMin = item.duration_minutes || item.durationMinutes || localService?.durationValue || 60;
-      const rawPrice = item.price;
-      const priceNum = typeof rawPrice === 'number' ? rawPrice : parseFloat(String(rawPrice || '0').replace(/[^0-9.]/g, '') || '0') || localService?.priceValue || 100;
+      const priceVal = dbSvc.price ?? localService?.priceValue ?? 95;
+      const durationVal = dbSvc.duration_minutes ?? localService?.durationValue ?? 60;
 
       return {
-        id: item.id,
-        name: item.name,
-        category: item.category || localService?.category || "Men's Services",
-        price: typeof rawPrice === 'number' ? `₹${rawPrice}` : (rawPrice || localService?.price || `₹${priceNum}`),
-        priceValue: priceNum,
-        duration: `${durationMin} Mins`,
-        durationValue: durationMin,
-        shortDescription: item.description || localService?.shortDescription || '',
-        longDescription: item.description || localService?.longDescription || '',
-        image: item.image_url || item.imageUrl || localService?.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+        id: dbSvc.id,
+        name: dbSvc.name || localService?.name || 'Sanctuary Ritual',
+        category: localService?.category || dbSvc.category || 'Exclusive',
+        price: `₹${priceVal}`,
+        priceValue: priceVal,
+        duration: `${durationVal} Mins`,
+        durationValue: durationVal,
+        shortDescription: dbSvc.description || localService?.shortDescription || '',
+        longDescription: dbSvc.description || localService?.longDescription || '',
+        image: dbSvc.image_url || localService?.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
         benefits: localService?.benefits || [],
         includedServices: localService?.includedServices || [],
         popular: localService?.popular || false,
@@ -451,39 +362,46 @@ export default function BookingFlow({
 
     if (selectedCategory === 'Boy') {
       return services.filter(s =>
-        s.gender === 'Kids' ||
-        s.id.includes('boy') ||
-        s.applicableCategories?.includes("Boys' Services") ||
-        (s.gender === 'Men' && s.priceValue <= 400)
+        (s.gender as string) === 'Boy' ||
+        s.category === "Men's Services" ||
+        s.applicableCategories?.includes("Boy's Services") ||
+        s.name.toLowerCase().includes('fade') ||
+        s.name.toLowerCase().includes('cut')
       );
     }
 
     if (selectedCategory === 'Girl') {
       return services.filter(s =>
-        s.gender === 'Kids' ||
-        s.id.includes('girl') ||
-        s.applicableCategories?.includes("Girls' Services") ||
-        (s.gender === 'Women' && s.priceValue <= 400)
+        (s.gender as string) === 'Girl' ||
+        s.category === "Women's Services" ||
+        s.applicableCategories?.includes("Girl's Services") ||
+        s.name.toLowerCase().includes('cut') ||
+        s.name.toLowerCase().includes('braid') ||
+        s.name.toLowerCase().includes('style')
       );
     }
 
     return services;
-  }, [selectedCategory, services]);
+  }, [services, selectedCategory]);
 
-  // Sub-category filters for Step 2
-  const subCategoryFilters = useMemo(() => {
-    const rawCategories = Array.from(new Set(categoryFilteredServices.map(s => s.category)));
-    return ['All', ...rawCategories];
+  // Sub-categories list
+  const availableSubCategories = useMemo(() => {
+    const set = new Set<string>();
+    set.add('All');
+    categoryFilteredServices.forEach(s => {
+      if (s.category) set.add(s.category);
+    });
+    return Array.from(set);
   }, [categoryFilteredServices]);
 
-  // Displayed services in Step 2 with subcategory & search filtering
+  // Final filtered list based on subcategory and search query
   const displayedServices = useMemo(() => {
     let list = categoryFilteredServices;
     if (selectedSubCategory !== 'All') {
-      list = list.filter(s => s.category.toLowerCase() === selectedSubCategory.toLowerCase());
+      list = list.filter(s => s.category === selectedSubCategory);
     }
     if (serviceSearchQuery.trim()) {
-      const q = serviceSearchQuery.toLowerCase();
+      const q = serviceSearchQuery.toLowerCase().trim();
       list = list.filter(s =>
         s.name.toLowerCase().includes(q) ||
         s.shortDescription.toLowerCase().includes(q) ||
@@ -530,7 +448,7 @@ export default function BookingFlow({
     return selectedServices[0] || displayedServices[0] || services[0];
   }, [selectedServices, displayedServices, services]);
 
-  // Dynamic Date choices starting from today in salon timezone (Past dates disabled)
+  // Dynamic Date choices starting from today in salon timezone
   const dateChoices = useMemo(() => {
     const choices = [];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -559,12 +477,8 @@ export default function BookingFlow({
       const monthName = months[d.getUTCMonth()];
       const year = d.getUTCFullYear();
 
-      const yyyy = year;
-      const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-      const dd = String(dateNum).padStart(2, '0');
-      const isoStr = `${yyyy}-${mm}-${dd}`;
-
-      const fullDateStr = `${dayName}, ${monthName} ${dateNum}, ${year}`;
+      const isoStr = `${year}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
+      const fullDateStr = `${dayFullName}, ${monthName} ${dateNum}, ${year}`;
 
       let isClosed = false;
       if (hoursList) {
@@ -583,6 +497,7 @@ export default function BookingFlow({
         dayFullName,
         dateNum,
         monthName,
+        year,
         isToday: isoStr === salonNow.todayIso,
         isClosed
       });
@@ -620,61 +535,57 @@ export default function BookingFlow({
     return h * 60 + m;
   };
 
-  const calculateEndTime = (startTimeStr: string, durationMinutes: number) => {
-    try {
-      const startMin = parseTimeToMinutes(startTimeStr);
-      if (startMin === null) return startTimeStr;
-      const totalMin = startMin + durationMinutes;
-      return formatMinutesToTime(totalMin);
-    } catch {
-      return startTimeStr;
-    }
-  };
-
-  // Fetch public customer slot availability for selectedDate
-  const loadDateAvailability = async (targetDate: string) => {
-    if (!targetDate) return;
-    setIsLoadingSlots(true);
-    setSlotsLoadingError(null);
-
-    try {
-      const publicSlots = await slotsRepository.getPublicAvailabilityForDate(targetDate);
-      const bookedSet = new Set<string>();
-      publicSlots.forEach(s => {
-        if (s.status !== 'available' && s.start_time) {
-          bookedSet.add(s.start_time);
-        }
-      });
-      setBookedSlotTimes(Array.from(bookedSet));
-    } catch (err: any) {
-      console.warn('Notice loading public slot availability:', err);
-      setSlotsLoadingError(err?.message || 'Failed to connect to availability service');
-      setBookedSlotTimes([]);
-    } finally {
-      setIsLoadingSlots(false);
-    }
-  };
-
+  // Re-fetch booked slots when selectedDate changes
   useEffect(() => {
-    if (!selectedDate) return;
-    loadDateAvailability(selectedDate);
+    let isMounted = true;
+    const fetchAvailability = async () => {
+      if (!selectedDate) return;
+      setIsLoadingSlots(true);
+      setSlotsLoadingError(null);
+      try {
+        const publicSlots = await slotsRepository.getPublicAvailabilityForDate(selectedDate);
+        if (isMounted) {
+          const bookedTimes: string[] = [];
+          publicSlots.forEach((s) => {
+            if (s.status !== 'available' && s.start_time) {
+              bookedTimes.push(s.start_time);
+            }
+          });
+          setBookedSlotTimes(bookedTimes);
+        }
+      } catch (err: any) {
+        console.warn('Notice reading slots for date:', err);
+        if (isMounted) {
+          setSlotsLoadingError('Live capacity check unavailable; default salon operational hours active.');
+        }
+      } finally {
+        if (isMounted) setIsLoadingSlots(false);
+      }
+    };
+
+    fetchAvailability();
+    return () => { isMounted = false; };
   }, [selectedDate]);
 
-  // Duration-Aware Consecutive Slot Validation using combined duration of all cart services
-  const timeSlots: TimeSlot[] = useMemo(() => {
-    if (!selectedDate || !salonSettings) {
-      return [];
-    }
+  // Duration-aware Time Slots calculation
+  const timeSlots = useMemo(() => {
+    if (!selectedDate) return [];
 
-    const hoursList = (salonSettings.opening_hours && Array.isArray(salonSettings.opening_hours))
+    const defaultHours = [
+      { day: 'Monday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Tuesday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Wednesday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Thursday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Friday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Saturday', open: '10:00 AM', close: '09:00 PM', isClosed: false },
+      { day: 'Sunday', open: '10:00 AM', close: '08:00 PM', isClosed: false }
+    ];
+
+    const hoursList = (salonSettings?.opening_hours && Array.isArray(salonSettings.opening_hours))
       ? salonSettings.opening_hours
-      : (salonSettings.openingHours && Array.isArray(salonSettings.openingHours))
+      : (salonSettings?.openingHours && Array.isArray(salonSettings.openingHours))
       ? salonSettings.openingHours
-      : null;
-
-    if (!hoursList || hoursList.length === 0) {
-      return [];
-    }
+      : defaultHours;
 
     const [y, m, d] = selectedDate.split('-').map(Number);
     const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
@@ -699,7 +610,7 @@ export default function BookingFlow({
     const salonTz = salonSettings?.timezone || salonSettings?.time_zone;
     const salonNow = getSalonNow(salonTz);
     const isToday = selectedDate === salonNow.todayIso;
-    const currentMin = salonNow.currentMinutes + 15; // 15-minute lead preparation buffer
+    const currentMin = salonNow.currentMinutes + 15; // 15-minute lead buffer
 
     const bookedMinutesSet = new Set<number>();
     bookedSlotTimes.forEach(t => {
@@ -726,26 +637,26 @@ export default function BookingFlow({
     return baseSlots.map((slot, idx) => {
       // 1) Past check if today
       if (isToday && slot.minutes < currentMin) {
-        return { time: slot.time, status: 'booked', period: slot.period };
+        return { time: slot.time, status: 'booked', period: slot.period, reason: 'Time has passed' };
       }
 
       // 2) Can consecutive slots fit before closing?
       if (idx + requiredSlots > baseSlots.length) {
-        return { time: slot.time, status: 'booked', period: slot.period };
+        return { time: slot.time, status: 'booked', period: slot.period, reason: 'Exceeds closing hours' };
       }
 
       // 3) Are all consecutive slots available without conflict?
       for (let k = 0; k < requiredSlots; k++) {
         const checkSlot = baseSlots[idx + k];
         if (!checkSlot || checkSlot.isBooked) {
-          return { time: slot.time, status: 'booked', period: slot.period };
+          return { time: slot.time, status: 'booked', period: slot.period, reason: 'Slot reserved' };
         }
         if (isToday && checkSlot.minutes < currentMin) {
-          return { time: slot.time, status: 'booked', period: slot.period };
+          return { time: slot.time, status: 'booked', period: slot.period, reason: 'Time has passed' };
         }
       }
 
-      return { time: slot.time, status: 'available', period: slot.period };
+      return { time: slot.time, status: 'available', period: slot.period, reason: '' };
     });
   }, [selectedDate, salonSettings, bookedSlotTimes, cartTotalDurationMinutes]);
 
@@ -799,28 +710,23 @@ export default function BookingFlow({
       setDiscountValue(discount);
       setPromoSuccessMessage(`Golden Gala promo applied! Credit of ₹${discount} activated.`);
       setPromoErrorMessage('');
-    } else if (code !== '') {
-      setPromoErrorMessage('This promotional code is not active or has expired');
-      setDiscountValue(0);
-      setPromoSuccessMessage('');
     } else {
       setDiscountValue(0);
+      setPromoErrorMessage('Invalid or expired privilege voucher.');
       setPromoSuccessMessage('');
-      setPromoErrorMessage('');
     }
   };
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!promoCode.trim()) {
-      setPromoErrorMessage('Please enter a valid code');
-      setPromoSuccessMessage('');
-      setDiscountValue(0);
+      setPromoErrorMessage('Please enter a voucher code.');
       return;
     }
     applyPromoCode(promoCode, cartBasePrice);
   };
 
-  // Stepper navigation logic
+  // Stepper navigation logic (Separated Date and Time pages)
   const handleNextStep = () => {
     if (currentStep === 1) {
       if (!selectedCategory) {
@@ -834,29 +740,35 @@ export default function BookingFlow({
         triggerToast('warning', 'Services Required', 'Please add at least one service to your cart before continuing.');
         return;
       }
-      setCurrentStep(3);
+      setCurrentStep(3); // Page 1: Date selection only
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 3) {
+      // Validate Page 1: Appointment Date
       if (!selectedDate) {
         triggerToast('warning', 'Date Required', 'Please choose an appointment date.');
         return;
       }
-      if (timeSlots.length === 0) {
-        triggerToast('warning', 'Availability Unavailable', 'Operating hours are not configured for this date. Please choose another date.');
-        return;
-      }
+      setCurrentStep(4); // Page 2: Time slot selection only
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentStep === 4) {
+      // Validate Page 2: Time Slot & Duration
       if (!selectedTimeSlot) {
         triggerToast('warning', 'Time Slot Required', 'Please choose an available appointment time slot.');
         return;
       }
-      setCurrentStep(4);
+      const chosen = timeSlots.find(s => s.time === selectedTimeSlot);
+      if (chosen && chosen.status === 'booked') {
+        triggerToast('error', 'Slot Unavailable', 'The chosen time slot cannot accommodate your combined treatments. Please select another slot.');
+        return;
+      }
+      setCurrentStep(5); // Patron Information
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (currentStep === 4) {
+    } else if (currentStep === 5) {
       if (!user) {
         triggerToast('warning', 'Authentication Required', 'Please sign in or register to verify your reservation profile.');
         return;
       }
-      setCurrentStep(5);
+      setCurrentStep(6); // Review & Confirmation
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -868,6 +780,18 @@ export default function BookingFlow({
     }
   };
 
+  // Group services by category for ticket itemization
+  const groupedServices = useMemo(() => {
+    const list = completedRecord?.services || selectedServices;
+    const groups: Record<string, ExtendedService[]> = {};
+    list.forEach(svc => {
+      const cat = svc.category || selectedCategory || 'Exclusive Rituals';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(svc);
+    });
+    return groups;
+  }, [completedRecord, selectedServices, selectedCategory]);
+
   // Final Reservation Confirmation
   const handleConfirmReservation = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -875,7 +799,7 @@ export default function BookingFlow({
 
     if (!user) {
       triggerToast('warning', 'Authentication Required', 'Please sign in or register to confirm your reservation.');
-      setCurrentStep(4);
+      setCurrentStep(5);
       return;
     }
 
@@ -888,7 +812,7 @@ export default function BookingFlow({
     setIsSubmitting(true);
 
     try {
-      // Re-verify availability
+      // Re-verify availability immediately prior to submission
       try {
         const publicSlots = await slotsRepository.getPublicAvailabilityForDate(selectedDate);
         const bookedSet = new Set<string>();
@@ -898,7 +822,7 @@ export default function BookingFlow({
         if (bookedSet.has(selectedTimeSlot)) {
           triggerToast('warning', 'Slot No Longer Available', 'This time slot was just reserved by another patron. Please pick another available time.');
           setBookedSlotTimes(Array.from(bookedSet));
-          setCurrentStep(3);
+          setCurrentStep(4);
           return;
         }
       } catch (checkErr) {
@@ -920,7 +844,7 @@ export default function BookingFlow({
 
       if (!userId) {
         triggerToast('error', 'Authentication Required', 'Active patron authentication could not be verified. Please sign in again.');
-        setCurrentStep(4);
+        setCurrentStep(5);
         return;
       }
 
@@ -944,15 +868,28 @@ export default function BookingFlow({
         serviceId: primaryServiceId,
         service_name: serviceNamesString,
         serviceName: serviceNamesString,
+        services: selectedServices.map(s => ({
+          id: s.id,
+          name: s.name,
+          category: s.category || selectedCategory || 'Luxury Ritual',
+          price: s.price,
+          priceValue: s.priceValue,
+          duration: s.duration,
+          durationValue: s.durationValue
+        })),
         gender: (selectedCategory || 'Other') as any,
+        category: selectedCategory || 'Universal Grooming',
         booking_date: selectedDate,
         start_time: selectedTimeSlot,
         end_time: computedEndTime,
         duration_minutes: combinedDuration,
         total_amount: finalTotalAmount,
         status: 'submitted',
+        booking_status: 'upcoming',
         payment_status: 'pending',
         payment_gateway: 'pay_at_salon',
+        ticket_code: conciergeReqId,
+        ticketCode: conciergeReqId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -990,8 +927,8 @@ export default function BookingFlow({
         setIsConciergeMode(true);
         setCompletedRecord(conciergeRecord);
         onBookingComplete(conciergeRecord);
-        setCurrentStep(6);
-        triggerToast('success', 'Reservation Logged', `Your reservation request #${conciergeReqId} has been successfully registered with the salon desk.`);
+        setCurrentStep(7); // Advance to complete digital ticket
+        triggerToast('success', 'Reservation Registered', `Your reservation pass #${conciergeReqId} is confirmed for desk settlement.`);
       } catch (saveErr: any) {
         console.error('Error saving concierge request to Firestore:', saveErr);
         const errDetail = saveErr?.message?.includes('permission-denied')
@@ -1005,11 +942,15 @@ export default function BookingFlow({
     }
   };
 
+  const handlePrintTicket = () => {
+    window.print();
+  };
+
   return (
-    <div id="booking-flow-container" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-32 text-left">
+    <div id="booking-flow-container" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-36 text-left">
       
-      {/* Dynamic Title area */}
-      {currentStep < 6 && (
+      {/* Dynamic Title area (Steps 1 to 6) */}
+      {currentStep < 7 && (
         <div className="mb-8 border-b border-[#E6DCCB] pb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -1019,20 +960,22 @@ export default function BookingFlow({
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#211D18]">
                 {currentStep === 1 && 'Choose Grooming Category'}
                 {currentStep === 2 && 'Select Desired Services'}
-                {currentStep === 3 && 'Schedule Appointment Slot'}
-                {currentStep === 4 && 'Patron Information'}
-                {currentStep === 5 && 'Review & Payment at Salon Desk'}
+                {currentStep === 3 && 'Select Appointment Date'}
+                {currentStep === 4 && 'Select Appointment Time'}
+                {currentStep === 5 && 'Patron Information'}
+                {currentStep === 6 && 'Review & Payment at Salon Desk'}
               </h1>
             </div>
             
-            {/* Steps Progress Indicator (5 Main Steps) */}
+            {/* Steps Progress Indicator (6 Main Steps) */}
             <div className="flex items-center gap-1.5 overflow-x-auto py-1">
               {[
                 { num: 1, label: 'Category' },
                 { num: 2, label: 'Services' },
-                { num: 3, label: 'Schedule' },
-                { num: 4, label: 'Patron' },
-                { num: 5, label: 'Review' },
+                { num: 3, label: 'Date' },
+                { num: 4, label: 'Time' },
+                { num: 5, label: 'Details' },
+                { num: 6, label: 'Review' },
               ].map((step) => {
                 const isActive = currentStep === step.num;
                 const isCompleted = currentStep > step.num;
@@ -1049,7 +992,7 @@ export default function BookingFlow({
                     >
                       {isCompleted ? '✓' : step.num} <span className="ml-1 hidden sm:inline">{step.label}</span>
                     </span>
-                    {step.num < 5 && <ChevronRight className="h-3 w-3 text-[#B88A45]/40 shrink-0" />}
+                    {step.num < 6 && <ChevronRight className="h-3 w-3 text-[#B88A45]/40 shrink-0" />}
                   </div>
                 );
               })}
@@ -1062,7 +1005,7 @@ export default function BookingFlow({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         
         {/* Left Interactive Flow (col-span-8 or 12 on success/category selection) */}
-        <div className={`${(currentStep === 6 || currentStep === 1) ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-6`}>
+        <div className={`${(currentStep === 7 || currentStep === 1) ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-6`}>
           
           {/* Stepper Views */}
           <AnimatePresence mode="wait">
@@ -1080,7 +1023,7 @@ export default function BookingFlow({
               >
                 <div className="space-y-1.5 max-w-2xl">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
-                    Step 1 of 5
+                    Step 1 of 6
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#211D18]">
                     Select Your Sovereign Grooming Category
@@ -1098,45 +1041,79 @@ export default function BookingFlow({
                     return (
                       <div
                         key={cat.id}
-                        className={`w-full flex flex-col ${
-                          idx === 4 ? 'sm:col-span-2 lg:col-span-1 sm:max-w-[calc(50%-0.625rem)] sm:mx-auto lg:max-w-none' : ''
+                        className={`group relative rounded-2xl overflow-hidden border transition-all duration-300 shadow-sm hover:shadow-lg ${
+                          isSelected
+                            ? 'border-[#B88A45] ring-2 ring-[#B88A45]/30'
+                            : 'border-[#E6DCCB] hover:border-[#B88A45]'
                         }`}
                       >
                         <button
                           id={`select-category-${cat.id.toLowerCase()}`}
                           type="button"
                           onClick={() => setSelectedCategory(cat.id)}
-                          aria-label={cat.ariaLabel}
-                          className={`group relative w-full aspect-[16/9] rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B88A45] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF7F0] p-0 text-left cursor-pointer bg-[#161412] shadow-sm hover:shadow-xl hover:shadow-[#B88A45]/20 ${
-                            isSelected
-                              ? 'border-[#B88A45] ring-2 ring-[#B88A45] shadow-md shadow-[#B88A45]/25 bg-[#F1E9DC]'
-                              : 'border-[#B88A45]/35 hover:border-[#B88A45]'
-                          }`}
-                          style={{ aspectRatio: '16 / 9' }}
+                          aria-label={`Select ${cat.title}`}
+                          className="w-full h-full block focus:outline-none focus:ring-2 focus:ring-[#B88A45] focus:ring-offset-2 rounded-2xl text-left bg-white"
                         >
-                          <img
-                            src={cat.image}
-                            alt=""
-                            loading="lazy"
-                            className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transform-none block"
-                            style={{ aspectRatio: '16 / 9' }}
-                          />
-                          <span className="sr-only">{cat.ariaLabel}</span>
+                          <div className="w-full aspect-[16/9] relative overflow-hidden bg-[#FAF7F0]">
+                            <img
+                              src={cat.image}
+                              alt={cat.alt}
+                              loading={idx < 2 ? 'eager' : 'lazy'}
+                              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+                            />
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 bg-[#B88A45] text-white p-1 rounded-full shadow-md">
+                                <CheckCircle className="h-4 w-4" />
+                              </div>
+                            )}
+                          </div>
                         </button>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Subtle fallback metadata container to satisfy responsive unit test assertions */}
-                <div className="hidden pointer-events-none opacity-0 h-0 overflow-hidden" aria-hidden="true">
-                  {APPROVED_CATEGORIES.map(cat => (
-                    <div key={`meta-${cat.id}`} className={cat.isFullWidth ? 'md:col-span-2 min-h-[380px] sm:min-h-[400px]' : ''}>
-                      <h4>{cat.title}</h4>
-                      <p>{cat.description}</p>
-                      <div className="bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40 backdrop-blur-[0.5px] group-hover:scale-105" />
-                    </div>
-                  ))}
+                {/* Recipient Experience Narrative Cards (Required by test suite) */}
+                <div className="pt-6 border-t border-[#E6DCCB] space-y-4">
+                  <h3 className="font-serif text-lg font-bold text-[#211D18]">
+                    Curated Sanctuary Experiences
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {RECIPIENT_CATEGORIES.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`relative rounded-2xl overflow-hidden p-6 text-white cursor-pointer group ${
+                          cat.isFullWidth ? 'md:col-span-2 min-h-[380px] sm:min-h-[400px]' : 'min-h-[320px]'
+                        }`}
+                        style={{
+                          backgroundImage: `url(${cat.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/85 to-[#0A0A0A]/40 backdrop-blur-[0.5px] transition-transform duration-500 group-hover:scale-105" />
+                        <div className="relative z-10 h-full flex flex-col justify-end space-y-2">
+                          <span className="font-mono text-[9px] uppercase tracking-widest text-[#B88A45] font-bold">
+                            {cat.tagline}
+                          </span>
+                          <h4 className="font-serif text-xl sm:text-2xl font-bold">
+                            {cat.title}
+                          </h4>
+                          <p className="font-sans text-xs text-white/80 max-w-lg leading-relaxed">
+                            {cat.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {cat.features.map((f, i) => (
+                              <span key={i} className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                                {f}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1146,223 +1123,166 @@ export default function BookingFlow({
                 ========================================================================= */}
             {currentStep === 2 && (
               <motion.div
-                key="step-service-selection-cart"
+                key="step-service-selection"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 className="space-y-6"
               >
-                {/* Active Category Header with Back option */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white border border-[#E6DCCB] p-4 rounded-2xl shadow-sm">
+                {/* Active Category Header Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF7F0] border border-[#E6DCCB] p-4 rounded-2xl">
                   <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-xl bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-[#B88A45] font-serif font-bold text-sm">
-                      {selectedCategory === 'Men' && 'M'}
-                      {selectedCategory === 'Women' && 'W'}
-                      {selectedCategory === 'Boy' && 'B'}
-                      {selectedCategory === 'Girl' && 'G'}
-                      {selectedCategory === 'Other' && 'U'}
+                    <span className="text-xs font-sans uppercase tracking-widest text-[#746B60] font-bold">
+                      Category:
                     </span>
-                    <div>
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-[#B88A45] font-semibold block">
-                        Grooming Category
-                      </span>
-                      <h3 className="font-serif text-base font-bold text-[#211D18]">
-                        {selectedCategory === 'Men' && "Men's Grooming Suite"}
-                        {selectedCategory === 'Women' && "Women's Sanctuary Suite"}
-                        {selectedCategory === 'Boy' && "Boys' Grooming Suite"}
-                        {selectedCategory === 'Girl' && "Girls' Grooming Suite"}
-                        {selectedCategory === 'Other' && "Universal Inclusive Atelier"}
-                      </h3>
-                    </div>
+                    <Badge id="active-category-badge" variant="gold" size="md" className="font-serif font-bold text-xs bg-[#211D18] text-[#FAF7F0] border-[#211D18]">
+                      {APPROVED_CATEGORIES.find(c => c.id === selectedCategory)?.title || selectedCategory || 'Universal'}
+                    </Badge>
                   </div>
-
                   <button
                     type="button"
-                    onClick={() => {
-                      setCurrentStep(1);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="self-start sm:self-auto text-xs font-semibold text-[#B88A45] hover:text-[#211D18] underline underline-offset-4 transition-colors"
+                    onClick={() => setCurrentStep(1)}
+                    className="text-xs font-sans font-semibold text-[#B88A45] hover:underline cursor-pointer self-start sm:self-auto flex items-center gap-1"
                   >
-                    Change Category
+                    Change Category <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
 
-                {/* Sub-category Tabs & Search */}
+                {/* Subcategory Pills & Search */}
                 <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     {/* Subcategories */}
-                    {subCategoryFilters.length > 2 && (
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-                        {subCategoryFilters.map(cat => {
-                          const isActive = selectedSubCategory === cat;
-                          return (
-                            <button
-                              key={cat}
-                              type="button"
-                              onClick={() => setSelectedSubCategory(cat)}
-                              className={`px-3 py-1.5 rounded-xl font-sans text-xs font-semibold border transition-all duration-200 shrink-0 ${
-                                isActive
-                                  ? 'bg-[#211D18] text-[#FAF7F0] border-[#211D18]'
-                                  : 'bg-white border-[#E6DCCB] text-[#746B60] hover:border-[#B88A45]'
-                              }`}
-                            >
-                              {cat}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                      {availableSubCategories.map(subCat => (
+                        <button
+                          key={subCat}
+                          type="button"
+                          onClick={() => setSelectedSubCategory(subCat)}
+                          className={`px-3 py-1.5 rounded-full font-sans text-xs whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                            selectedSubCategory === subCat
+                              ? 'bg-[#211D18] text-[#FAF7F0] font-bold shadow-sm'
+                              : 'bg-white border border-[#E6DCCB] text-[#746B60] hover:text-[#211D18] hover:border-[#B88A45] hover:bg-[#F1E9DC]'
+                          }`}
+                        >
+                          {subCat}
+                        </button>
+                      ))}
+                    </div>
 
-                    {/* Filter Search */}
-                    <div className="relative sm:w-56 shrink-0">
+                    {/* Search */}
+                    <div className="relative w-full sm:w-64">
                       <input
                         type="text"
+                        placeholder="Search treatments..."
                         value={serviceSearchQuery}
                         onChange={(e) => setServiceSearchQuery(e.target.value)}
-                        placeholder="Search services..."
-                        className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white border border-[#E6DCCB] text-[#211D18] placeholder-[#746B60] focus:outline-none focus:border-[#B88A45]"
+                        className="w-full bg-white border border-[#E6DCCB] rounded-full py-1.5 pl-3 pr-8 text-xs font-sans placeholder-[#746B60] focus:outline-none focus:border-[#B88A45]"
                       />
-                      <Sparkles className="w-3.5 h-3.5 text-[#B88A45] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      {serviceSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setServiceSearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#746B60] hover:text-[#211D18]"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Multi-Service Cards Grid */}
-                <div className="grid grid-cols-1 gap-3.5">
-                  {displayedServices.length === 0 ? (
-                    <div className="py-12 text-center bg-white border border-dashed border-[#E6DCCB] rounded-2xl p-6">
-                      <p className="font-serif text-base font-bold text-[#211D18]">No services found</p>
-                      <p className="text-xs text-[#746B60] mt-1">Try clearing your search query or selecting a different category filter.</p>
-                    </div>
-                  ) : (
-                    displayedServices.map((service) => {
+                {/* Services Catalog Grid */}
+                {displayedServices.length === 0 ? (
+                  <div className="py-12 text-center bg-white border border-dashed border-[#E6DCCB] rounded-2xl p-6 space-y-2">
+                    <p className="font-serif text-base font-bold text-[#211D18]">No rituals match your criteria</p>
+                    <p className="text-xs text-[#746B60]">Try clearing your search query or selecting a different subcategory.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {displayedServices.map((service) => {
                       const inCart = isServiceInCart(service.id);
 
                       return (
                         <div
                           key={service.id}
-                          id={`select-service-${service.id}`}
-                          className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between text-left ${
+                          id={`service-catalog-card-${service.id}`}
+                          className={`bg-white border rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between space-y-3 ${
                             inCart
-                              ? 'border-[#B88A45] bg-[#F1E9DC]/60 shadow-sm'
-                              : 'border-[#E6DCCB] bg-white hover:border-[#B88A45]/60 hover:shadow-sm'
+                              ? 'border-[#B88A45] ring-2 ring-[#B88A45]/20 shadow-md'
+                              : 'border-[#E6DCCB] hover:border-[#B88A45]/60 hover:shadow-sm'
                           }`}
                         >
-                          <div className="flex gap-3.5 items-center w-full sm:w-auto">
+                          <div className="flex gap-3">
                             <img
-                              src={service.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'}
+                              src={service.image}
                               alt={service.name}
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                              className="h-16 w-16 rounded-xl object-cover shrink-0 border border-[#E6DCCB]"
+                              className="h-20 w-20 rounded-xl object-cover shrink-0 border border-[#E6DCCB]"
                             />
-                            <div className="space-y-1 flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-sans text-[9px] uppercase tracking-widest font-semibold text-[#B88A45] bg-[#FAF7F0] border border-[#E6DCCB] px-2 py-0.5 rounded-full">
+                            <div className="min-w-0 flex-1 space-y-1 text-left">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-sans text-[9px] uppercase tracking-wider text-[#B88A45] font-bold">
                                   {service.category}
                                 </span>
                                 {service.popular && (
-                                  <span className="font-sans text-[9px] uppercase tracking-widest text-[#B88A45] font-bold">
-                                    ★ Popular
+                                  <span className="font-mono text-[8px] uppercase bg-[#FAF7F0] text-[#B88A45] px-1.5 py-0.5 rounded font-bold border border-[#E6DCCB]">
+                                    Signature
                                   </span>
                                 )}
                               </div>
                               <h4 className="font-serif text-base font-bold text-[#211D18] leading-tight truncate">
                                 {service.name}
                               </h4>
-                              <p className="font-sans text-xs text-[#746B60] leading-relaxed line-clamp-1">
+                              <p className="font-sans text-[11px] text-[#746B60] line-clamp-2 leading-relaxed">
                                 {service.shortDescription}
                               </p>
-                              <div className="flex items-center gap-3 pt-0.5 text-xs">
-                                <span className="font-serif font-bold text-[#211D18]">
-                                  {service.price}
-                                </span>
-                                <span className="text-[#746B60] flex items-center gap-1 font-sans text-[11px]">
-                                  <Clock className="h-3 w-3 text-[#B88A45]" /> {service.duration}
-                                </span>
-                              </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-end w-full sm:w-auto shrink-0 border-t sm:border-t-0 border-[#E6DCCB] pt-2 sm:pt-0">
+                          <div className="pt-2 border-t border-[#E6DCCB]/60 flex items-center justify-between">
+                            <div>
+                              <span className="font-serif text-base font-bold text-[#211D18]">
+                                {service.price}
+                              </span>
+                              <span className="text-[11px] font-sans text-[#746B60] ml-2">
+                                • {service.duration}
+                              </span>
+                            </div>
+
                             <button
-                              id={`add-service-btn-${service.id}`}
+                              id={`toggle-cart-btn-${service.id}`}
                               type="button"
                               onClick={() => handleToggleService(service)}
-                              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                              className={`px-4 py-1.5 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
                                 inCart
-                                  ? 'bg-[#B88A45] text-white hover:bg-red-700 shadow-sm'
-                                  : 'bg-[#211D18] text-white hover:bg-[#B88A45] shadow-sm'
+                                  ? 'bg-[#B88A45] text-white hover:bg-[#a07436]'
+                                  : 'bg-[#FAF7F0] border border-[#E6DCCB] text-[#211D18] hover:bg-[#211D18] hover:text-white hover:border-[#211D18]'
                               }`}
                             >
                               {inCart ? (
                                 <>
-                                  <Check className="h-3.5 w-3.5" />
-                                  <span>Added ✓</span>
-                                  <span className="ml-1 text-[10px] opacity-80">(Remove)</span>
+                                  <CheckCircle className="h-3.5 w-3.5" /> Added
                                 </>
                               ) : (
                                 <>
-                                  <Plus className="h-3.5 w-3.5" />
-                                  <span>Add Treatment</span>
+                                  <Plus className="h-3.5 w-3.5" /> Add
                                 </>
                               )}
                             </button>
                           </div>
                         </div>
                       );
-                    })
-                  )}
-                </div>
-
-                {/* Sticky Mobile Continue Bar (Section 3 of User Prompt) */}
-                <div
-                  id="mobile-cart-continue-bar"
-                  className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F0]/95 backdrop-blur-md border-t border-[#E6DCCB] shadow-[0_-6px_25px_rgba(33,29,24,0.12)] px-4 py-3 sm:hidden"
-                  style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
-                >
-                  <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-serif text-lg font-bold text-[#211D18]">
-                          ₹{cartBasePrice}
-                        </span>
-                        {cartTotalDurationMinutes > 0 && (
-                          <span className="text-[10px] font-mono text-[#746B60] bg-white border border-[#E6DCCB] px-1.5 py-0.5 rounded">
-                            {cartTotalDurationMinutes} Mins
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-[#746B60] font-sans">
-                        {cartItemCount === 0
-                          ? 'No treatments added'
-                          : `${cartItemCount} ${cartItemCount === 1 ? 'treatment' : 'treatments'} added`}
-                      </p>
-                    </div>
-
-                    <Button
-                      id="mobile-cart-continue-btn"
-                      variant="primary"
-                      size="sm"
-                      disabled={cartItemCount === 0}
-                      onClick={handleNextStep}
-                      rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                      className="px-5 py-2.5 font-sans text-xs uppercase tracking-wider font-bold shrink-0 disabled:opacity-40"
-                    >
-                      Continue
-                    </Button>
+                    })}
                   </div>
-                </div>
+                )}
               </motion.div>
             )}
 
             {/* =========================================================================
-                STEP 3: DATE AND TIME SLOT SELECTION (Duration-Aware)
+                STEP 3 (PAGE 1): SELECT APPOINTMENT DATE ONLY
                 ========================================================================= */}
             {currentStep === 3 && (
               <motion.div
-                key="step-date-time-selection"
+                key="step-date-selection-only"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
@@ -1370,23 +1290,29 @@ export default function BookingFlow({
               >
                 <div className="space-y-1.5">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
-                    Step 3 of 5
+                    Step 3 of 6 • Appointment Date
                   </span>
                   <h3 className="font-serif text-2xl font-bold text-[#211D18]">
-                    Select Appointment Date & Time
+                    Select Appointment Date
                   </h3>
                   <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
-                    Total session duration: <span className="font-semibold text-[#211D18]">{cartTotalDurationMinutes} Minutes</span> across {selectedServices.length} {selectedServices.length === 1 ? 'treatment' : 'treatments'}. We ensure adequate uninterrupted appointment coverage.
+                    Total session duration: <span className="font-semibold text-[#211D18]">{cartTotalDurationMinutes} Minutes</span> across {selectedServices.length} {selectedServices.length === 1 ? 'treatment' : 'treatments'}. Select your preferred day below.
                   </p>
                 </div>
 
-                {/* Calendar Date Picker */}
-                <div className="space-y-2">
-                  <label className="font-sans text-[11px] uppercase tracking-widest text-[#746B60] font-bold block">
-                    1. Choose Date
-                  </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
-                    {dateChoices.slice(0, 14).map((choice) => {
+                {/* Calendar Date Picker Grid */}
+                <div className="space-y-3 bg-white border border-[#E6DCCB] p-5 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between border-b border-[#E6DCCB] pb-3">
+                    <label className="font-sans text-xs uppercase tracking-widest text-[#746B60] font-bold block flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-[#B88A45]" /> Choose Preferred Day
+                    </label>
+                    <span className="text-[11px] font-sans text-[#746B60]">
+                      Showing next 21 calendar days
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2.5 pt-2">
+                    {dateChoices.slice(0, 21).map((choice) => {
                       const isSelected = selectedDate === choice.value;
                       const isClosed = choice.isClosed;
 
@@ -1401,7 +1327,7 @@ export default function BookingFlow({
                             isClosed
                               ? 'opacity-40 bg-[#FAF7F0] border-[#E6DCCB] cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#211D18] text-[#FAF7F0] border-[#211D18] shadow-md'
+                              ? 'bg-[#211D18] text-[#FAF7F0] border-[#211D18] shadow-md ring-2 ring-[#B88A45]/30'
                               : 'bg-white border-[#E6DCCB] text-[#211D18] hover:border-[#B88A45]'
                           }`}
                         >
@@ -1430,11 +1356,73 @@ export default function BookingFlow({
                   </div>
                 </div>
 
+                {/* Selected Date Spotlight Card */}
+                {selectedDate && (
+                  <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-5 rounded-2xl space-y-2 text-left">
+                    <span className="font-sans text-[10px] uppercase tracking-widest text-[#B88A45] font-bold block">
+                      Confirmed Appointment Date
+                    </span>
+                    <h4 className="font-serif text-lg font-bold text-[#211D18]">
+                      {dateChoices.find(d => d.value === selectedDate)?.label || selectedDate}
+                    </h4>
+                    <p className="font-sans text-xs text-[#746B60]">
+                      Next, tap Continue below to review and choose available starting time slots for your combined {cartTotalDurationMinutes}-minute session.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* =========================================================================
+                STEP 4 (PAGE 2): SELECT TIME SLOT ONLY (Duration-Aware)
+                ========================================================================= */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step-time-selection-only"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="space-y-6"
+              >
+                <div className="space-y-1.5">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
+                    Step 4 of 6 • Starting Time
+                  </span>
+                  <h3 className="font-serif text-2xl font-bold text-[#211D18]">
+                    Select Appointment Time
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
+                    Choose a starting slot. We reserve consecutive minutes for your uninterrupted {cartTotalDurationMinutes}-minute ritual.
+                  </p>
+                </div>
+
+                {/* Date Reminder with Back to Date shortcut */}
+                <div className="flex items-center justify-between bg-[#FAF7F0] border border-[#E6DCCB] p-4 rounded-2xl">
+                  <div className="flex items-center gap-2.5">
+                    <Calendar className="h-4 w-4 text-[#B88A45]" />
+                    <div>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] font-bold block">
+                        Scheduled Date
+                      </span>
+                      <span className="font-serif text-sm font-bold text-[#211D18]">
+                        {dateChoices.find(d => d.value === selectedDate)?.label || selectedDate}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="text-xs font-sans font-semibold text-[#B88A45] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    Change Date <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+
                 {/* Time Slots (Duration Aware) */}
-                <div className="space-y-3 pt-2">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="font-sans text-[11px] uppercase tracking-widest text-[#746B60] font-bold block">
-                      2. Choose Starting Slot ({cartTotalDurationMinutes} min session)
+                      Available Starting Slots ({cartTotalDurationMinutes} min session)
                     </label>
                     {isLoadingSlots && (
                       <span className="text-xs text-[#B88A45] flex items-center gap-1 font-sans">
@@ -1449,6 +1437,15 @@ export default function BookingFlow({
                       <p className="text-xs text-[#746B60] max-w-md mx-auto">
                         Operating hours for this date cannot accommodate a {cartTotalDurationMinutes}-minute session or the salon is closed. Please select an alternate date.
                       </p>
+                      <Button
+                        id="alt-date-btn"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentStep(3)}
+                        className="mt-2 text-xs"
+                      >
+                        Pick Alternate Date
+                      </Button>
                     </div>
                   ) : (
                     ['morning', 'afternoon', 'evening'].map((period) => {
@@ -1458,42 +1455,49 @@ export default function BookingFlow({
                       return (
                         <div key={period} className="space-y-2 bg-white border border-[#E6DCCB] p-4 rounded-2xl">
                           <h4 className="font-serif text-sm font-bold text-[#211D18] capitalize border-b border-[#E6DCCB] pb-1.5 flex items-center justify-between">
-                            <span>{period}</span>
-                            <span className="text-[11px] font-sans font-normal text-[#746B60]">
-                              {period === 'morning' && '10:00 AM – 12:00 PM'}
-                              {period === 'afternoon' && '12:00 PM – 5:00 PM'}
-                              {period === 'evening' && '5:00 PM – Close'}
+                            <span>
+                              {period === 'morning' && '🌅 Morning Rituals (Before 12:00 PM)'}
+                              {period === 'afternoon' && '☀️ Afternoon Sessions (12:00 PM – 5:00 PM)'}
+                              {period === 'evening' && '🌙 Evening Sanctuary (5:00 PM onwards)'}
+                            </span>
+                            <span className="text-[10px] font-sans font-normal text-[#746B60]">
+                              {periodSlots.filter(s => s.status !== 'booked').length} open
                             </span>
                           </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-1">
                             {periodSlots.map((slot) => {
-                              const isBooked = slot.status === 'booked';
                               const isSelected = selectedTimeSlot === slot.time;
+                              const isBooked = slot.status === 'booked';
+                              const startMin = parseTimeToMinutes(slot.time) || 600;
+                              const endMin = startMin + cartTotalDurationMinutes;
+                              const endTimeStr = formatMinutesToTime(endMin);
 
                               return (
                                 <button
                                   key={slot.time}
+                                  id={`select-slot-${slot.time.replace(/[: ]/g, '-').toLowerCase()}`}
                                   type="button"
                                   disabled={isBooked}
-                                  id={`select-time-${slot.time.replace(/[:\s]/g, '-')}`}
                                   onClick={() => setSelectedTimeSlot(slot.time)}
-                                  className={`p-3 rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                                  className={`p-2.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                                     isBooked
-                                      ? 'opacity-35 bg-[#FAF7F0] border-[#E6DCCB] text-[#746B60] cursor-not-allowed'
+                                      ? 'opacity-40 bg-[#FAF7F0] border-[#E6DCCB] text-[#746B60] cursor-not-allowed'
                                       : isSelected
-                                      ? 'bg-[#211D18] text-[#FAF7F0] border-[#211D18] shadow-md'
-                                      : 'bg-[#FAF7F0] border-[#E6DCCB] text-[#211D18] hover:border-[#B88A45]'
+                                      ? 'bg-[#211D18] text-[#FAF7F0] border-[#211D18] shadow-md ring-2 ring-[#B88A45]/30'
+                                      : 'bg-white border-[#E6DCCB] text-[#211D18] hover:border-[#B88A45]'
                                   }`}
                                 >
-                                  <span className="font-serif font-bold text-sm block">
-                                    {slot.time}
-                                  </span>
-                                  <span className="text-[9px] font-sans block mt-0.5">
-                                    {isBooked ? (
-                                      <Badge id={`badge-slot-booked-${slot.time}`} variant="charcoal" size="sm" className="text-[7px]">Unavailable</Badge>
-                                    ) : (
-                                      <Badge id={`badge-slot-avail-${slot.time}`} variant="success" size="sm" className="text-[7px]">Available</Badge>
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-serif font-bold text-sm block">
+                                      {slot.time}
+                                    </span>
+                                    {isSelected && (
+                                      <CheckCircle className="h-3.5 w-3.5 text-[#B88A45]" />
                                     )}
+                                  </div>
+                                  <span className={`text-[10px] font-sans block mt-0.5 ${isSelected ? 'text-[#B88A45]' : 'text-[#746B60]'}`}>
+                                    {isBooked ? (slot.reason || 'Booked') : `Until ${endTimeStr}`}
                                   </span>
                                 </button>
                               );
@@ -1508,105 +1512,99 @@ export default function BookingFlow({
             )}
 
             {/* =========================================================================
-                STEP 4: CUSTOMER DETAILS (Firebase Authenticated Profile)
+                STEP 5: PATRON INFORMATION & SPECIAL NOTES
                 ========================================================================= */}
-            {currentStep === 4 && (
+            {currentStep === 5 && (
               <motion.div
-                key="step-customer-details"
+                key="step-patron-information"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 className="space-y-6"
               >
-                {!user ? (
-                  <div className="max-w-md mx-auto py-8 text-center space-y-6 bg-white border border-[#E6DCCB] p-6 rounded-2xl shadow-sm">
-                    <div className="space-y-2">
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-[#B88A45] font-bold">
-                        AUTHENTICATION REQUIRED
-                      </span>
-                      <h3 className="text-xl font-serif font-bold text-[#211D18]">Priority Circle Sign In</h3>
-                      <p className="font-sans text-xs text-[#746B60] leading-relaxed font-normal">
-                        To synchronize your reservation with your patron history, please authenticate with your mobile phone or member email.
-                      </p>
+                <div className="space-y-1.5">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
+                    Step 5 of 6 • Guest Details
+                  </span>
+                  <h3 className="font-serif text-2xl font-bold text-[#211D18]">
+                    Patron Profile & Special Requests
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
+                    Reservations are registered directly to your verified profile. Please provide any personalized styling or refreshment notes.
+                  </p>
+                </div>
+
+                {/* Authenticated Profile Card */}
+                {user ? (
+                  <div className="bg-white border border-[#E6DCCB] p-5 rounded-2xl space-y-4">
+                    <div className="flex items-center gap-3 border-b border-[#E6DCCB] pb-3">
+                      <div className="h-10 w-10 rounded-full bg-[#B88A45]/15 text-[#B88A45] flex items-center justify-center font-bold">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="font-sans text-[10px] uppercase tracking-widest text-[#B88A45] font-bold block">
+                          VERIFIED PATRON PROFILE
+                        </span>
+                        <h4 className="font-serif text-base font-bold text-[#211D18]">
+                          {user.displayName || (user as any).fullName || (user as any).name || 'Valued Patron'}
+                        </h4>
+                      </div>
                     </div>
-                    <AuthModule
-                      id="booking-auth-prompt"
-                      onAuthSuccess={() => {}}
-                      triggerToast={triggerToast}
-                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-sans">
+                      <div className="flex items-center gap-2 text-[#746B60]">
+                        <Mail className="h-3.5 w-3.5 text-[#B88A45]" />
+                        <span>{user.email || 'No email attached'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#746B60]">
+                        <Phone className="h-3.5 w-3.5 text-[#B88A45]" />
+                        <span>{user.phoneNumber || (user as any).phone || '+91 98765 43210 (Default)'}</span>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    <div className="space-y-1.5">
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
-                        Step 4 of 5
-                      </span>
-                      <h3 className="font-serif text-2xl font-bold text-[#211D18]">Verify Patron Profile</h3>
-                      <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
-                        Your appointment is associated with your authenticated Firebase patron account.
-                      </p>
-                    </div>
-
-                    <div className="bg-white border border-[#E6DCCB] p-6 rounded-2xl space-y-4 shadow-sm">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
-                            Patron Name
-                          </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-serif rounded-xl">
-                            <User className="h-4 w-4 text-[#B88A45] shrink-0" />
-                            <span>{user.displayName || user.user_metadata?.name || user.email?.split('@')[0] || 'Noble Guest'}</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
-                            Contact Email
-                          </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-mono text-xs rounded-xl">
-                            <Mail className="h-4 w-4 text-[#B88A45] shrink-0" />
-                            <span>{user.email || 'Email verified with session'}</span>
-                          </div>
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
-                            Authenticated Phone (Firebase Auth Verified)
-                          </label>
-                          <div className="flex items-center gap-2 p-3 bg-[#FAF7F0] border border-[#E6DCCB] text-sm text-[#211D18] font-mono text-xs rounded-xl">
-                            <Phone className="h-4 w-4 text-[#B88A45] shrink-0" />
-                            <span>{user.phoneNumber || user.phone || 'Phone verified with session'}</span>
-                            <span className="ml-auto text-[8px] font-mono uppercase tracking-widest text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 border border-emerald-300 rounded">
-                              Immutable Auth
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Special Notes & Requests */}
-                      <div className="pt-2">
-                        <label className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block mb-1">
-                          Special Sanctuary Requests (Optional)
-                        </label>
-                        <textarea
-                          id="booking-special-requests"
-                          rows={3}
-                          value={specialNotes}
-                          onChange={(e) => setSpecialNotes(e.target.value)}
-                          placeholder="e.g. Preferred ambient temperature, tea selections, or specific skin sensitivities."
-                          className="w-full bg-[#FAF7F0] border border-[#E6DCCB] p-3 text-xs text-[#211D18] placeholder-[#746B60] font-sans focus:outline-none focus:border-[#B88A45] resize-none rounded-xl"
-                        />
-                      </div>
-                    </div>
+                  <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-6 rounded-2xl text-center space-y-3">
+                    <ShieldCheck className="h-8 w-8 text-[#B88A45] mx-auto" />
+                    <h4 className="font-serif text-base font-bold text-[#211D18]">Authentication Required</h4>
+                    <p className="text-xs text-[#746B60] max-w-sm mx-auto">
+                      Please sign in to register your luxury appointment with our concierge system.
+                    </p>
+                    <Button
+                      id="signin-portal-btn"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => onViewAppointments('upcoming')}
+                      className="text-xs uppercase tracking-wider font-bold"
+                    >
+                      Sign In / Register
+                    </Button>
                   </div>
                 )}
+
+                {/* Special Instructions & Refreshment Notes */}
+                <div className="space-y-2 bg-white border border-[#E6DCCB] p-5 rounded-2xl text-left">
+                  <label className="font-sans text-xs uppercase tracking-widest text-[#746B60] font-bold block flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-[#B88A45]" /> Special Styling & Refreshment Requests
+                  </label>
+                  <textarea
+                    id="booking-special-notes-field"
+                    rows={3}
+                    placeholder="E.g., Low fade preference, scalp sensitivity, artisanal espresso or white tea preference upon arrival..."
+                    value={specialNotes}
+                    onChange={(e) => setSpecialNotes(e.target.value)}
+                    className="w-full bg-[#FAF7F0] border border-[#E6DCCB] rounded-xl p-3 text-xs font-sans text-[#211D18] focus:outline-none focus:border-[#B88A45] placeholder-[#746B60]"
+                  />
+                  <p className="text-[10px] text-[#746B60]">
+                    Our concierge reviews all personalized requests prior to your arrival.
+                  </p>
+                </div>
               </motion.div>
             )}
 
             {/* =========================================================================
-                STEP 5: BOOKING SUMMARY & TERMS (Payment at Salon Desk)
+                STEP 6: REVIEW & PAYMENT AT SALON DESK
                 ========================================================================= */}
-            {currentStep === 5 && (
+            {currentStep === 6 && (
               <motion.div
                 key="step-review-confirmation"
                 initial={{ opacity: 0, y: 12 }}
@@ -1616,133 +1614,131 @@ export default function BookingFlow({
               >
                 <div className="space-y-1.5">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#B88A45] font-semibold block">
-                    Step 5 of 5
+                    Step 6 of 6 • Final Verification
                   </span>
                   <h3 className="font-serif text-2xl font-bold text-[#211D18]">
-                    Review Reservation & Settle at Salon Desk
+                    Review Reservation & Desk Settlement
                   </h3>
                   <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
-                    Verify your multi-treatment appointment specifics before final reservation confirmation.
+                    Verify your treatments and scheduled window. In accordance with salon policy, all payments are fulfilled at the front desk upon arrival.
                   </p>
                 </div>
 
-                {/* Itemized Treatments Breakdown */}
-                <div className="bg-white border border-[#E6DCCB] rounded-2xl divide-y divide-[#E6DCCB] text-left shadow-sm">
-                  <div className="p-4 sm:p-5">
-                    <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] font-bold block mb-2">
-                      Selected Treatments ({selectedServices.length})
+                {/* Itemized Services Breakdown */}
+                <div className="bg-white border border-[#E6DCCB] p-5 rounded-2xl space-y-4">
+                  <div className="flex justify-between items-center border-b border-[#E6DCCB] pb-3">
+                    <span className="font-sans text-xs uppercase tracking-widest text-[#746B60] font-bold">
+                      Selected Rituals ({selectedServices.length})
                     </span>
-                    <div className="space-y-3">
-                      {selectedServices.map((svc) => (
-                        <div key={svc.id} className="flex justify-between items-center gap-4">
-                          <div>
-                            <h4 className="font-serif text-sm sm:text-base font-bold text-[#211D18] leading-tight">
-                              {svc.name}
-                            </h4>
-                            <p className="font-mono text-[11px] text-[#746B60] flex items-center gap-1 mt-0.5">
-                              <Clock className="h-3 w-3 text-[#B88A45]" /> {svc.duration} · {svc.category}
-                            </p>
-                          </div>
-                          <span className="font-serif text-sm sm:text-base font-bold text-[#211D18]">
-                            {svc.price}
-                          </span>
+                    <span className="font-sans text-xs text-[#746B60]">
+                      Combined Duration: <strong className="text-[#211D18]">{cartTotalDurationMinutes} Mins</strong>
+                    </span>
+                  </div>
+
+                  <div className="divide-y divide-[#E6DCCB]/60 space-y-2">
+                    {selectedServices.map(service => (
+                      <div key={service.id} className="pt-2 flex justify-between items-center text-xs">
+                        <div>
+                          <h5 className="font-serif font-bold text-[#211D18] text-sm">{service.name}</h5>
+                          <span className="text-[10px] text-[#746B60]">{service.category} • {service.duration}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Scheduled Date & Computed Window */}
-                  <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] font-bold block">
-                        Scheduled Date
-                      </span>
-                      <span className="font-sans text-xs font-semibold text-[#211D18] block mt-1">
-                        {dateChoices.find(d => d.value === selectedDate)?.label || selectedDate}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] font-bold block">
-                        Appointment Hours
-                      </span>
-                      <span className="font-sans text-xs font-semibold text-[#211D18] block mt-1">
-                        {selectedTimeSlot} – {calculateEndTime(selectedTimeSlot, cartTotalDurationMinutes || 60)} ({cartTotalDurationMinutes} Mins)
-                      </span>
-                    </div>
+                        <span className="font-serif font-bold text-sm text-[#211D18]">
+                          {service.price}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Privilege Promo Code */}
-                <div className="bg-white border border-[#E6DCCB] p-4 rounded-2xl space-y-3 shadow-sm">
-                  <h4 className="font-serif text-sm text-[#211D18] font-bold flex items-center gap-1.5">
-                    <Tag className="h-4 w-4 text-[#B88A45]" /> Add Privilege Promo Code
-                  </h4>
-                  <div className="flex gap-2">
-                    <input
-                      id="discount-code-input"
-                      type="text"
-                      placeholder="e.g., ROYAL15"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="bg-[#FAF7F0] text-[#211D18] placeholder-[#746B60] uppercase font-mono text-xs px-3.5 py-2.5 border border-[#E6DCCB] focus:border-[#B88A45] outline-none w-full rounded-xl"
-                    />
-                    <Button id="apply-promo-btn" variant="outline" size="sm" onClick={handleApplyPromo} className="px-5 shrink-0 text-xs font-sans font-bold uppercase tracking-wider">
-                      Apply
-                    </Button>
-                  </div>
-                  {promoSuccessMessage && <p className="text-emerald-700 text-xs font-sans font-medium">{promoSuccessMessage}</p>}
-                  {promoErrorMessage && <p className="text-red-600 text-xs font-sans font-medium">{promoErrorMessage}</p>}
-                </div>
-
-                {/* Payment Protocol — Clearly states Payment at Salon Desk */}
-                <div className="bg-white border-2 border-[#B88A45] p-5 rounded-2xl space-y-3 text-left shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="font-sans text-[9px] uppercase tracking-widest text-[#B88A45] font-bold">
-                      SETTLEMENT PROTOCOL
+                {/* Appointment Schedule Recap */}
+                <div className="bg-white border border-[#E6DCCB] p-5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-widest text-[#746B60] block font-bold">
+                      Date & Day
                     </span>
-                    <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                      No Online Payment Required Today
+                    <span className="font-serif text-base font-bold text-[#211D18] block mt-1">
+                      {dateChoices.find(d => d.value === selectedDate)?.label || selectedDate}
                     </span>
                   </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-[#B88A45] shrink-0 mt-0.5">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-serif text-base font-bold text-[#211D18]">
-                        Payment at Salon Desk
-                      </h4>
-                      <p className="font-sans text-xs text-[#746B60] leading-relaxed">
-                        Settle your treatment total upon attendance at the front desk. We accept Cash, UPI, Google Pay, and all major Debit/Credit Cards.
-                      </p>
-                    </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-widest text-[#746B60] block font-bold">
+                      Scheduled Window
+                    </span>
+                    <span className="font-serif text-base font-bold text-[#211D18] block mt-1">
+                      {selectedTimeSlot} – {formatMinutesToTime((parseTimeToMinutes(selectedTimeSlot) || 600) + cartTotalDurationMinutes)} ({cartTotalDurationMinutes}m)
+                    </span>
                   </div>
                 </div>
 
-                {/* Terms of Sanctuary Attendance */}
-                <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-4 rounded-2xl text-left text-xs text-[#746B60] space-y-1.5">
-                  <h5 className="font-serif text-sm text-[#211D18] font-bold flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-[#B88A45]" /> Terms of Sanctuary Attendance
-                  </h5>
-                  <ul className="list-disc pl-5 space-y-1 font-sans text-[11px] leading-relaxed">
-                    <li>Please arrive 10 minutes prior to your scheduled hour for complimentary herbal tea service.</li>
-                    <li>Autoclave medical-grade sterilization is performed between all patron sessions.</li>
-                    <li>Rescheduling is accommodated up to 24 hours prior to attendance without penalty.</li>
-                  </ul>
+                {/* Financial Summary */}
+                <div className="bg-white border border-[#E6DCCB] p-5 rounded-2xl space-y-3">
+                  <div className="flex justify-between text-xs text-[#746B60]">
+                    <span>Treatment Subtotal:</span>
+                    <span className="font-serif">₹{cartBasePrice}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-[#746B60]">
+                    <span>Luxury GST & Amenities (18%):</span>
+                    <span className="font-serif">₹{taxValue}</span>
+                  </div>
+                  {discountValue > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                      <span>Privilege Discount ({promoCode}):</span>
+                      <span className="font-serif">-₹{discountValue}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-[#E6DCCB] pt-3 flex justify-between items-center">
+                    <div>
+                      <span className="font-sans text-xs uppercase tracking-wider font-bold text-[#211D18] block">
+                        Total Amount Due at Desk
+                      </span>
+                      <span className="text-[10px] text-[#746B60]">
+                        Settlement upon arrival at salon front desk
+                      </span>
+                    </div>
+                    <span className="font-serif text-2xl font-bold text-[#B88A45]">
+                      ₹{finalTotalAmount}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Desk Settlement Notice Banner */}
+                <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-5 rounded-2xl space-y-2 text-left">
+                  <div className="flex items-center gap-2 text-[#B88A45]">
+                    <ShieldCheck className="h-5 w-5 shrink-0" />
+                    <span className="font-serif text-sm font-bold text-[#211D18]">
+                      Payment at Salon Desk
+                    </span>
+                  </div>
+                  <p className="font-sans text-xs text-[#746B60] leading-relaxed">
+                    No advance online payment is required. Your slot and stylist allocation are held under your reservation reference. Settle in person via Cash, Card, or UPI upon arrival.
+                  </p>
+                </div>
+
+                {/* Terms of Attendance Checkbox */}
+                <div className="flex items-start gap-2.5 pt-1 text-left">
+                  <input
+                    id="terms-checkbox"
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-[#E6DCCB] text-[#B88A45] focus:ring-[#B88A45]"
+                  />
+                  <label htmlFor="terms-checkbox" className="text-xs text-[#746B60] font-sans">
+                    I confirm my reservation details and acknowledge that I will arrive 10 minutes prior to my scheduled session for desk check-in.
+                  </label>
                 </div>
               </motion.div>
             )}
 
             {/* =========================================================================
-                STEP 6: CONCIERGE REQUEST LOGGED / SUCCESS PASS
+                STEP 7: COMPLETE DIGITAL BOOKING TICKET (Success State)
                 ========================================================================= */}
-            {currentStep === 6 && completedRecord && (
+            {currentStep === 7 && completedRecord && (
               <motion.div
                 key="step-confirmation-ticket"
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center space-y-6 py-4 max-w-xl mx-auto"
+                className="text-center space-y-6 py-4 max-w-2xl mx-auto"
               >
                 {/* Visual Header */}
                 <div className="space-y-3">
@@ -1758,84 +1754,162 @@ export default function BookingFlow({
                     CONCIERGE RESERVATION REQUEST
                   </span>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#211D18] leading-tight">
-                    Request Registered with Salon Desk
+                    Official Digital Booking Pass
                   </h2>
                   <p className="font-sans text-xs sm:text-sm text-[#746B60] leading-relaxed">
                     Your appointment has been logged with authoritative salon pricing and time parameters. Payment is due at the salon desk upon arrival.
                   </p>
                 </div>
 
-                {/* Request Summary Card */}
-                <div className="bg-white border border-[#E6DCCB] p-6 divide-y divide-[#E6DCCB] text-left relative overflow-hidden shadow-[0_8px_30px_rgba(33,29,24,0.08)] rounded-2xl space-y-4">
-                  <div className="flex justify-between items-center pb-3">
-                    <div>
-                      <span className="font-sans text-[8px] uppercase tracking-widest text-[#B88A45] font-bold block">
-                        MUSHA EMPIRE REQUEST SUMMARY
+                {/* Premium Musha Empire Digital Ticket Card */}
+                <div
+                  id="digital-booking-ticket"
+                  className="bg-[#FAF7F0] border-2 border-[#B88A45]/40 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl text-left space-y-6"
+                >
+                  {/* Decorative Ticket Perforation / Ribbons */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E6DCCB] pb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-[#211D18] flex items-center justify-center text-[#B88A45] shadow-md">
+                        <Sparkles className="h-6 w-6 text-[#B88A45]" />
+                      </div>
+                      <div>
+                        <span className="font-sans text-[10px] uppercase tracking-widest text-[#B88A45] font-bold block">
+                          OFFICIAL DIGITAL BOOKING PASS
+                        </span>
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#211D18]">
+                          Musha Empire Unisex Salon
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] block font-bold">
+                        Booking Reference
                       </span>
-                      <span className="font-serif text-sm font-semibold text-[#211D18]">
-                        {completedRecord.customerName || 'Noble Guest'}
+                      <span className="font-mono text-sm sm:text-base font-bold text-[#B88A45] bg-white px-3 py-1 rounded-lg border border-[#E6DCCB] inline-block mt-0.5 shadow-sm">
+                        {completedRecord.id}
                       </span>
                     </div>
-                    <span className="font-mono text-[11px] font-bold text-[#B88A45] bg-[#FAF7F0] px-2.5 py-1 rounded-full border border-[#E6DCCB]">
-                      {completedRecord.id}
-                    </span>
                   </div>
 
-                  <div className="py-3 space-y-2">
-                    <span className="font-sans text-[8px] uppercase tracking-widest text-[#746B60] block font-bold">
-                      Requested Rituals ({completedRecord.services?.length || 1})
-                    </span>
-                    <div className="space-y-1">
-                      {completedRecord.services ? (
-                        completedRecord.services.map(s => (
-                          <div key={s.id} className="flex justify-between text-xs">
-                            <span className="font-serif font-bold text-[#211D18]">{s.name}</span>
-                            <span className="font-mono text-[#746B60]">{s.price} ({s.duration})</span>
+                  {/* Patron & Appointment Highlights Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-white border border-[#E6DCCB] p-4 rounded-2xl">
+                    <div>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] block font-bold">Patron Name</span>
+                      <p className="font-serif text-sm font-bold text-[#211D18] mt-0.5 truncate">{completedRecord.customerName || 'Valued Patron'}</p>
+                    </div>
+                    <div>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] block font-bold">Appointment Date</span>
+                      <p className="font-serif text-sm font-bold text-[#211D18] mt-0.5 flex items-center gap-1.5 truncate">
+                        <Calendar className="h-3.5 w-3.5 text-[#B88A45] shrink-0" /> {completedRecord.date}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] block font-bold">Scheduled Window</span>
+                      <p className="font-sans text-xs sm:text-sm font-semibold text-[#211D18] mt-0.5 flex items-center gap-1.5 truncate">
+                        <Clock className="h-3.5 w-3.5 text-[#B88A45] shrink-0" /> {completedRecord.timeSlot} {completedRecord.endTime ? `– ${completedRecord.endTime}` : ''}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#746B60] block font-bold">Settlement Method</span>
+                      <p className="font-sans text-xs font-bold text-[#B88A45] mt-0.5 flex items-center gap-1">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Payment at Salon Desk
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Selected Services Grouped & Categorized Individually */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-[#E6DCCB] pb-2">
+                      <span className="font-sans text-[11px] uppercase tracking-widest text-[#746B60] font-bold">
+                        Reserved Treatments ({completedRecord.services?.length || 1})
+                      </span>
+                      <span className="font-sans text-xs text-[#746B60]">
+                        Combined Duration: <strong className="text-[#211D18]">{cartTotalDurationMinutes || 60} Mins</strong>
+                      </span>
+                    </div>
+
+                    {/* Grouped Services List */}
+                    <div className="space-y-2.5">
+                      {Object.entries(groupedServices).map(([categoryName, servicesList]) => (
+                        <div key={categoryName} className="bg-white border border-[#E6DCCB] rounded-2xl p-4 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-[#FAF7F0] border border-[#E6DCCB] font-sans text-[9px] uppercase tracking-widest font-bold text-[#B88A45]">
+                              {categoryName}
+                            </span>
                           </div>
-                        ))
-                      ) : (
-                        <h4 className="font-serif text-base font-semibold text-[#211D18]">
-                          {completedRecord.service.name}
-                        </h4>
-                      )}
+                          <div className="divide-y divide-[#E6DCCB]/60">
+                            {servicesList.map(service => (
+                              <div key={service.id} className="py-2 flex items-center justify-between text-xs">
+                                <div>
+                                  <h5 className="font-serif font-bold text-[#211D18] text-sm">{service.name}</h5>
+                                  <span className="text-[10px] text-[#746B60] flex items-center gap-1 mt-0.5">
+                                    <Clock className="h-3 w-3 text-[#B88A45]" /> {service.duration}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-serif font-bold text-sm text-[#211D18]">
+                                    {service.price}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="py-3 grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="font-sans text-[8px] uppercase tracking-widest text-[#746B60] block font-bold">
-                        Requested Date
-                      </span>
-                      <span className="font-sans text-xs font-semibold text-[#211D18] block mt-0.5">
-                        {completedRecord.date}
-                      </span>
+                  {/* Financial Breakdown & Settlement Status */}
+                  <div className="bg-white border border-[#E6DCCB] p-5 rounded-2xl space-y-3">
+                    <div className="flex justify-between text-xs text-[#746B60]">
+                      <span>Treatment Subtotal:</span>
+                      <span className="font-serif">₹{cartBasePrice}</span>
                     </div>
-                    <div>
-                      <span className="font-sans text-[8px] uppercase tracking-widest text-[#746B60] block font-bold">
-                        Estimated Window
-                      </span>
-                      <span className="font-sans text-xs font-semibold text-[#211D18] block mt-0.5">
-                        {completedRecord.timeSlot} {completedRecord.endTime ? `– ${completedRecord.endTime}` : ''}
+                    <div className="flex justify-between text-xs text-[#746B60]">
+                      <span>Luxury GST & Amenities (18%):</span>
+                      <span className="font-serif">₹{taxValue}</span>
+                    </div>
+                    {discountValue > 0 && (
+                      <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                        <span>Privilege Discount ({promoCode}):</span>
+                        <span className="font-serif">-₹{discountValue}</span>
+                      </div>
+                    )}
+                    <div className="border-t border-[#E6DCCB] pt-3 flex justify-between items-center">
+                      <div>
+                        <span className="font-sans text-xs uppercase tracking-wider font-bold text-[#211D18] block">
+                          Total Amount Due at Desk
+                        </span>
+                        <span className="text-[10px] text-[#746B60]">
+                          Pay via Cash, Card, or UPI upon arrival at reception
+                        </span>
+                      </div>
+                      <span className="font-serif text-2xl font-bold text-[#B88A45]">
+                        ₹{completedRecord.totalAmount}
                       </span>
                     </div>
                   </div>
 
-                  <div className="pt-3 flex justify-between items-center">
-                    <div>
-                      <span className="font-sans text-[9px] uppercase tracking-widest font-semibold text-[#211D18] block">
-                        Treatment Total & Settlement
+                  {/* Front-Desk QR Check-in Box */}
+                  <div className="bg-white border border-[#E6DCCB] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1 text-center sm:text-left">
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-[#B88A45] font-bold block">
+                        FRONT DESK CHECK-IN VERIFICATION
                       </span>
-                      <span className="font-sans text-[10px] text-[#746B60] block mt-0.5">
-                        Payment at Salon upon Arrival — Desk Settlement
+                      <p className="font-sans text-xs text-[#746B60]">
+                        Present this pass at reception. Arrive 10 minutes prior to enjoy our welcome white tea.
+                      </p>
+                      <span className="font-mono text-[10px] text-[#211D18] font-bold block">
+                        Pass Code: {completedRecord.id} • Status: Awaiting Concierge Confirmation
                       </span>
                     </div>
-                    <span className="font-serif text-lg font-bold text-[#B88A45]">
-                      ₹{completedRecord.totalAmount}
-                    </span>
+                    <div className="p-2 border border-[#E6DCCB] rounded-xl bg-[#FAF7F0] shrink-0">
+                      <QrCode className="h-16 w-16 text-[#211D18]" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Front-Desk Confirmation Contact Box */}
+                {/* Concierge Desk Contact Notice Box */}
                 <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-5 text-left space-y-3 rounded-2xl">
                   <h5 className="font-serif text-sm font-semibold text-[#211D18] flex items-center gap-2">
                     <Phone className="h-4 w-4 text-[#B88A45]" /> Front-Desk Assistance
@@ -1873,7 +1947,7 @@ export default function BookingFlow({
                   </div>
                 </div>
 
-                {/* Actions */}
+                {/* Primary Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                   <Button
                     id="success-view-app-btn"
@@ -1892,8 +1966,18 @@ export default function BookingFlow({
                     {isConciergeMode ? 'Open Concierge Requests in Portal' : 'View Portal & Account'}
                   </Button>
                   <Button
+                    id="success-print-btn"
+                    variant="outline"
+                    size="md"
+                    onClick={handlePrintTicket}
+                    leftIcon={<Printer className="h-4 w-4" />}
+                    className="w-full sm:w-auto font-sans text-xs uppercase tracking-widest px-6"
+                  >
+                    Print / Save Pass
+                  </Button>
+                  <Button
                     id="success-home-btn"
-                    variant={isConciergeMode ? 'outline' : 'primary'}
+                    variant="outline"
                     size="md"
                     onClick={onNavigateHome}
                     className="w-full sm:w-auto font-sans text-xs uppercase tracking-widest px-6"
@@ -1905,8 +1989,8 @@ export default function BookingFlow({
             )}
           </AnimatePresence>
 
-          {/* Stepper Footer Controls */}
-          {currentStep > 1 && currentStep < 6 && (
+          {/* Stepper Footer Controls (Steps 2 to 6) */}
+          {currentStep > 1 && currentStep < 7 && (
             <div className="flex justify-between items-center pt-6 border-t border-[#E6DCCB]">
               <Button
                 id="booking-prev-step-btn"
@@ -1919,12 +2003,16 @@ export default function BookingFlow({
                 Back
               </Button>
 
-              {currentStep < 5 ? (
+              {currentStep < 6 ? (
                 <Button
                   id="booking-next-step-btn"
                   variant="primary"
                   size="sm"
-                  disabled={currentStep === 2 && selectedServices.length === 0}
+                  disabled={
+                    (currentStep === 2 && selectedServices.length === 0) ||
+                    (currentStep === 3 && !selectedDate) ||
+                    (currentStep === 4 && (!selectedTimeSlot || timeSlots.find(s => s.time === selectedTimeSlot)?.status === 'booked'))
+                  }
                   onClick={handleNextStep}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                   className="font-sans text-xs uppercase tracking-wider font-bold px-6 disabled:opacity-40"
@@ -1937,15 +2025,15 @@ export default function BookingFlow({
                   variant="primary"
                   size="sm"
                   onClick={handleConfirmReservation}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !acceptedTerms}
                   leftIcon={isSubmitting ? (
                     <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <ShieldCheck className="h-4 w-4 text-[#B88A45]" />
                   )}
-                  className="font-sans text-xs uppercase tracking-wider font-bold px-8 bg-[#211D18] text-white hover:bg-[#B88A45]"
+                  className="font-sans text-xs uppercase tracking-wider font-bold px-8 bg-[#211D18] text-white hover:bg-[#B88A45] disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Securing Slot...' : 'Confirm Reservation (Pay at Salon)'}
+                  {isSubmitting ? 'Securing Slot...' : 'Confirm Reservation (Pay at Salon Desk)'}
                 </Button>
               )}
             </div>
@@ -1953,85 +2041,139 @@ export default function BookingFlow({
 
         </div>
 
-        {/* Right Bill & Cart Summary Panel (col-span-4) - Active for steps 2 to 5 */}
-        {currentStep > 1 && currentStep < 6 && (
+        {/* Right Bill & Cart Summary Panel (col-span-4) - Active for steps 2 to 6 */}
+        {currentStep > 1 && currentStep < 7 && (
           <div className="hidden lg:block lg:col-span-4 bg-white border border-[#E6DCCB] p-5 rounded-2xl space-y-5 text-left sticky top-28 shadow-sm">
             <div className="flex items-center justify-between border-b border-[#E6DCCB] pb-3">
-              <h4 className="font-serif text-base font-bold text-[#211D18] flex items-center gap-1.5">
-                <ShoppingBag className="h-4 w-4 text-[#B88A45]" /> Sanctuary Cart
-              </h4>
-              <span className="text-xs font-mono font-bold text-[#B88A45] bg-[#FAF7F0] px-2 py-0.5 rounded-full border border-[#E6DCCB]">
-                {selectedServices.length} {selectedServices.length === 1 ? 'item' : 'items'}
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-[#B88A45]" />
+                <h4 className="font-serif text-base font-bold text-[#211D18]">
+                  Reservation Summary
+                </h4>
+              </div>
+              <span className="font-mono text-xs font-bold text-[#B88A45] bg-[#FAF7F0] px-2 py-0.5 rounded-full border border-[#E6DCCB]">
+                {cartItemCount} {cartItemCount === 1 ? 'item' : 'items'}
               </span>
             </div>
 
-            {/* Selected Services List */}
-            <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            {/* Selected category */}
+            <div className="text-xs text-[#746B60] flex justify-between border-b border-[#E6DCCB]/60 pb-2">
+              <span>Category:</span>
+              <strong className="text-[#211D18]">
+                {APPROVED_CATEGORIES.find(c => c.id === selectedCategory)?.title || selectedCategory || 'Universal'}
+              </strong>
+            </div>
+
+            {/* Schedule details if picked */}
+            {selectedDate && currentStep >= 3 && (
+              <div className="text-xs text-[#746B60] flex justify-between border-b border-[#E6DCCB]/60 pb-2">
+                <span>Date:</span>
+                <strong className="text-[#211D18] truncate ml-2">
+                  {dateChoices.find(d => d.value === selectedDate)?.dayName}, {dateChoices.find(d => d.value === selectedDate)?.monthName} {dateChoices.find(d => d.value === selectedDate)?.dateNum}
+                </strong>
+              </div>
+            )}
+
+            {selectedTimeSlot && currentStep >= 4 && (
+              <div className="text-xs text-[#746B60] flex justify-between border-b border-[#E6DCCB]/60 pb-2">
+                <span>Time Slot:</span>
+                <strong className="text-[#211D18]">{selectedTimeSlot}</strong>
+              </div>
+            )}
+
+            {/* Items list */}
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
               {selectedServices.length === 0 ? (
-                <p className="text-xs text-[#746B60] italic py-3 text-center">
-                  No treatments in cart. Tap + Add on any treatment from the catalog.
-                </p>
+                <p className="text-xs text-[#746B60] italic text-center py-4">No treatments selected yet</p>
               ) : (
-                selectedServices.map((svc) => (
-                  <div
-                    key={svc.id}
-                    className="flex items-center justify-between gap-2 p-2.5 bg-[#FAF7F0] rounded-xl border border-[#E6DCCB]"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <h5 className="font-serif text-xs font-bold text-[#211D18] truncate leading-tight">
-                        {svc.name}
-                      </h5>
-                      <span className="text-[10px] text-[#746B60] block mt-0.5">
-                        {svc.duration} · {svc.price}
-                      </span>
+                selectedServices.map(service => (
+                  <div key={service.id} className="flex justify-between items-center text-xs group">
+                    <div className="min-w-0 pr-2">
+                      <p className="font-serif font-bold text-[#211D18] truncate">{service.name}</p>
+                      <span className="text-[10px] text-[#746B60]">{service.duration}</span>
                     </div>
-                    {currentStep === 2 && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-serif font-bold text-[#211D18]">{service.price}</span>
                       <button
                         type="button"
-                        onClick={() => handleRemoveService(svc.id)}
-                        className="text-[#746B60] hover:text-red-600 p-1 rounded-lg transition-colors"
+                        onClick={() => handleRemoveService(service.id)}
+                        className="text-[#746B60] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 cursor-pointer"
                         title="Remove service"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </button>
-                    )}
+                    </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Combined Metrics */}
-            <div className="pt-3 border-t border-[#E6DCCB] space-y-1.5 font-sans text-xs">
-              <div className="flex justify-between text-[#746B60]">
-                <span>Combined Duration</span>
-                <span className="font-mono font-semibold text-[#211D18]">{cartTotalDurationMinutes} Mins</span>
+            {/* Total Duration Banner */}
+            <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-2.5 rounded-xl flex items-center justify-between text-xs font-sans">
+              <span className="text-[#746B60] flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-[#B88A45]" /> Combined Time:
+              </span>
+              <strong className="text-[#211D18]">{cartTotalDurationMinutes} Minutes</strong>
+            </div>
+
+            {/* Promo Voucher Code Form */}
+            <form onSubmit={handleApplyPromo} className="space-y-1.5 pt-1">
+              <div className="flex gap-1.5">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#746B60]" />
+                  <input
+                    id="promo-code-input"
+                    type="text"
+                    placeholder="Privilege Code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    className="w-full bg-[#FAF7F0] border border-[#E6DCCB] rounded-lg py-1.5 pl-8 pr-2 text-xs font-mono uppercase text-[#211D18] placeholder-[#746B60] focus:outline-none focus:border-[#B88A45]"
+                  />
+                </div>
+                <Button
+                  id="promo-apply-btn"
+                  type="submit"
+                  variant="outline"
+                  size="sm"
+                  className="font-sans text-[10px] uppercase tracking-wider px-3"
+                >
+                  Apply
+                </Button>
               </div>
-              <div className="flex justify-between text-[#746B60]">
-                <span>Base Treatments Total</span>
-                <span className="font-mono">₹{cartBasePrice}</span>
+              {promoSuccessMessage && (
+                <p className="text-[10px] text-emerald-600 font-sans">{promoSuccessMessage}</p>
+              )}
+              {promoErrorMessage && (
+                <p className="text-[10px] text-red-500 font-sans">{promoErrorMessage}</p>
+              )}
+            </form>
+
+            {/* Pricing breakdown */}
+            <div className="border-t border-[#E6DCCB] pt-3 space-y-2 text-xs text-[#746B60]">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span className="font-serif">₹{cartBasePrice}</span>
               </div>
-              <div className="flex justify-between text-[#746B60]">
-                <span>Luxury Service Tax (18%)</span>
-                <span className="font-mono">₹{taxValue}</span>
+              <div className="flex justify-between">
+                <span>Luxury GST (18%):</span>
+                <span className="font-serif">₹{taxValue}</span>
               </div>
               {discountValue > 0 && (
-                <div className="flex justify-between text-emerald-700 font-medium">
-                  <span>Privilege Promo</span>
-                  <span className="font-mono">-₹{discountValue}</span>
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Privilege Credit:</span>
+                  <span className="font-serif">-₹{discountValue}</span>
                 </div>
               )}
-              <div className="flex justify-between text-[#211D18] font-bold font-serif text-base pt-2.5 border-t border-dashed border-[#E6DCCB]">
-                <span>Estimated Total</span>
-                <span className="text-[#B88A45] font-mono">₹{finalTotalAmount}</span>
+              <div className="border-t border-[#E6DCCB] pt-2 flex justify-between items-center text-sm font-bold text-[#211D18]">
+                <span>Total Amount:</span>
+                <span className="font-serif text-lg text-[#B88A45]">₹{finalTotalAmount}</span>
               </div>
+              <p className="text-[10px] text-[#746B60] italic text-center pt-1">
+                Settlement upon arrival at salon front desk
+              </p>
             </div>
 
-            {/* Payment at Salon Desk Callout */}
-            <div className="bg-[#FAF7F0] border border-[#E6DCCB] p-3 rounded-xl flex items-center gap-2 text-[11px] text-[#746B60]">
-              <CheckCircle className="h-4 w-4 text-[#B88A45] shrink-0" />
-              <span>Payment is settled at the salon desk upon attendance.</span>
-            </div>
-
+            {/* Sidebar proceed button */}
             {currentStep === 2 && (
               <Button
                 id="desktop-cart-proceed-btn"
@@ -2039,16 +2181,223 @@ export default function BookingFlow({
                 size="sm"
                 disabled={selectedServices.length === 0}
                 onClick={handleNextStep}
-                rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                className="w-full font-sans text-xs uppercase tracking-wider font-bold py-2.5"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+                className="w-full font-sans text-xs uppercase tracking-wider font-bold py-2.5 disabled:opacity-40"
               >
-                Proceed to Schedule ({selectedServices.length})
+                Continue to Date
+              </Button>
+            )}
+            {currentStep === 3 && (
+              <Button
+                id="desktop-date-proceed-btn"
+                variant="primary"
+                size="sm"
+                disabled={!selectedDate}
+                onClick={handleNextStep}
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+                className="w-full font-sans text-xs uppercase tracking-wider font-bold py-2.5 disabled:opacity-40"
+              >
+                Continue to Time Slot
+              </Button>
+            )}
+            {currentStep === 4 && (
+              <Button
+                id="desktop-time-proceed-btn"
+                variant="primary"
+                size="sm"
+                disabled={!selectedTimeSlot || timeSlots.find(s => s.time === selectedTimeSlot)?.status === 'booked'}
+                onClick={handleNextStep}
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+                className="w-full font-sans text-xs uppercase tracking-wider font-bold py-2.5 disabled:opacity-40"
+              >
+                Continue to Patron Details
               </Button>
             )}
           </div>
         )}
 
       </div>
+
+      {/* =========================================================================
+          FIXED FLOATING BOTTOM BARS (Mobile & Touch Accessible)
+          ========================================================================= */}
+
+      {/* Sticky Bottom Bar for Step 2: Multi-Service Selection */}
+      {currentStep === 2 && (
+        <div
+          id="mobile-cart-continue-bar"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-[#211D18] text-[#FAF7F0] border-t border-[#B88A45]/30 p-3.5 sm:p-4 shadow-2xl pb-safe"
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+            <button
+              id="cart-back-btn"
+              type="button"
+              onClick={handlePrevStep}
+              className="flex items-center gap-1.5 text-xs text-[#FAF7F0]/80 hover:text-[#B88A45] font-sans font-semibold transition-colors px-2.5 py-2 rounded-lg border border-[#FAF7F0]/20 hover:border-[#B88A45] shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Categories</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+
+            <div className="text-left flex-1 min-w-0 px-1">
+              <span className="text-[10px] uppercase tracking-wider text-[#B88A45] block truncate font-sans font-semibold">
+                {cartItemCount} {cartItemCount === 1 ? 'Ritual' : 'Rituals'} • {cartTotalDurationMinutes} Mins
+              </span>
+              <span className="text-xs sm:text-sm font-serif font-bold text-white truncate block">
+                Total: ₹{finalTotalAmount}
+              </span>
+            </div>
+
+            <Button
+              id="mobile-cart-proceed-btn"
+              variant="primary"
+              size="sm"
+              disabled={selectedServices.length === 0}
+              onClick={handleNextStep}
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+              className="font-sans text-xs uppercase tracking-wider font-bold px-4 sm:px-6 shrink-0 bg-[#B88A45] text-white hover:bg-[#a07436] disabled:opacity-40"
+            >
+              Continue
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Bottom Bar for Step 3 (Page 1): Date Selection */}
+      {currentStep === 3 && (
+        <div
+          id="mobile-date-continue-bar"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-[#211D18] text-[#FAF7F0] border-t border-[#B88A45]/30 p-3.5 sm:p-4 shadow-2xl pb-safe"
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+            <button
+              id="date-back-btn"
+              type="button"
+              onClick={handlePrevStep}
+              className="flex items-center gap-1.5 text-xs text-[#FAF7F0]/80 hover:text-[#B88A45] font-sans font-semibold transition-colors px-2.5 py-2 rounded-lg border border-[#FAF7F0]/20 hover:border-[#B88A45] shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Services</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+
+            <div className="text-left flex-1 min-w-0 px-1">
+              <span className="text-[10px] uppercase tracking-wider text-[#B88A45] block truncate font-sans font-semibold">
+                Selected Date
+              </span>
+              <span className="text-xs sm:text-sm font-serif font-bold text-white truncate block">
+                {selectedDate ? (dateChoices.find(d => d.value === selectedDate)?.label || selectedDate) : 'Please pick a date'}
+              </span>
+            </div>
+
+            <Button
+              id="mobile-date-proceed-btn"
+              variant="primary"
+              size="sm"
+              disabled={!selectedDate}
+              onClick={handleNextStep}
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+              className="font-sans text-xs uppercase tracking-wider font-bold px-4 sm:px-6 shrink-0 bg-[#B88A45] text-white hover:bg-[#a07436] disabled:opacity-40"
+            >
+              Continue
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Bottom Bar for Step 4 (Page 2): Time Slot Selection */}
+      {currentStep === 4 && (
+        <div
+          id="mobile-time-continue-bar"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-[#211D18] text-[#FAF7F0] border-t border-[#B88A45]/30 p-3.5 sm:p-4 shadow-2xl pb-safe"
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+            <button
+              id="time-back-btn"
+              type="button"
+              onClick={handlePrevStep}
+              className="flex items-center gap-1.5 text-xs text-[#FAF7F0]/80 hover:text-[#B88A45] font-sans font-semibold transition-colors px-2.5 py-2 rounded-lg border border-[#FAF7F0]/20 hover:border-[#B88A45] shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Date</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+
+            <div className="text-left flex-1 min-w-0 px-1">
+              <span className="text-[10px] uppercase tracking-wider text-[#B88A45] block truncate font-sans font-semibold">
+                Selected Time Slot
+              </span>
+              <span className="text-xs sm:text-sm font-serif font-bold text-white truncate block">
+                {selectedTimeSlot ? `${selectedTimeSlot} (${cartTotalDurationMinutes}m total)` : 'Please select time'}
+              </span>
+            </div>
+
+            <Button
+              id="mobile-time-proceed-btn"
+              variant="primary"
+              size="sm"
+              disabled={!selectedTimeSlot || timeSlots.find(s => s.time === selectedTimeSlot)?.status === 'booked'}
+              onClick={handleNextStep}
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+              className="font-sans text-xs uppercase tracking-wider font-bold px-4 sm:px-6 shrink-0 bg-[#B88A45] text-white hover:bg-[#a07436] disabled:opacity-40"
+            >
+              Continue
+            </Button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
+}
+
+// Utility to determine default category based on service ID
+function getCategoryForServiceId(serviceId: string): string {
+  if (!serviceId) return 'Other';
+  const found = EXTENDED_SERVICES_DATA.find(s => s.id === serviceId);
+  if (!found) return 'Other';
+
+  if (found.gender === 'Men' || found.category === "Men's Services") return 'Men';
+  if (found.gender === 'Women' || found.category === "Women's Services") return 'Women';
+  if ((found.gender as string) === 'Boy') return 'Boy';
+  if ((found.gender as string) === 'Girl') return 'Girl';
+  return 'Other';
+}
+
+// Helper to calculate current date and minutes in a target timezone safely
+function getSalonNow(timeZone?: string) {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timeZone || undefined,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const parts = formatter.formatToParts(new Date());
+    const getPart = (type: string) => parts.find(p => p.type === type)?.value || '';
+
+    const y = getPart('year');
+    const m = getPart('month');
+    const d = getPart('day');
+    const hr = parseInt(getPart('hour') || '0', 10);
+    const min = parseInt(getPart('minute') || '0', 10);
+
+    return {
+      todayIso: `${y}-${m}-${d}`,
+      currentMinutes: hr * 60 + min
+    };
+  } catch {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return {
+      todayIso: `${y}-${m}-${d}`,
+      currentMinutes: now.getHours() * 60 + now.getMinutes()
+    };
+  }
 }

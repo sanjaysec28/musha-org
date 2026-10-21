@@ -8,7 +8,7 @@ import { Sparkles } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { isFirebaseConfigured } from './lib/firebase';
-import { bookingsRepository } from './lib/firestoreService';
+import { bookingsRepository, conciergeRequestsRepository } from './lib/firestoreService';
 import { callCancelBooking } from './lib/firebaseFunctions';
 import { EXTENDED_SERVICES_DATA } from './data/servicesExtendedData';
 import { STYLISTS_DATA } from './data/salonData';
@@ -104,51 +104,92 @@ export default function App() {
       // 1. Try Firestore first if configured
       if (isFirebaseConfigured) {
         try {
-          const fbBookings = await bookingsRepository.getMyBookings(user.id);
-          if (isMounted) {
-            if (fbBookings && fbBookings.length > 0) {
-              const mapped: BookingRecord[] = fbBookings.map((b) => {
-                const localService = EXTENDED_SERVICES_DATA.find(s => s.id === b.service_id || s.name.toLowerCase() === (b.service_name || '').toLowerCase());
-                const durationMin = b.duration_minutes || localService?.durationValue || 60;
-                const priceVal = b.price || localService?.priceValue || 95;
+          const [fbBookings, conciergeReqs] = await Promise.all([
+            bookingsRepository.getMyBookings(user.id),
+            conciergeRequestsRepository.getMyRequests(user.id)
+          ]);
 
-                return {
-                  id: b.id,
-                  service: {
-                    id: b.service_id || 'service-1',
-                    name: b.service_name || localService?.name || 'Sanctuary Ritual',
-                    category: localService?.category || 'Exclusive',
-                    price: `₹${priceVal}`,
-                    priceValue: priceVal,
-                    duration: `${durationMin} Mins`,
-                    durationValue: durationMin,
-                    shortDescription: localService?.shortDescription || '',
-                    longDescription: localService?.longDescription || '',
-                    image: localService?.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
-                    benefits: localService?.benefits || [],
-                    includedServices: localService?.includedServices || [],
-                    popular: localService?.popular || false,
-                    rating: localService?.rating || 4.9,
-                    reviewsCount: localService?.reviewsCount || 12,
-                    faqs: localService?.faqs || []
-                  },
-                  gender: b.gender,
-                  date: b.booking_date,
-                  timeSlot: b.start_time,
-                  endTime: b.end_time,
-                  totalAmount: b.price,
-                  discountApplied: b.discountApplied || 0,
-                  promoApplied: b.promoCodeApplied || '',
-                  createdAt: b.created_at || new Date().toLocaleDateString(),
-                  ticketCode: b.ticket_code,
-                  customerName: user.displayName || 'Valued Patron',
-                  stylist: null
-                };
-              });
-              setAppointments(mapped);
-            } else {
-              setAppointments([]);
-            }
+          if (isMounted) {
+            const mappedFb: BookingRecord[] = (fbBookings || []).map((b) => {
+              const localService = EXTENDED_SERVICES_DATA.find(s => s.id === b.service_id || s.name.toLowerCase() === (b.service_name || '').toLowerCase());
+              const durationMin = b.duration_minutes || localService?.durationValue || 60;
+              const priceVal = b.price || localService?.priceValue || 95;
+
+              return {
+                id: b.id,
+                service: {
+                  id: b.service_id || 'service-1',
+                  name: b.service_name || localService?.name || 'Sanctuary Ritual',
+                  category: localService?.category || 'Exclusive',
+                  price: `₹${priceVal}`,
+                  priceValue: priceVal,
+                  duration: `${durationMin} Mins`,
+                  durationValue: durationMin,
+                  shortDescription: localService?.shortDescription || '',
+                  longDescription: localService?.longDescription || '',
+                  image: localService?.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+                  benefits: localService?.benefits || [],
+                  includedServices: localService?.includedServices || [],
+                  popular: localService?.popular || false,
+                  rating: localService?.rating || 4.9,
+                  reviewsCount: localService?.reviewsCount || 12,
+                  faqs: localService?.faqs || []
+                },
+                services: (b as any).services,
+                gender: b.gender,
+                date: b.booking_date,
+                timeSlot: b.start_time,
+                endTime: b.end_time,
+                totalAmount: b.price,
+                discountApplied: b.discountApplied || 0,
+                promoApplied: b.promoCodeApplied || '',
+                createdAt: b.created_at || new Date().toLocaleDateString(),
+                ticketCode: b.ticket_code,
+                customerName: user.displayName || 'Valued Patron',
+                stylist: STYLISTS_DATA[0]
+              };
+            });
+
+            const mappedReqs: BookingRecord[] = (conciergeReqs || []).map((r) => {
+              const localService = EXTENDED_SERVICES_DATA.find(s => s.id === r.service_id || s.name.toLowerCase() === (r.service_name || '').toLowerCase());
+              const durationMin = r.duration_minutes || localService?.durationValue || 60;
+              const priceVal = r.total_amount || localService?.priceValue || 95;
+
+              return {
+                id: r.id,
+                service: (r.services && r.services[0]) ? {
+                  ...(localService || EXTENDED_SERVICES_DATA[0]),
+                  id: r.services[0].id,
+                  name: r.services[0].name,
+                  category: r.services[0].category || r.gender || 'Luxury Ritual',
+                  price: typeof r.services[0].price === 'number' ? `₹${r.services[0].price}` : r.services[0].price,
+                  priceValue: r.services[0].priceValue,
+                  duration: typeof r.services[0].duration === 'number' ? `${r.services[0].duration} Mins` : r.services[0].duration,
+                  durationValue: r.services[0].durationValue
+                } as any : (localService || EXTENDED_SERVICES_DATA[0]),
+                services: r.services,
+                gender: r.gender,
+                date: r.booking_date,
+                timeSlot: r.start_time,
+                endTime: r.end_time,
+                totalAmount: priceVal,
+                discountApplied: r.discount_applied || 0,
+                promoApplied: r.promo_code || '',
+                createdAt: r.created_at || new Date().toLocaleDateString(),
+                ticketCode: 'AWAITING-CONFIRMATION',
+                customerName: r.customer_name || user.displayName || 'Valued Patron',
+                stylist: STYLISTS_DATA[0],
+                paymentStatus: 'pending',
+                paymentGateway: 'pay_at_salon'
+              };
+            });
+
+            const combined = [
+              ...mappedReqs,
+              ...mappedFb.filter(fb => !mappedReqs.some(r => r.id === fb.id))
+            ];
+
+            setAppointments(combined);
             return;
           }
         } catch (fbErr) {
@@ -561,7 +602,7 @@ export default function App() {
         GLOBAL OVERLAY UTILITIES (Cookie consent, scroll top, page loading, CTAs)
         ========================================================================
       */}
-      <PageLoader />
+      <PageLoader isLoading={loading} />
       <CookieConsent onPrivacyClick={() => handleNavigate('privacy')} />
       <ScrollToTop />
       {currentView !== 'booking' && currentView !== 'portal' && (

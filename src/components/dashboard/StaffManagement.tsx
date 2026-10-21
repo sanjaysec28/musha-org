@@ -566,10 +566,32 @@ export default function StaffManagement({ id, triggerToast }: StaffManagementPro
                     </div>
 
                     <div className="bg-brand-bg/60 p-3 border border-brand-accent/30 space-y-1.5 text-xs font-sans">
-                      <div className="flex justify-between text-brand-text-muted">
-                        <span>Ritual:</span>
-                        <span className="font-semibold text-white">{req.service_name} ({req.gender})</span>
-                      </div>
+                      {req.services && req.services.length > 0 ? (
+                        <div className="space-y-1 pt-1 border-b border-brand-accent/20 pb-2">
+                          <span className="text-[10px] uppercase tracking-wider text-brand-secondary font-bold block">
+                            All Selected Services ({req.services.length}):
+                          </span>
+                          <div className="space-y-1">
+                            {req.services.map((s: any, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center text-[11px] bg-brand-surface/60 px-2 py-1 rounded border border-brand-accent/20">
+                                <div>
+                                  <span className="text-white font-medium">{s.name}</span>
+                                  {s.category && <span className="text-[9px] text-brand-text-muted ml-1.5">({s.category})</span>}
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-brand-secondary font-mono">{typeof s.price === 'number' ? `₹${s.price}` : s.price}</span>
+                                  <span className="text-[9px] text-brand-text-muted ml-1">({typeof s.duration === 'number' ? `${s.duration}m` : s.duration})</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between text-brand-text-muted">
+                          <span>Ritual:</span>
+                          <span className="font-semibold text-white">{req.service_name} ({req.gender})</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-brand-text-muted">
                         <span>Requested Time:</span>
                         <span className="font-semibold text-white">{req.booking_date} at {req.start_time}</span>

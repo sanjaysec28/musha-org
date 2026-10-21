@@ -197,10 +197,11 @@ export interface FirestoreBooking {
   payment_status: PaymentStatus;
   paymentStatus?: PaymentStatus;
   payment_method?: PaymentMethodType;
-  paymentMethod?: PaymentMethodType;
   ticket_code: string;
   ticketCode?: string;
   notes?: string;
+  services?: any[];
+  category?: string;
   // Staff assignment is strictly internal/salon-controlled (optional):
   staff_id?: string;
   staffId?: string;
@@ -308,6 +309,10 @@ export interface FirestoreConciergeRequest {
   discount_applied?: number;
   promo_code?: string;
   notes?: string;
+  services?: any[];
+  category?: string;
+  ticket_code?: string;
+  ticketCode?: string;
   status: ConciergeRequestStatus;
   payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
   payment_gateway?: 'razorpay' | 'pay_at_salon';

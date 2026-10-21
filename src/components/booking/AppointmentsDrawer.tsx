@@ -60,8 +60,21 @@ export default function AppointmentsDrawer({
 
                   {/* Service info */}
                   <div className="space-y-1">
-                    <span className="font-sans text-[8px] uppercase tracking-widest text-brand-text-muted">Ritual</span>
-                    <h4 className="font-serif text-sm font-semibold text-brand-primary leading-tight">{app.service.name}</h4>
+                    <span className="font-sans text-[8px] uppercase tracking-widest text-brand-text-muted">
+                      {app.services && app.services.length > 1 ? `Rituals (${app.services.length})` : 'Ritual'}
+                    </span>
+                    {app.services && app.services.length > 1 ? (
+                      <div className="space-y-0.5">
+                        {app.services.map((s, idx) => (
+                          <div key={idx} className="flex justify-between text-xs">
+                            <span className="font-serif font-semibold text-brand-primary">{s.name}</span>
+                            <span className="font-mono text-[10px] text-brand-text-muted">{s.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <h4 className="font-serif text-sm font-semibold text-brand-primary leading-tight">{app.service.name}</h4>
+                    )}
                   </div>
 
                   {/* Stylist & Schedule details */}

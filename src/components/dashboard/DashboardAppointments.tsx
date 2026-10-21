@@ -508,6 +508,15 @@ export default function DashboardAppointments({
                       <h4 className="font-serif text-base sm:text-lg font-medium text-brand-primary mt-1 truncate">
                         {app.serviceName}
                       </h4>
+                      {app.services && app.services.length > 1 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {app.services.map((s, idx) => (
+                            <span key={idx} className="font-sans text-[10px] bg-brand-surface border border-brand-accent px-1.5 py-0.5 rounded text-brand-text">
+                              {s.name} ({typeof s.price === 'number' ? `₹${s.price}` : s.price})
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <p className="font-sans text-xs text-brand-text-muted mt-0.5 truncate">
                         Senior Artist: <span className="text-brand-primary font-medium">{app.stylistName}</span>
                       </p>
@@ -624,6 +633,42 @@ export default function DashboardAppointments({
               <p className="font-mono text-[10px] text-brand-secondary mt-1 font-semibold">
                 ID: {activeDetailAppointment.id}
               </p>
+
+              {/* All individual selected services */}
+              {activeDetailAppointment.services && activeDetailAppointment.services.length > 0 && (
+                <div className="text-left bg-white border border-[#E6DCCB] rounded-xl p-3.5 my-4 space-y-2">
+                  <div className="flex justify-between items-center border-b border-[#E6DCCB] pb-1.5">
+                    <span className="font-sans text-[10px] uppercase tracking-wider text-[#B88A45] font-bold">
+                      All Individual Services ({activeDetailAppointment.services.length})
+                    </span>
+                    <span className="font-sans text-xs text-[#746B60]">
+                      Combined Duration: <strong className="text-[#211D18]">{activeDetailAppointment.duration}</strong>
+                    </span>
+                  </div>
+                  <div className="divide-y divide-[#E6DCCB]/60 space-y-1">
+                    {activeDetailAppointment.services.map((srv, idx) => (
+                      <div key={idx} className="pt-1.5 flex justify-between items-center text-xs">
+                        <div>
+                          <span className="font-serif font-bold text-[#211D18]">{srv.name}</span>
+                          {srv.category && (
+                            <span className="text-[9px] text-[#746B60] ml-1.5 px-1 py-0.5 rounded bg-[#FAF7F0] border border-[#E6DCCB]">
+                              {srv.category}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <span className="font-serif font-bold text-[#211D18]">
+                            {typeof srv.price === 'number' ? `₹${srv.price}` : srv.price}
+                          </span>
+                          <span className="text-[10px] text-[#746B60] ml-1">
+                            ({typeof srv.duration === 'number' ? `${srv.duration} Mins` : srv.duration})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* QR Code Placeholder Box */}
               <div className="bg-white border border-[#E6DCCB] p-4 h-36 w-36 mx-auto my-5 flex flex-col items-center justify-center shadow-md rounded-xl relative group">

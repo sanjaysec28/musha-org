@@ -73,6 +73,19 @@ export interface DashboardAppointment {
   qrCodeUrl: string;
   invoiceUrl: string;
   realStatus?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  services?: Array<{
+    id: string;
+    name: string;
+    category?: string;
+    price: string | number;
+    priceValue: number;
+    duration: string | number;
+    durationValue: number;
+  }>;
+  customerName?: string;
+  notes?: string;
+  endTime?: string;
+  ticketCode?: string;
 }
 
 export interface WalletTransaction {
