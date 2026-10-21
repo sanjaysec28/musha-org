@@ -1,69 +1,50 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Musha Empire — Patron Categories (Men, Women, Boys, Girls, Third Gender / Universal)
- * Matches the approved Bright Creamy Luxury visual language.
+ * Musha Empire — Sovereign Patron Grooming Categories
+ * 16:9 Landscape cards featuring approved bespoke imagery.
  */
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { Shield, Sparkles, Heart, Compass, Crown, ArrowRight } from 'lucide-react';
 
 export interface PatronCategoryItem {
   id: 'Men' | 'Women' | 'Boy' | 'Girl' | 'Other';
   title: string;
-  subtitle: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tag: string;
   image: string;
+  ariaLabel: string;
 }
 
 export const PATRON_CATEGORIES: PatronCategoryItem[] = [
   {
     id: 'Men',
     title: "Men's Grooming",
-    subtitle: 'Kings & Gentlemen',
-    description: 'Precision scissor cuts, hot towel beard sculpting, charcoal facials, and hair spa treatments.',
-    icon: Crown,
-    tag: 'Executive Suites',
-    image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80',
+    ariaLabel: "Men's Grooming — View Men's Services",
+    image: '/images/men-groom.png',
   },
   {
     id: 'Women',
-    title: "Women's Sanctuary",
-    subtitle: 'Queens & Ladies',
-    description: 'Balayage, couture blowouts, keratin silk baths, Korean glow facials, and bridal suites.',
-    icon: Sparkles,
-    tag: 'Haute Artistry',
-    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+    title: "Women's Grooming",
+    ariaLabel: "Women's Grooming — View Women's Services",
+    image: '/images/women-groom.png',
   },
   {
     id: 'Boy',
-    title: "Boys' Styling",
-    subtitle: 'Young Gentlemen',
-    description: 'Unhurried scissor trims, modern fades, and gentle scalp-friendly botanical washes.',
-    icon: Compass,
-    tag: 'Youth Grooming',
-    image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+    title: "Boys' Grooming",
+    ariaLabel: "Boys' Grooming — View Boys' Services",
+    image: '/images/boys-groom.png',
   },
   {
     id: 'Girl',
-    title: "Girls' Styling",
-    subtitle: 'Young Royalty',
-    description: 'Gentle haircutting, botanical conditioning, celebratory braiding, and delicate trims.',
-    icon: Heart,
-    tag: 'Delicate Care',
-    image: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=800&q=80',
+    title: "Girls' Grooming",
+    ariaLabel: "Girls' Grooming — View Girls' Services",
+    image: '/images/girls-groom.png',
   },
   {
     id: 'Other',
-    title: 'Universal Experience',
-    subtitle: 'Inclusive Atelier & Third Gender',
-    description: 'Bespoke scalp diagnosis, gender-affirming styling, and private treatment suites for every guest.',
-    icon: Shield,
-    tag: 'All Welcome',
-    image: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=800&q=80',
+    title: 'Universal Grooming (Inclusive Atelier & Third Gender)',
+    ariaLabel: 'Universal Grooming Services & Third Gender Inclusive Atelier — View Universal Services',
+    image: '/images/universal-groom.png',
   },
 ];
 
@@ -77,7 +58,7 @@ export default function PatronCategories({ onSelectCategory }: PatronCategoriesP
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-3.5">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 space-y-3.5">
           <span className="font-sans text-[11px] uppercase tracking-[0.3em] font-semibold text-[#B88A45] block">
             INDIVIDUALIZED LUXURY CARE
           </span>
@@ -90,65 +71,38 @@ export default function PatronCategories({ onSelectCategory }: PatronCategoriesP
           </p>
         </div>
 
-        {/* 5-Column Responsive Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 sm:gap-6">
-          {PATRON_CATEGORIES.map((cat, idx) => {
-            const Icon = cat.icon;
-            return (
-              <motion.div
-                key={cat.id}
+        {/* 5-Column Responsive Cards Grid (Desktop: 5 in one row, Tablet: 2 per row, Mobile: 1-col) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-5">
+          {PATRON_CATEGORIES.map((cat, idx) => (
+            <motion.div
+              key={cat.id}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-20px' }}
+              transition={{ duration: 0.45, delay: idx * 0.08 }}
+              className={`w-full flex flex-col ${
+                idx === 4 ? 'sm:col-span-2 lg:col-span-1 sm:max-w-[calc(50%-0.625rem)] sm:mx-auto lg:max-w-none' : ''
+              }`}
+            >
+              <button
                 id={`patron-cat-card-${cat.id.toLowerCase()}`}
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-30px' }}
-                transition={{ duration: 0.45, delay: idx * 0.08 }}
+                type="button"
                 onClick={() => onSelectCategory?.(cat.id)}
-                className="group relative flex flex-col justify-between bg-white border border-[#E6DCCB] hover:border-[#B88A45]/60 rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-400 shadow-sm hover:shadow-xl hover:shadow-[#B88A45]/10 cursor-pointer hover:-translate-y-1 text-left"
+                aria-label={cat.ariaLabel}
+                className="group relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-[#B88A45]/35 hover:border-[#B88A45] bg-[#161412] shadow-sm hover:shadow-xl hover:shadow-[#B88A45]/20 transition-all duration-300 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B88A45] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF7F0] cursor-pointer block p-0 text-left"
+                style={{ aspectRatio: '16 / 9' }}
               >
-                {/* 1. High-Quality Editorial Image Banner */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#F1E9DC]">
-                  <img
-                    src={cat.image}
-                    alt={cat.title}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108 motion-reduce:transform-none"
-                  />
-                  {/* Subtle tonal gradient to ground badge and elevate luxury feel */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/15 pointer-events-none" />
-
-                  {/* Floating Category Tag with Icon */}
-                  <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md border border-[#E6DCCB] text-[#B88A45] shadow-xs">
-                    <Icon className="w-3.5 h-3.5 text-[#B88A45]" />
-                    <span className="font-mono text-[9px] uppercase tracking-wider font-semibold text-[#211D18]">
-                      {cat.tag}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 2. Card Content Body */}
-                <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-4 bg-white">
-                  <div>
-                    <span className="font-mono text-[9px] sm:text-[10px] text-[#B88A45] uppercase tracking-widest font-semibold block mb-1">
-                      {cat.subtitle}
-                    </span>
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#211D18] group-hover:text-[#B88A45] transition-colors leading-snug">
-                      {cat.title}
-                    </h3>
-                    <p className="font-sans text-xs text-[#746B60] mt-2 leading-relaxed font-normal">
-                      {cat.description}
-                    </p>
-                  </div>
-
-                  {/* 3. Footer Action Button */}
-                  <div className="pt-3.5 border-t border-[#E6DCCB] flex items-center justify-between text-xs font-serif font-bold uppercase tracking-wider text-[#B88A45] group-hover:text-[#211D18] transition-colors">
-                    <span>Explore Menu</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5 text-[#B88A45]" />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                <img
+                  src={cat.image}
+                  alt=""
+                  loading="lazy"
+                  className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transform-none block"
+                  style={{ aspectRatio: '16 / 9' }}
+                />
+                <span className="sr-only">{cat.ariaLabel}</span>
+              </button>
+            </motion.div>
+          ))}
         </div>
 
       </div>

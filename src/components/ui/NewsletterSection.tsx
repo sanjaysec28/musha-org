@@ -39,7 +39,7 @@ export default function NewsletterSection({
   return (
     <section
       id="newsletter-curation-banner"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-20"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-4 mb-16 sm:mb-20"
     >
       <div className="bg-[#F1E9DC] border border-[#E6DCCB] text-[#211D18] p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-sm rounded-2xl">
         {/* Decorative background grid and vector gradients - subtle warm gold */}

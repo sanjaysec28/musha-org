@@ -80,16 +80,12 @@ describe('Musha Empire — Permanent Bright Creamy Luxury Theme System', () => {
     expect(patronCategoriesSource).toContain("Third Gender");
   });
 
-  it('verifies Brand benefit cards use pure white with deep charcoal headings and warm taupe descriptions', () => {
+  it('verifies Brand benefit cards have been completely removed from TrustIndicators.tsx', () => {
     const trustSource = fs.readFileSync(path.resolve(__dirname, '../src/components/home/TrustIndicators.tsx'), 'utf-8');
-    expect(trustSource).toContain('bg-white');
-    expect(trustSource).toContain('border-[#E6DCCB]');
-    expect(trustSource).toContain('text-[#211D18]');
-    expect(trustSource).toContain('text-[#746B60]');
-    expect(trustSource).toContain('Certified Masters');
-    expect(trustSource).toContain('Pure Botanicals');
-    expect(trustSource).toContain('Private Suites');
-    expect(trustSource).toContain('Bespoke Care');
+    expect(trustSource).not.toContain('Certified Masters');
+    expect(trustSource).not.toContain('Pure Botanicals');
+    expect(trustSource).not.toContain('Private Suites');
+    expect(trustSource).not.toContain('Bespoke Care');
   });
 
   it('verifies Royal Dispatch newsletter section uses soft cream background, charcoal heading, white input, and gold Subscribe button', () => {

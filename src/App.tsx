@@ -320,7 +320,7 @@ export default function App() {
     triggerToast(
       'success',
       'Reservation Confirmed!',
-      `Your session ${record.id} with ${record.stylist.name} is scheduled for ${record.timeSlot}.`
+      `Your session ${record.id} with ${record.stylist?.name || 'Salon Concierge'} is scheduled for ${record.timeSlot}.`
     );
   };
 
