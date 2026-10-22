@@ -536,8 +536,8 @@ export default function DashboardAppointments({
                   {/* Right: Payment Status & Actions */}
                   <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end justify-between gap-3 border-t md:border-t-0 border-brand-surface-muted pt-3.5 md:pt-0 w-full md:w-auto">
                     <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto">
-                      <span className="font-serif text-base font-medium text-brand-primary block">
-                        ${app.price.toFixed(2)}
+                      <span className="font-serif text-base font-bold text-brand-primary block">
+                        ₹ {(app.price || 0).toLocaleString('en-IN')}
                       </span>
                       <span className="font-mono text-[9px] uppercase font-bold text-brand-gold-dark block">
                         {app.paymentStatus === 'paid' ? '● Fully Prepaid' : '○ Counter Pay'}
@@ -717,8 +717,8 @@ export default function DashboardAppointments({
                 <span className="font-sans text-[9px] uppercase tracking-widest text-brand-text-muted font-bold block">
                   BILLING DETAILS
                 </span>
-                <p className="font-serif text-sm font-semibold text-brand-primary mt-1">
-                  ${activeDetailAppointment.price.toFixed(2)}
+                <p className="font-serif text-sm font-bold text-brand-primary mt-1">
+                  ₹ {(activeDetailAppointment.price || 0).toLocaleString('en-IN')}
                 </p>
                 <p className="font-mono text-[9px] font-bold text-brand-gold-dark mt-0.5 uppercase">
                   {activeDetailAppointment.paymentStatus === 'paid' ? 'Paid via Wallet' : 'Pay On Location'}
@@ -774,7 +774,7 @@ export default function DashboardAppointments({
                 Are you sure you wish to cancel your scheduled slot for <strong className="text-brand-primary">{activeCancelConfirm.serviceName}</strong> with <strong className="text-brand-primary">{activeCancelConfirm.stylistName}</strong>?
               </p>
               <p className="font-sans text-[10px] text-brand-gold-dark bg-brand-gold-light border border-brand-secondary/35 p-2.5 mt-3 leading-relaxed">
-                Credits of ${activeCancelConfirm.price.toFixed(2)} will be refunded instantly back into your personal salon wallet.
+                Credits of ₹ {(activeCancelConfirm.price || 0).toLocaleString('en-IN')} will be refunded instantly back into your personal salon wallet.
               </p>
             </div>
 

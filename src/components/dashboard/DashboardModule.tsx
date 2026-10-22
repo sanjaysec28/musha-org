@@ -36,7 +36,8 @@ import {
 } from './types';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { isFirebaseConfigured, auth } from '../../lib/firebase';
-import { bookingsRepository, conciergeRequestsRepository } from '../../lib/firestoreService';
+import { bookingsRepository, conciergeRequestsRepository, usersRepository } from '../../lib/firestoreService';
+import { updateProfile } from 'firebase/auth';
 import { callCancelBooking } from '../../lib/firebaseFunctions';
 import { EXTENDED_SERVICES_DATA } from '../../data/servicesExtendedData';
 import { STYLISTS_DATA } from '../../data/salonData';
@@ -61,6 +62,7 @@ interface DashboardModuleProps {
   userProfile: { name: string; email: string; phone: string };
   initialAppointmentTab?: 'upcoming' | 'requests' | 'completed' | 'cancelled';
   initialView?: DashboardViewType;
+  onNavigateBooking?: () => void;
 }
 
 // ==============================================
@@ -97,9 +99,10 @@ export default function DashboardModule({
   triggerToast,
   userProfile,
   initialAppointmentTab,
-  initialView
+  initialView,
+  onNavigateBooking
 }: DashboardModuleProps) {
-  const { user: authUser, profile } = useAuth();
+  const { user: authUser, profile, refreshProfile } = useAuth();
   const userRole = authUser?.role || profile?.role || 'customer';
   const isStaffUser = ['admin', 'manager', 'receptionist', 'stylist', 'cashier', 'staff'].includes(userRole);
 

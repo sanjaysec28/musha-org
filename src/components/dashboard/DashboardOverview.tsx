@@ -1,10 +1,31 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ * Musha Empire Luxury Unisex Saloon — Customer Portal Overview
+ * 
+ * Design System: Bright Creamy Luxury
+ * - Background: Warm Ivory (#FAF7F0)
+ * - Cards: Pure White (#FFFFFF), Rounded (#E6DCCB borders)
+ * - Headings: Playfair Display
+ * - Body: Plus Jakarta Sans
+ * - Tasteful emoji-style icons inspired by GitHub activity visuals
+ * - ₹ INR formatting everywhere, zero dummy data, zero loyalty points section
  */
 
+import React from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Calendar, Wallet, Award, ArrowRight, PlusCircle, CheckCircle, Clock } from 'lucide-react';
+import {
+  Calendar,
+  Wallet,
+  Clock,
+  ArrowRight,
+  PlusCircle,
+  Sparkles,
+  QrCode,
+  ShieldCheck,
+  User,
+  ChevronRight
+} from 'lucide-react';
 import { DashboardUser, DashboardAppointment } from './types';
 import Button from '../ui/Button';
 
@@ -15,7 +36,7 @@ interface DashboardOverviewProps {
   onNavigateView: (view: any) => void;
   onOpenQuickBook: () => void;
   onOpenAddMoney: () => void;
-  onOpenRedeemRewards: () => void;
+  onOpenRedeemRewards?: () => void;
 }
 
 export default function DashboardOverview({
@@ -24,48 +45,57 @@ export default function DashboardOverview({
   appointments,
   onNavigateView,
   onOpenQuickBook,
-  onOpenAddMoney,
-  onOpenRedeemRewards
+  onOpenAddMoney
 }: DashboardOverviewProps) {
-  // Get next upcoming appointment
-  const nextAppointment = appointments
-    .filter((app) => app.status === 'upcoming')
+  // Filter for real upcoming appointments
+  const upcomingAppointments = appointments.filter(
+    (app) => app.status === 'upcoming' || (app.realStatus && app.realStatus !== 'cancelled')
+  );
+
+  const nextAppointment = upcomingAppointments
+    .slice()
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
 
+  const walletBalanceFormatted = `₹ ${(user.walletBalance || 0).toLocaleString('en-IN')}`;
+
   return (
-    <div id={id} className="space-y-6">
+    <div id={id} className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* 1. Welcome Card Banner */}
       <motion.div
         id={`${id}-welcome-card`}
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative bg-brand-surface text-brand-text p-8 md:p-10 border border-brand-secondary/15 overflow-hidden"
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="relative bg-white border border-[#E6DCCB] rounded-2xl p-6 sm:p-8 lg:p-10 shadow-[0_4px_20px_rgba(33,29,24,0.03)] overflow-hidden"
       >
-        {/* Subtle geometric pattern */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#C5A880_1px,transparent_1px)] bg-[size:1.5rem_1.5rem]" />
-        <div className="absolute -right-20 -top-20 w-80 h-80 bg-brand-secondary/10 rounded-full filter blur-3xl pointer-events-none" />
+        {/* Subtle warm champagne-gold ambient glow */}
+        <div
+          className="absolute -right-16 -top-16 w-80 h-80 bg-[#B88A45]/[0.07] rounded-full blur-[80px] pointer-events-none"
+          aria-hidden="true"
+        />
 
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <span className="font-sans text-[10px] uppercase tracking-[0.25em] font-semibold text-brand-secondary inline-flex items-center gap-1.5 mb-2.5">
-              <Sparkles className="h-3 w-3" /> PRIVATE EMPIRE MEMBER
+          <div className="max-w-xl">
+            <span className="font-sans text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-semibold text-[#B88A45] inline-flex items-center gap-1.5 mb-2">
+              <Sparkles className="w-3.5 h-3.5" /> PRIVATE SALON SANCTUARY
             </span>
-            <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-white">
-              Good day, {user.name}
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#211D18]">
+              Good day, {user.name || 'Valued Patron'}
             </h1>
-            <p className="font-sans text-xs text-brand-text-muted mt-2 max-w-md leading-relaxed font-normal">
-              Welcome back to your tailored sanctuary portal. Enjoy your priority status, view active bookings, or top up your premium treatments wallet.
+            <p className="font-sans text-xs sm:text-sm text-[#746B60] mt-2 leading-relaxed">
+              Welcome back to your private Musha Empire portal. Access active grooming reservations,
+              inspect digital salon passes, and manage your prepaid treatments balance.
             </p>
           </div>
-          <div className="flex flex-col xs:flex-row gap-3 w-full md:w-auto">
+
+          <div className="flex flex-col xs:flex-row gap-3 w-full md:w-auto shrink-0">
             <Button
               id="dashboard-quick-book-btn"
               variant="primary"
               size="md"
-              leftIcon={<Calendar className="h-4 w-4" />}
+              leftIcon={<Calendar className="w-4 h-4" />}
               onClick={onOpenQuickBook}
-              className="w-full xs:w-auto px-6 font-sans text-xs uppercase tracking-widest font-bold"
+              className="w-full xs:w-auto bg-[#B88A45] hover:bg-[#A07435] text-white rounded-full px-6 font-sans text-xs uppercase tracking-wider font-bold shadow-sm"
             >
               Book Treatment
             </Button>
@@ -74,7 +104,7 @@ export default function DashboardOverview({
               variant="outline"
               size="md"
               onClick={() => onNavigateView('appointments')}
-              className="w-full xs:w-auto border-brand-secondary/30 text-brand-secondary hover:border-brand-secondary hover:text-white hover:bg-brand-secondary/10 font-sans text-xs uppercase tracking-widest font-semibold"
+              className="w-full xs:w-auto border-[#E6DCCB] text-[#211D18] hover:border-[#B88A45] hover:text-[#B88A45] hover:bg-[#FAF7F0] rounded-full px-6 font-sans text-xs uppercase tracking-wider font-semibold"
             >
               View Sessions
             </Button>
@@ -82,284 +112,276 @@ export default function DashboardOverview({
         </div>
       </motion.div>
 
-      {/* 2. Visual Metric Widgets Grid */}
-      <div id={`${id}-metrics-grid`} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Wallet Balance widget */}
+      {/* 2. Visual Metric Widgets (Consistently formatted in ₹ INR — No Rewards points section) */}
+      <div id={`${id}-metrics-grid`} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Wallet Balance Widget */}
         <motion.div
           id="metric-wallet"
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="bg-brand-surface border border-brand-accent p-5 sm:p-6 flex flex-col justify-between hover:border-brand-secondary/40 transition-all duration-300 group"
+          transition={{ duration: 0.45, delay: 0.05 }}
+          className="bg-white border border-[#E6DCCB] hover:border-[#D8B77A]/60 rounded-2xl p-6 shadow-[0_4px_20px_rgba(33,29,24,0.03)] flex flex-col justify-between transition-all duration-300 group"
         >
           <div className="flex justify-between items-start">
-            <span className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold">
-              Empire Wallet
-            </span>
-            <div className="h-8 w-8 bg-brand-gold-light border border-brand-secondary/20 flex items-center justify-center text-brand-secondary group-hover:bg-brand-secondary group-hover:text-brand-primary transition-all duration-300 shrink-0">
-              <Wallet className="h-4 w-4" />
+            <div>
+              <span className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block">
+                💳 Empire Salon Wallet
+              </span>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-[#211D18] mt-2">
+                {walletBalanceFormatted}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-[#B88A45] group-hover:bg-[#B88A45] group-hover:text-white transition-all duration-300 shrink-0">
+              <Wallet className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <span className="font-serif text-2xl sm:text-3xl font-semibold text-brand-primary">
-              ${user.walletBalance.toFixed(2)}
+
+          <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#E6DCCB]/60">
+            <span className="font-sans text-xs text-[#746B60]">
+              Prepaid balance for desk settlements
             </span>
-            <div className="flex justify-between items-center mt-2 gap-2">
-              <span className="font-sans text-[10px] text-brand-text-muted truncate">
-                Pre-funded credits
-              </span>
-              <button
-                id="overview-add-money-trigger"
-                onClick={onOpenAddMoney}
-                className="font-sans text-[10px] uppercase tracking-wider font-bold text-brand-gold-dark hover:underline flex items-center gap-1 cursor-pointer shrink-0"
-              >
-                <PlusCircle className="h-3.5 w-3.5" /> Top Up
-              </button>
-            </div>
+            <button
+              id="overview-add-money-trigger"
+              type="button"
+              onClick={onOpenAddMoney}
+              className="font-sans text-xs font-bold text-[#B88A45] hover:text-[#A07435] flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <PlusCircle className="w-4 h-4" /> Top Up Balance
+            </button>
           </div>
         </motion.div>
 
-        {/* Loyalty Points widget */}
-        <motion.div
-          id="metric-loyalty"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-brand-surface border border-brand-accent p-5 sm:p-6 flex flex-col justify-between hover:border-brand-secondary/40 transition-all duration-300 group"
-        >
-          <div className="flex justify-between items-start">
-            <span className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold">
-              Loyalty Rewards
-            </span>
-            <div className="h-8 w-8 bg-brand-gold-light border border-brand-secondary/20 flex items-center justify-center text-brand-secondary group-hover:bg-brand-secondary group-hover:text-brand-primary transition-all duration-300 shrink-0">
-              <Award className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <span className="font-serif text-2xl sm:text-3xl font-semibold text-brand-primary">
-              {user.loyaltyPoints} PTS
-            </span>
-            <div className="flex justify-between items-center mt-2 gap-2">
-              <span className="font-sans text-[10px] text-brand-text-muted truncate">
-                Level Gold Tier
-              </span>
-              <button
-                id="overview-redeem-trigger"
-                onClick={onOpenRedeemRewards}
-                className="font-sans text-[10px] uppercase tracking-wider font-bold text-brand-gold-dark hover:underline flex items-center gap-1 cursor-pointer shrink-0"
-              >
-                Redeem Perks &rarr;
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Saved Addresses / Count widget */}
+        {/* Active Sessions Widget */}
         <motion.div
           id="metric-appointments-count"
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="bg-brand-surface border border-brand-accent p-5 sm:p-6 flex flex-col justify-between hover:border-brand-secondary/40 transition-all duration-300 group sm:col-span-1"
+          transition={{ duration: 0.45, delay: 0.1 }}
+          className="bg-white border border-[#E6DCCB] hover:border-[#D8B77A]/60 rounded-2xl p-6 shadow-[0_4px_20px_rgba(33,29,24,0.03)] flex flex-col justify-between transition-all duration-300 group"
         >
           <div className="flex justify-between items-start">
-            <span className="font-sans text-[10px] uppercase tracking-widest text-brand-text-muted font-semibold">
-              Active Sessions
-            </span>
-            <div className="h-8 w-8 bg-brand-gold-light border border-brand-secondary/20 flex items-center justify-center text-brand-secondary group-hover:bg-brand-secondary group-hover:text-brand-primary transition-all duration-300 shrink-0">
-              <Calendar className="h-4 w-4" />
+            <div>
+              <span className="font-sans text-[10px] uppercase tracking-widest text-[#746B60] font-semibold block">
+                🗓️ Active Grooming Sessions
+              </span>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-[#211D18] mt-2">
+                {upcomingAppointments.length} Booked
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-[#B88A45] group-hover:bg-[#B88A45] group-hover:text-white transition-all duration-300 shrink-0">
+              <Calendar className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <span className="font-serif text-2xl sm:text-3xl font-semibold text-brand-primary">
-              {appointments.filter((app) => app.status === 'upcoming').length} Booked
+
+          <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#E6DCCB]/60">
+            <span className="font-sans text-xs text-[#746B60]">
+              Confirmed at Musha Empire desk
             </span>
-            <div className="flex justify-between items-center mt-2 gap-2">
-              <span className="font-sans text-[10px] text-brand-text-muted truncate">
-                Includes private spa room
-              </span>
-              <button
-                id="overview-appointments-trigger"
-                onClick={() => onNavigateView('appointments')}
-                className="font-sans text-[10px] uppercase tracking-wider font-bold text-brand-gold-dark hover:underline cursor-pointer shrink-0"
-              >
-                View Slots &rarr;
-              </button>
-            </div>
+            <button
+              id="overview-appointments-trigger"
+              type="button"
+              onClick={() => onNavigateView('appointments')}
+              className="font-sans text-xs font-bold text-[#B88A45] hover:text-[#A07435] flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              View Sessions <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </motion.div>
       </div>
 
-      {/* 3. Upcoming Appointment & Quick Actions Split layout */}
-      <div id={`${id}-splits`} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Next Scheduled Appointment */}
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="font-serif text-lg font-medium text-brand-primary flex items-center gap-2">
-            <Clock className="h-4.5 w-4.5 text-brand-secondary" /> Next Priority Appointment
-          </h3>
-
-          {nextAppointment ? (
-            <div
-              id="next-appointment-hero-card"
-              className="bg-brand-surface border border-brand-secondary/40 p-6 shadow-sm relative overflow-hidden group"
+      {/* 3. Next Priority Appointment Spotlight */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#211D18] flex items-center gap-2">
+            <Clock className="w-5 h-5 text-[#B88A45]" /> Next Scheduled Appointment
+          </h2>
+          {nextAppointment && (
+            <button
+              type="button"
+              onClick={() => onNavigateView('appointments')}
+              className="text-xs font-sans font-semibold text-[#B88A45] hover:underline"
             >
-              {/* Premium stripe accent */}
-              <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-brand-secondary" />
-              
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pl-3">
-                <div className="flex gap-4 items-center">
-                  <img
-                    src={nextAppointment.stylistAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150'}
-                    alt={nextAppointment.stylistName}
-                    className="h-14 w-14 border border-brand-accent rounded-none object-cover"
-                  />
-                  <div>
-                    <span className="bg-brand-gold-light text-brand-gold-dark font-mono text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-brand-secondary/20 inline-block mb-1.5">
-                      {nextAppointment.category}
-                    </span>
-                    <h4 className="font-serif text-xl font-medium text-brand-primary">
-                      {nextAppointment.serviceName}
-                    </h4>
-                    <p className="font-sans text-xs text-brand-text-muted mt-1">
-                      Stylist Master: <span className="text-brand-primary font-medium">{nextAppointment.stylistName}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:items-end gap-1.5 text-left sm:text-right border-t sm:border-t-0 border-brand-surface-muted pt-3 sm:pt-0 w-full sm:w-auto">
-                  <div className="font-serif text-lg font-medium text-brand-primary">
-                    {nextAppointment.date}
-                  </div>
-                  <div className="font-sans text-xs text-brand-text-muted flex items-center sm:justify-end gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-brand-secondary" /> {nextAppointment.timeSlot} ({nextAppointment.duration})
-                  </div>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-brand-gold-dark font-semibold bg-brand-gold-light border border-brand-secondary/20 px-2.5 py-0.5 rounded-none self-start sm:self-auto mt-1">
-                    {nextAppointment.paymentStatus === 'paid' ? '● Paid' : '○ Pay at Counter'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border-t border-brand-surface-muted mt-6 pt-4 flex flex-col xs:flex-row gap-2.5 justify-end">
-                <Button
-                  id="overview-appointment-details-btn"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onNavigateView('appointments')}
-                  className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold border-brand-accent hover:border-brand-secondary py-2.5"
-                >
-                  View Access Ticket (QR)
-                </Button>
-                <Button
-                  id="overview-appointment-reschedule-btn"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onNavigateView('appointments')}
-                  className="w-full xs:w-auto font-sans text-[10px] uppercase tracking-wider font-semibold py-2.5"
-                >
-                  Manage Reservation
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-brand-surface border border-dashed border-brand-accent p-6 sm:p-10 text-center flex flex-col items-center justify-center min-h-[220px]">
-              <div className="h-12 w-12 rounded-none bg-brand-surface-muted flex items-center justify-center text-brand-text-muted mb-4 border border-brand-accent">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <p className="font-serif text-lg font-medium text-brand-primary">No Upcoming Treatments</p>
-              <p className="font-sans text-xs text-brand-text-muted max-w-xs mt-1.5">
-                Reserve an luxurious styling sessions or high-end hair spa today to refresh your elegant style.
-              </p>
-              <Button
-                id="overview-schedule-first-btn"
-                variant="primary"
-                size="sm"
-                className="mt-5 font-sans text-[10px] uppercase tracking-widest font-bold py-2.5 px-6 w-full xs:w-auto"
-                onClick={onOpenQuickBook}
-              >
-                Book Priority Slot
-              </Button>
-            </div>
+              All Sessions &rarr;
+            </button>
           )}
         </div>
 
-        {/* Custom Actions list widget */}
-        <div className="space-y-4">
-          <h3 className="font-serif text-lg font-medium text-brand-primary flex items-center gap-2">
-            <Sparkles className="h-4.5 w-4.5 text-brand-secondary" /> Express Luxury Operations
-          </h3>
+        {nextAppointment ? (
+          <div
+            id="next-appointment-hero-card"
+            className="bg-white border border-[#B88A45]/30 rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(33,29,24,0.03)] relative overflow-hidden"
+          >
+            {/* Fine gold vertical accent */}
+            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-[#B88A45]" />
 
-          <div className="bg-brand-surface border border-brand-accent p-4 sm:p-6 space-y-3">
-            <button
-              id="express-act-add-funds"
-              onClick={onOpenAddMoney}
-              className="w-full text-left p-3 border border-brand-surface-muted hover:border-brand-secondary hover:bg-brand-gold-light/40 transition-all duration-300 flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 bg-brand-surface-muted border border-brand-accent flex items-center justify-center text-brand-gold-dark group-hover:border-brand-secondary/40 shrink-0">
-                  <Wallet className="h-4 w-4" />
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pl-2">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-2xl shrink-0">
+                  ✂️
                 </div>
-                <div className="min-w-0">
-                  <h4 className="font-serif text-sm font-medium text-brand-primary truncate">Fund Wallet</h4>
-                  <p className="font-sans text-[10px] text-brand-text-muted truncate">Instant top-up with premium bonus cards</p>
+
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-sans text-[11px] font-semibold text-[#B88A45] bg-[#FAF7F0] px-2.5 py-0.5 rounded-full border border-[#B88A45]/20">
+                      {nextAppointment.category || 'Grooming Service'}
+                    </span>
+                    {nextAppointment.ticketCode && (
+                      <span className="font-mono text-[10px] text-[#746B60] bg-[#FAF7F0] px-2 py-0.5 rounded-md border border-[#E6DCCB]">
+                        REF: {nextAppointment.ticketCode}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#211D18]">
+                    {nextAppointment.serviceName}
+                  </h3>
+
+                  <p className="font-sans text-xs sm:text-sm text-[#746B60] mt-1.5 flex items-center gap-3 flex-wrap">
+                    <span className="flex items-center gap-1 font-medium text-[#211D18]">
+                      🗓️ {nextAppointment.date}
+                    </span>
+                    <span className="text-[#E6DCCB]">·</span>
+                    <span className="flex items-center gap-1 font-medium text-[#211D18]">
+                      ⏱️ {nextAppointment.timeSlot}
+                    </span>
+                    <span className="text-[#E6DCCB]">·</span>
+                    <span className="flex items-center gap-1">
+                      👤 {nextAppointment.stylistName || 'Salon Concierge'}
+                    </span>
+                  </p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-brand-text-muted group-hover:text-brand-secondary transition-colors shrink-0 ml-2" />
-            </button>
 
-            <button
-              id="express-act-claim-loyalty"
-              onClick={onOpenRedeemRewards}
-              className="w-full text-left p-3 border border-brand-surface-muted hover:border-brand-secondary hover:bg-brand-gold-light/40 transition-all duration-300 flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 bg-brand-surface-muted border border-brand-accent flex items-center justify-center text-brand-gold-dark group-hover:border-brand-secondary/40 shrink-0">
-                  <Award className="h-4 w-4" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto shrink-0 border-t md:border-t-0 pt-4 md:pt-0 border-[#E6DCCB]">
+                <div className="text-left md:text-right pr-4 hidden md:block">
+                  <span className="text-[10px] uppercase font-sans text-[#746B60] block font-semibold">
+                    Amount Payable
+                  </span>
+                  <span className="font-serif text-xl font-bold text-[#211D18]">
+                    ₹ {(nextAppointment.price || 0).toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-[10px] font-sans text-[#B88A45] block">
+                    Payment at Salon Desk
+                  </span>
                 </div>
-                <div className="min-w-0">
-                  <h4 className="font-serif text-sm font-medium text-brand-primary truncate">Claim Loyalty Gifts</h4>
-                  <p className="font-sans text-[10px] text-brand-text-muted truncate">Redeem accumulated points for free treatments</p>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-brand-text-muted group-hover:text-brand-secondary transition-colors shrink-0 ml-2" />
-            </button>
 
-            <button
-              id="express-act-sessions"
-              onClick={() => onNavigateView('appointments')}
-              className="w-full text-left p-3 border border-brand-surface-muted hover:border-brand-secondary hover:bg-brand-gold-light/40 transition-all duration-300 flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 bg-brand-surface-muted border border-brand-accent flex items-center justify-center text-brand-gold-dark group-hover:border-brand-secondary/40 shrink-0">
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-serif text-sm font-medium text-brand-primary truncate">Upcoming Sessions</h4>
-                  <p className="font-sans text-[10px] text-brand-text-muted truncate">Review active appointments & QR passes</p>
-                </div>
+                <Button
+                  id="overview-view-ticket-btn"
+                  variant="primary"
+                  size="md"
+                  leftIcon={<QrCode className="w-4 h-4" />}
+                  onClick={() => onNavigateView('appointments')}
+                  className="bg-[#B88A45] hover:bg-[#A07435] text-white rounded-full px-6 font-sans text-xs uppercase tracking-wider font-semibold"
+                >
+                  Digital Ticket
+                </Button>
               </div>
-              <ArrowRight className="h-4 w-4 text-brand-text-muted group-hover:text-brand-secondary transition-colors shrink-0 ml-2" />
-            </button>
-
-            <button
-              id="express-act-profile"
-              onClick={() => onNavigateView('profile')}
-              className="w-full text-left p-3 border border-brand-surface-muted hover:border-brand-secondary hover:bg-brand-gold-light/40 transition-all duration-300 flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 bg-brand-surface-muted border border-brand-accent flex items-center justify-center text-brand-gold-dark group-hover:border-brand-secondary/40 shrink-0">
-                  <CheckCircle className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-serif text-sm font-medium text-brand-primary truncate">Personal Records</h4>
-                  <p className="font-sans text-[10px] text-brand-text-muted truncate">Manage profile details and style preferences</p>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-brand-text-muted group-hover:text-brand-secondary transition-colors shrink-0 ml-2" />
-            </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Graceful Empty State (Zero dummy appointments) */
+          <div
+            id="next-appointment-empty-state"
+            className="bg-white border border-[#E6DCCB] rounded-2xl p-8 sm:p-10 text-center shadow-[0_4px_20px_rgba(33,29,24,0.02)]"
+          >
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#FAF7F0] border border-[#E6DCCB] flex items-center justify-center text-2xl mb-4">
+              🗓️
+            </div>
+            <h3 className="font-serif text-xl font-bold text-[#211D18]">
+              No Active Sessions Scheduled
+            </h3>
+            <p className="font-sans text-xs sm:text-sm text-[#746B60] max-w-md mx-auto mt-2 leading-relaxed">
+              You currently have no upcoming styling or spa reservations.
+              Choose from our master haircutting, balayage, beard grooming, or private spa treatments.
+            </p>
+            <div className="mt-6">
+              <Button
+                id="empty-overview-book-btn"
+                variant="primary"
+                size="md"
+                onClick={onOpenQuickBook}
+                className="bg-[#B88A45] hover:bg-[#A07435] text-white rounded-full px-7 font-sans text-xs uppercase tracking-wider font-bold shadow-sm"
+              >
+                Book Your First Session
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
 
+      {/* 4. Quick Action Visual Strip (Inspired by GitHub activity badges) */}
+      <div className="space-y-4">
+        <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#211D18]">
+          Quick Portal Actions
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Action 1: Sessions */}
+          <button
+            type="button"
+            onClick={() => onNavigateView('appointments')}
+            className="p-5 rounded-2xl bg-white border border-[#E6DCCB] hover:border-[#D8B77A] shadow-[0_2px_12px_rgba(33,29,24,0.02)] text-left transition-all duration-300 group cursor-pointer flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <span className="text-2xl p-2 rounded-xl bg-[#FAF7F0] border border-[#E6DCCB]">
+                🗓️
+              </span>
+              <div>
+                <span className="font-serif font-bold text-base text-[#211D18] block group-hover:text-[#B88A45] transition-colors">
+                  All Sessions
+                </span>
+                <span className="font-sans text-xs text-[#746B60]">
+                  View tickets, QR codes &amp; history
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#E6DCCB] group-hover:text-[#B88A45] transition-colors shrink-0" />
+          </button>
+
+          {/* Action 2: Wallet */}
+          <button
+            type="button"
+            onClick={() => onNavigateView('wallet')}
+            className="p-5 rounded-2xl bg-white border border-[#E6DCCB] hover:border-[#D8B77A] shadow-[0_2px_12px_rgba(33,29,24,0.02)] text-left transition-all duration-300 group cursor-pointer flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <span className="text-2xl p-2 rounded-xl bg-[#FAF7F0] border border-[#E6DCCB]">
+                💳
+              </span>
+              <div>
+                <span className="font-serif font-bold text-base text-[#211D18] block group-hover:text-[#B88A45] transition-colors">
+                  Empire Wallet
+                </span>
+                <span className="font-sans text-xs text-[#746B60]">
+                  Top up credits &amp; view transactions
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#E6DCCB] group-hover:text-[#B88A45] transition-colors shrink-0" />
+          </button>
+
+          {/* Action 3: Profile */}
+          <button
+            type="button"
+            onClick={() => onNavigateView('profile')}
+            className="p-5 rounded-2xl bg-white border border-[#E6DCCB] hover:border-[#D8B77A] shadow-[0_2px_12px_rgba(33,29,24,0.02)] text-left transition-all duration-300 group cursor-pointer flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <span className="text-2xl p-2 rounded-xl bg-[#FAF7F0] border border-[#E6DCCB]">
+                👤
+              </span>
+              <div>
+                <span className="font-serif font-bold text-base text-[#211D18] block group-hover:text-[#B88A45] transition-colors">
+                  Identity Records
+                </span>
+                <span className="font-sans text-xs text-[#746B60]">
+                  Edit credentials &amp; styling notes
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#E6DCCB] group-hover:text-[#B88A45] transition-colors shrink-0" />
+          </button>
+        </div>
       </div>
     </div>
   );

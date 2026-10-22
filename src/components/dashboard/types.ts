@@ -38,6 +38,10 @@ export interface DashboardUser {
   membershipExpiryDate?: string;
   membershipRemainingDays?: number;
   membershipStatus?: string;
+  gender?: string;
+  bio?: string;
+  role?: string;
+  createdAt?: string;
   addresses: UserAddress[];
   preferences: {
     language: string;

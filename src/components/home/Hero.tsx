@@ -39,7 +39,7 @@ export default function Hero({ onBookClick, onExploreClick }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative flex flex-col md:flex-row md:min-h-screen lg:h-screen lg:min-h-[850px] bg-[#FAF7F0] text-[#211D18] overflow-hidden pt-14 md:pt-0"
+      className="relative flex flex-col md:flex-row md:min-h-screen lg:min-h-[850px] bg-[#FAF7F0] text-[#211D18] overflow-hidden pt-[76px] sm:pt-[84px] md:pt-0"
     >
       {/* ----------------- MOBILE HERO IMAGE (ONLY ON MOBILE <= 767px) ----------------- */}
       <div className="block md:hidden relative w-full h-[30vh] min-h-[210px] max-h-[280px] overflow-hidden bg-[#FAF7F0]">
@@ -69,7 +69,7 @@ export default function Hero({ onBookClick, onExploreClick }: HeroProps) {
       </div>
 
       {/* ----------------- EDITORIAL CONTENT (LEFT ON DESKTOP/TABLET, BELOW ON MOBILE) ----------------- */}
-      <div className="w-full md:w-[50%] lg:w-[48%] xl:w-[42%] flex flex-col justify-start md:justify-center px-4 sm:px-8 md:px-8 lg:px-12 xl:px-20 pt-4 sm:pt-6 pb-24 md:py-16 lg:py-0 relative z-20 bg-[#FAF7F0]">
+      <div className="w-full md:w-[50%] lg:w-[48%] xl:w-[42%] flex flex-col justify-start md:justify-center px-4 sm:px-8 md:px-8 lg:px-12 xl:px-20 pt-4 sm:pt-6 pb-24 md:pt-24 md:pb-16 lg:pt-[88px] lg:pb-12 relative z-20 bg-[#FAF7F0]">
         <div className="max-w-xl mx-auto lg:mx-0 text-center md:text-left relative z-20">
           
           {/* Eyebrow Label */}
@@ -192,7 +192,7 @@ export default function Hero({ onBookClick, onExploreClick }: HeroProps) {
       </div>
 
       {/* ----------------- TABLET & DESKTOP HERO IMAGE (HIDDEN ON MOBILE <= 767px) ----------------- */}
-      <div className="hidden md:flex w-[50%] lg:w-[52%] xl:w-[58%] relative h-auto overflow-hidden bg-[#FAF7F0] items-center justify-center">
+      <div className="hidden md:flex w-[50%] lg:w-[52%] xl:w-[58%] relative self-stretch overflow-hidden bg-[#FAF7F0] items-center justify-center">
         
         {/* Subtle decorative gold frame inside the image section */}
         <div className="absolute inset-6 xl:inset-8 border border-brand-secondary/15 z-20 pointer-events-none hidden lg:block" />
